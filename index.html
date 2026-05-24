@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>ColetaWeb</title>
+    <!-- Carregando a biblioteca Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -14,19 +15,32 @@
     </div>
 
     <script>
-        const supabase = supabase.createClient(
+        // Usamos uma variável única que não conflita com a biblioteca
+        const sbClient = supabase.createClient(
             'https://ekmcgifpvqrdgcikvepe.supabase.co', 
             'sb_publishable_DzhY4TT7JpShnqphkGa1Rg_Acjy2B0s'
         );
 
-        document.getElementById('loginBtn').onclick = async () => {
+        document.getElementById('loginBtn').addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) alert(error.message);
-            else alert("Sucesso! Logado.");
-        };
+            try {
+                const { data, error } = await sbClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    alert("Erro: " + error.message);
+                } else {
+                    alert("Sucesso! Logado.");
+                    console.log("Usuário:", data.user);
+                }
+            } catch (err) {
+                console.error("Erro inesperado:", err);
+            }
+        });
     </script>
 </body>
 </html>
