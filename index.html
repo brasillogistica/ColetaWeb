@@ -2,45 +2,31 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>ColetaWeb | Minerva Foods</title>
-    <!-- Supabase SDK -->
+    <title>ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f2f2f2; }
-        .card { background: white; padding: 40px; border-radius: 20px; border: 1px solid #c5b68d; width: 350px; text-align: center; }
-        input { width: 100%; border: none; border-bottom: 2px solid #2d4b5e; padding: 10px; margin: 10px 0; font-weight: 700; background: transparent; outline: none; }
-        button { background: #2d4b5e; color: white; border: none; padding: 12px 20px; border-radius: 99px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 15px; }
-    </style>
 </head>
 <body>
-
-    <div class="card">
-        <h2 style="color:#2d4b5e; margin-bottom: 20px;">LOGIN COLETAWEB</h2>
-        <input type="email" id="email" placeholder="E-mail">
-        <input type="password" id="password" placeholder="Senha">
+    <div style="text-align:center; margin-top:50px;">
+        <h2>LOGIN</h2>
+        <input type="email" id="email" placeholder="E-mail"><br>
+        <input type="password" id="password" placeholder="Senha"><br>
         <button id="loginBtn">ENTRAR</button>
     </div>
 
     <script>
-        // Configuração única e segura
         const supabase = supabase.createClient(
             'https://ekmcgifpvqrdgcikvepe.supabase.co', 
             'sb_publishable_DzhY4TT7JpShnqphkGa1Rg_Acjy2B0s'
         );
 
-        document.getElementById('loginBtn').addEventListener('click', async () => {
+        document.getElementById('loginBtn').onclick = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-
+            
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                alert("Erro: " + error.message);
-            } else {
-                alert("Sucesso! Redirecionando...");
-                // Aqui você pode adicionar lógica de redirecionamento para o painel depois
-            }
-        });
+            if (error) alert(error.message);
+            else alert("Sucesso! Logado.");
+        };
     </script>
 </body>
 </html>
