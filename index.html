@@ -2,48 +2,52 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>ColetaWeb</title>
+    <title>ColetaWeb | Minerva Foods</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f2f2f2; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 20px; border: 1px solid #c5b68d; width: 350px; text-align: center; }
+        input { width: 100%; border: none; border-bottom: 2px solid #2d4b5e; padding: 10px; margin: 10px 0; font-weight: 700; background: transparent; outline: none; }
+        button { background: #2d4b5e; color: white; border: none; padding: 12px 20px; border-radius: 99px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 15px; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
-    <div style="text-align:center; margin-top:50px;">
-        <h2>LOGIN</h2>
-        <input type="email" id="email" placeholder="E-mail"><br>
-        <input type="password" id="password" placeholder="Senha"><br>
+
+    <!-- Tela de Login -->
+    <div id="loginView" class="card">
+        <h2 style="color:#2d4b5e; margin-bottom: 20px;">LOGIN COLETAWEB</h2>
+        <input type="email" id="email" placeholder="E-mail">
+        <input type="password" id="password" placeholder="Senha">
         <button id="loginBtn">ENTRAR</button>
     </div>
 
+    <!-- Painel que aparece depois -->
+    <div id="panelView" class="card hidden">
+        <h2 style="color:#2d4b5e">PAINEL DE COLETA</h2>
+        <p id="userEmail" style="margin: 20px 0; font-size: 12px;"></p>
+        <button onclick="location.reload()" style="background:#c5b68d">SAIR</button>
+    </div>
+
     <script>
-        console.log("Script carregado!");
-        
         const sbClient = supabase.createClient(
             'https://ekmcgifpvqrdgcikvepe.supabase.co', 
             'sb_publishable_DzhY4TT7JpShnqphkGa1Rg_Acjy2B0s'
         );
 
         document.getElementById('loginBtn').addEventListener('click', async () => {
-            console.log("Botão clicado!");
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
-            console.log("Tentando auth com:", email);
 
-            try {
-                const { data, error } = await sbClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
+            const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
 
-                if (error) {
-                    console.error("Erro retornado:", error);
-                    alert("Erro do Supabase: " + error.message);
-                } else {
-                    console.log("Sucesso:", data);
-                    alert("Sucesso! Logado.");
-                }
-            } catch (err) {
-                console.error("Erro crítico:", err);
-                alert("Erro no código: " + err);
+            if (error) {
+                alert("Erro: " + error.message);
+            } else {
+                // Sucesso: Esconder login e mostrar painel
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('panelView').classList.remove('hidden');
+                document.getElementById('userEmail').innerText = "Logado como: " + data.user.email;
             }
         });
     </script>
