@@ -1,0 +1,125 @@
+:root { 
+    --navy: #2d4b5e; 
+    --gold: #c5b68d; 
+    --red: #E84D53; 
+    --bg: #f2f2f2; 
+    --white: #ffffff; 
+    --grey: #6c757d; 
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg); 
+    color: var(--navy); 
+    padding: 20px; 
+}
+
+.card { 
+    background: var(--white); 
+    padding: 20px; 
+    border-radius: 20px; 
+    border: 1px solid var(--gold); 
+}
+
+.btn-main { 
+    background: var(--navy); 
+    color: white; 
+    border: none; 
+    padding: 15px 30px; 
+    border-radius: 99px; 
+    font-weight: 800; 
+    cursor: pointer; 
+    text-transform: uppercase; 
+}
+
+.form-group { margin-bottom: 15px; }
+
+.form-group label { 
+    font-size: 10px; 
+    font-weight: 800; 
+    color: var(--gold); 
+    display: block; 
+    margin-bottom: 5px; 
+}
+
+.form-group input, .form-group select { 
+    width: 100%; 
+    border: none; 
+    border-bottom: 2px solid var(--navy); 
+    padding: 5px 0; 
+    font-weight: 700; 
+}
+
+/* Calendário Principal */
+.calendar-grid { 
+    display: grid; 
+    grid-template-columns: 50px repeat(7, 1fr); 
+    gap: 1px; 
+    background: #eee; 
+    border: 1px solid #ddd; 
+    margin-top: 10px; 
+    max-width: 600px; /* Limita o tamanho máximo do calendário */
+    margin-left: auto; /* Alinha à direita dentro do card */
+    margin-right: 0;
+}
+
+.cal-cell { 
+    background: white; 
+    padding: 12px; 
+    text-align: center; 
+    font-size: 14px; 
+    font-weight: 700; 
+    color: var(--navy); 
+}
+
+.cal-cell.head { 
+    background: var(--navy); 
+    color: white; 
+    font-size: 12px; 
+    font-weight: 800; 
+    padding: 10px; 
+}
+
+.week-number { 
+    color: var(--gold); 
+    background: #f9f9f9; 
+    font-weight: 800; 
+}
+
+/* Destaques do Calendário */
+.today { 
+    color: var(--red) !important; 
+    font-weight: 900 !important; 
+    font-size: 16px !important; 
+    border: 1px solid var(--red); 
+    border-radius: 4px; 
+}
+
+.weekend { 
+    background: #f0f7ff !important; 
+    color: var(--navy) !important; 
+    font-weight: 700 !important; 
+}
+
+/* Calendário Anual (Modal) */
+#full-calendar-content {
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); /* 4 meses por linha */
+    gap: 20px; 
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.annual-day {
+    padding: 8px;
+    border: 1px solid #eee;
+    font-size: 13px; 
+    color: var(--navy);
+}
+
+.annual-weekend {
+    background: #f0f7ff; 
+}

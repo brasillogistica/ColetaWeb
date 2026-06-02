@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Registro | ColetaWeb</title>
+</head>
+<body style="display: flex; justify-content: center; padding: 40px;">
+
+    <div class="card" style="width: 450px;">
+        <h2 style="color: var(--navy); margin-bottom: 20px;">NOVO REGISTRO</h2>
+        
+        <div class="form-group"><label>Transportadora</label><input type="text" value="Dallastra" disabled></div>
+        <div class="form-group"><label>Container</label><input type="text" id="cnt" placeholder="INSIRA O CONTAINER" onblur="autoFill()"></div>
+        
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;"><label>Tara</label><input type="text" id="tara" readonly></div>
+            <div class="form-group" style="flex: 1;"><label>Max Gross</label><input type="text" id="gross" readonly></div>
+        </div>
+
+        <div class="form-group">
+            <label>Armador</label>
+            <select id="armadorSelect"><option value="">SELECIONE...</option></select>
+        </div>
+
+        <!-- Novo campo: Local da Coleta -->
+        <div class="form-group">
+            <label>Local da Coleta</label>
+            <select id="localColetaSelect"><option value="">SELECIONE...</option></select>
+        </div>
+        
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn-main" style="background: #6c757d;" onclick="window.location.href='index.html'">VOLTAR</button>
+            <button class="btn-main" style="background: #E84D53;">SALVAR</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Preenche as listas dinâmicas ao carregar a página
+        popularArmadores();
+        popularLocais();
+    </script>
+</body>
+</html>
