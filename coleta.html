@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Registro | ColetaWeb</title>
-    <!-- 1. Carrega o Supabase primeiro de tudo -->
+    <!-- 1. Carrega o Supabase primeiro -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- 2. Biblioteca Tesseract -->
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
@@ -29,7 +29,7 @@
         </div>
     </div>
 
-    <!-- 3. Carrega o seu script por último -->
+    <!-- 3. Carrega o seu script -->
     <script src="script.js"></script>
     
     <script>
@@ -55,11 +55,13 @@
 
         // Função para salvar no Supabase
         async function salvarColeta() {
-            // Verifica se clienteSupabase já foi carregado do script.js
             if (typeof clienteSupabase === 'undefined') {
                 alert("Erro: O sistema ainda está carregando. Aguarde um segundo.");
                 return;
             }
+
+            const fileInput = document.getElementById('cameraInput');
+            if (!fileInput.files[0]) { alert("Tire uma foto primeiro!"); return; }
 
             const status = document.getElementById('status');
             const { data: { user } } = await clienteSupabase.auth.getUser();
@@ -69,20 +71,33 @@
                 return;
             }
             
-            status.innerText = "Salvando no banco...";
+            status.innerText = "Enviando foto...";
 
-            const { error } = await clienteSupabase.from('coletas').insert([{
-                usuario_email: user.email,
-                container: window.dadosExtraidos.container,
-                created_at: new Date()
-            }]);
+            try {
+                // 1. Upload da foto
+                const fileName = `${Date.now()}_${user.email}.jpg`;
+                const { error: uploadError } = await clienteSupabase.storage
+                    .from('coletas-fotos')
+                    .upload(fileName, fileInput.files[0]);
+                
+                if (uploadError) throw uploadError;
 
-            if (error) {
-                alert("Erro ao salvar: " + error.message);
-                status.innerText = "Erro ao salvar.";
-            } else {
+                // 2. Salvar no banco usando os nomes exatos das colunas do seu print
+                const { error: dbError } = await clienteSupabase.from('coletas').insert([{
+                    email_usuario: user.email,        // Ajustado para 'email_usuario' conforme seu print
+                    container: window.dadosExtraidos.container,
+                    foto_url: fileName,
+                    created_at: new Date().toISOString()
+                }]);
+
+                if (dbError) throw dbError;
+
                 alert("Registro salvo com sucesso!");
                 window.location.href = 'index.html';
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao salvar: " + err.message);
+                status.innerText = "Erro ao salvar.";
             }
         }
     </script>
