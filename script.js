@@ -14,6 +14,27 @@ window.dadosExtraidos = { container: "N/A" };
 const armadores = ["MSC", "CMA", "MAERSK", "HAPAG", "ALPHA", "HAPPAG", "VUXX", "TOZZO", "HAPAG LLOYD", "PIL", "ONE"];
 const locaisColeta = ["oceanic", "Lechman terminais", "VMG Terminais"];
 
+// Função para buscar transportadoras no banco de dados e preencher o select
+window.carregarTransportadoras = async function() {
+    if (!clienteSupabase) return;
+    try {
+        const { data, error } = await clienteSupabase.from('transportadoras').select('nome');
+        const sel = document.getElementById('novaTransportadora');
+        
+        if (sel && data) {
+            sel.innerHTML = '<option value="">SELECIONE...</option>';
+            data.forEach(t => {
+                let option = document.createElement('option');
+                option.value = t.nome;
+                option.text = t.nome;
+                sel.add(option);
+            });
+        }
+    } catch (e) {
+        console.error("Erro ao carregar transportadoras:", e);
+    }
+};
+
 // Funções Globais Registradas no Objeto Window
 window.fazerLogout = async function() {
     if (clienteSupabase) await clienteSupabase.auth.signOut();

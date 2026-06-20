@@ -24,7 +24,7 @@
                 </select>
 
                 <select id="novaTransportadora" style="padding: 8px;">
-                    <option value="">Carregando transportadoras...</option>
+                    <option value="">Carregando...</option>
                 </select>
 
                 <button class="btn-main" style="padding: 8px 15px; background: var(--navy); font-size: 12px;" onclick="criarUsuario()">CRIAR</button>
@@ -50,6 +50,12 @@
     <script src="script.js"></script>
     <script>
         async function carregarUsuarios() {
+            // Pequeno delay para garantir carregamento do script.js
+            if (typeof clienteSupabase === 'undefined') {
+                setTimeout(carregarUsuarios, 500);
+                return;
+            }
+
             const { data: { session } } = await clienteSupabase.auth.getSession();
             if (!session) { window.location.href = 'login.html'; return; }
 
@@ -74,7 +80,6 @@
             data.forEach(user => {
                 let perfilTd = user.perfil;
                 
-                // Regra: Apenas Master pode alterar perfil e o perfil Master é imutável
                 if (userData.perfil === 'master' && user.perfil !== 'master') {
                     perfilTd = `
                         <select onchange="atualizarCampo('${user.email}', 'perfil', this.value)" style="padding: 5px;">
@@ -134,7 +139,7 @@
 
         window.onload = async () => {
             await carregarUsuarios();
-            await carregarTransportadoras(); // Carrega dinamicamente do banco
+            await carregarTransportadoras(); // Busca transportadoras do banco
         };
     </script>
 </body>
