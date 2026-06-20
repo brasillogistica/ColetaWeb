@@ -88,12 +88,14 @@
                     console.warn("GPS não disponível:", e);
                 }
 
-                // 2. Busca transportadora
+                // 2. Busca transportadora na tabela usuários
                 const { data: userData } = await clienteSupabase
                     .from('usuarios')
                     .select('transportadora')
                     .eq('email', user.email)
                     .single();
+
+                status.innerText = "Enviando foto...";
 
                 // 3. Upload da foto
                 const fileName = `${Date.now()}_${user.email}.jpg`;
@@ -103,12 +105,12 @@
                 
                 if (uploadError) throw uploadError;
 
-                // 4. Salvar no banco
+                // 4. Salvar no banco usando nomes exatos da sua tabela
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
                     email_usuario: user.email,
                     container: window.dadosExtraidos.container,
                     foto_url: fileName,
-                    localizacao: localizacao, // Adicionado GPS
+                    localizacao: localizacao,
                     transportadora: userData ? userData.transportadora : "N/A",
                     created_at: new Date().toISOString()
                 }]);
