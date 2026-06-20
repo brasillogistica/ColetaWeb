@@ -23,9 +23,9 @@ body {
     border: 1px solid var(--gold); 
 }
 
-/* Força o container administrativo a ficar oculto antes do JS carregar */
+/* Alteração aqui: removido o !important para permitir que o JS controle a visibilidade */
 #admin-container {
-    display: none !important;
+    display: none;
 }
 
 .btn-main { 
