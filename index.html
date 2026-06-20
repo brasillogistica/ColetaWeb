@@ -31,11 +31,12 @@
     <!-- Container com Layout Lateral -->
     <div class="card" style="display: flex; gap: 40px; align-items: flex-start;">
         
-        <!-- Coluna da Esquerda: Botões (Todos com gap: 15px uniforme) -->
+        <!-- Coluna da Esquerda: Botões -->
         <div style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 15px;">
-            <button class="btn-main" onclick="window.location.href='coleta.html'" style="width: 100%;">+ REGISTRO DE COLETA</button>
+            <!-- Botão renomeado para REGISTRAR COLETA -->
+            <button class="btn-main" onclick="window.location.href='coleta.html'" style="width: 100%;">REGISTRAR COLETA</button>
             
-            <!-- Grupo Administrativo (Aparece apenas para Master/Admin) -->
+            <!-- Bloco Administrativo (Aparece apenas para Master/Admin) -->
             <div id="admin-container" style="display:none; flex-direction: column; gap: 15px;">
                 <button class="btn-main" style="width: 100%; background: var(--red);" onclick="window.location.href='admin.html'">GERENCIAMENTO</button>
                 <button class="btn-main" style="width: 100%; background: var(--gold);" onclick="window.location.href='historico.html'">HISTÓRICO</button>
