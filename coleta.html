@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Registro | ColetaWeb</title>
-    <!-- Biblioteca Tesseract -->
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 </head>
 <body style="display: flex; justify-content: center; padding: 40px;">
@@ -14,12 +13,16 @@
         <h2 style="color: var(--navy); margin-bottom: 20px;">NOVO REGISTRO</h2>
         
         <div class="form-group"><label>Transportadora</label><input type="text" value="Dallastra" disabled></div>
-        <div class="form-group"><label>Container</label><input type="text" id="cnt" placeholder="INSIRA O CONTAINER" onblur="autoFill()"></div>
+        <div class="form-group"><label>Container</label><input type="text" id="cnt" placeholder="CONTAINER"></div>
         
         <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;"><label>Tara</label><input type="text" id="tara" readonly></div>
-            <div class="form-group" style="flex: 1;"><label>Max Gross</label><input type="text" id="gross" readonly></div>
+            <div class="form-group" style="flex: 1;"><label>Tara</label><input type="text" id="tara"></div>
+            <div class="form-group" style="flex: 1;"><label>Max Gross</label><input type="text" id="gross"></div>
         </div>
+
+        <div class="form-group"><label>Motorista</label><input type="text" id="motorista"></div>
+        <div class="form-group"><label>Veículo</label><input type="text" id="veiculo"></div>
+        <div class="form-group"><label>Lacre</label><input type="text" id="lacre"></div>
 
         <div class="form-group">
             <label>Armador</label>
@@ -31,7 +34,6 @@
             <select id="localColetaSelect"><option value="">SELECIONE...</option></select>
         </div>
 
-        <!-- Campo de Acesso à Câmera -->
         <div class="form-group">
             <label>FOTO DO RECIBO</label>
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="border: none; padding: 10px 0; font-size: 14px;">
@@ -50,21 +52,15 @@
         popularArmadores();
         popularLocais();
 
-        // Lógica de captura disparando a função global do script.js
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = async function(event) {
-                    const preview = document.getElementById('preview');
-                    preview.src = event.target.result;
-                    preview.style.display = 'block';
-                    
-                    // Chama a função processarOCR que está no seu script.js
+                    document.getElementById('preview').src = event.target.result;
+                    document.getElementById('preview').style.display = 'block';
                     if(typeof window.processarOCR === 'function') {
                         await window.processarOCR(event.target.result);
-                    } else {
-                        console.error("Função processarOCR não encontrada no script.js");
                     }
                 }
                 reader.readAsDataURL(file);

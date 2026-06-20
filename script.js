@@ -22,16 +22,17 @@ window.processarOCR = async function(imagemBase64) {
     
     try {
         const { data: { text } } = await Tesseract.recognize(imagemBase64, 'por');
-        console.log("Texto extraído:", text);
+        console.log("TEXTO EXTRAÍDO:", text);
 
-        // Regex para extrair dados - Ajuste conforme necessidade
-        const containerMatch = text.match(/[A-Z]{4}\s?\d{3}\.?\d{3}\-?\d/i);
-        const taraMatch = text.match(/TARA\D*(\d+)/i);
-        const grossMatch = text.match(/MGW\D*(\d+)/i) || text.match(/MG\D*(\d+)/i);
+        const extrair = (regex) => (text.match(regex) || [])[1] || "";
 
-        if (containerMatch) document.getElementById('cnt').value = containerMatch[0];
-        if (taraMatch) document.getElementById('tara').value = taraMatch[1];
-        if (grossMatch) document.getElementById('gross').value = grossMatch[1];
+        // Preenchimento automático dos campos
+        if (document.getElementById('cnt')) document.getElementById('cnt').value = extrair(/CONTAINER:\s*([A-Z0-9\.\-]+)/i);
+        if (document.getElementById('tara')) document.getElementById('tara').value = extrair(/TARA\s*(\d+)/i);
+        if (document.getElementById('gross')) document.getElementById('gross').value = extrair(/MGW\s*(\d+)/i);
+        if (document.getElementById('motorista')) document.getElementById('motorista').value = extrair(/MOTORISTA:\s*([A-Z\s]+)/i);
+        if (document.getElementById('veiculo')) document.getElementById('veiculo').value = extrair(/VEICULO:\s*([A-Z0-9\-]+)/i);
+        if (document.getElementById('lacre')) document.getElementById('lacre').value = extrair(/LACRE:\s*([A-Z0-9\/\s]+)/i);
 
         if (status) status.innerText = "Leitura concluída!";
     } catch (err) {
