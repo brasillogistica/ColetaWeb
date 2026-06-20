@@ -15,7 +15,7 @@ window.fazerLogout = async function() {
     window.location.href = 'login.html';
 };
 
-// Função para verificar se o usuário tem perfil administrativo (Master ou Administrador)
+// Função para verificar se o usuário tem perfil administrativo
 async function checarPermissaoMaster() {
     try {
         const { data: { user } } = await clienteSupabase.auth.getUser();
@@ -27,7 +27,6 @@ async function checarPermissaoMaster() {
                 .eq('email', user.email)
                 .single();
 
-            // Adicionado suporte a 'administrador'
             if (userData && (userData.perfil === 'master' || userData.perfil === 'mestre' || userData.perfil === 'administrador')) {
                 return true;
             }
@@ -38,13 +37,12 @@ async function checarPermissaoMaster() {
     return false;
 }
 
-// Função para inicializar o painel e mostrar elementos administrativos
 async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
     if (isMaster) {
         const adminContainer = document.getElementById('admin-container');
         if (adminContainer) {
-            adminContainer.style.display = 'flex'; // Ajustado para flex conforme seu index.html
+            adminContainer.style.display = 'flex'; 
         }
     }
 }
@@ -183,3 +181,19 @@ function closeFullCalendar() {
     const modal = document.getElementById('full-calendar-modal');
     if (modal) modal.style.display = 'none';
 }
+
+// Lógica para visualizar a foto da câmera
+document.getElementById('cameraInput')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const preview = document.getElementById('preview');
+            if(preview) {
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+            }
+        }
+        reader.readAsDataURL(file);
+    }
+});

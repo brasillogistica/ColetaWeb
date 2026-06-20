@@ -24,15 +24,21 @@
             <select id="armadorSelect"><option value="">SELECIONE...</option></select>
         </div>
 
-        <!-- Novo campo: Local da Coleta -->
         <div class="form-group">
             <label>Local da Coleta</label>
             <select id="localColetaSelect"><option value="">SELECIONE...</option></select>
         </div>
+
+        <!-- Campo de Acesso à Câmera -->
+        <div class="form-group">
+            <label>FOTO DO CONTAINER</label>
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="border: none; padding: 10px 0; font-size: 14px;">
+            <img id="preview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
+        </div>
         
         <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <button class="btn-main" style="background: #6c757d;" onclick="window.location.href='index.html'">VOLTAR</button>
-            <button class="btn-main" style="background: #E84D53;">SALVAR</button>
+            <button class="btn-main" style="background: #6c757d; padding: 10px 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
+            <button class="btn-main" style="background: #E84D53; padding: 10px 20px;">SALVAR</button>
         </div>
     </div>
 
@@ -41,6 +47,20 @@
         // Preenche as listas dinâmicas ao carregar a página
         popularArmadores();
         popularLocais();
+
+        // Lógica para mostrar o preview da foto
+        document.getElementById('cameraInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('preview');
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
     </script>
 </body>
 </html>
