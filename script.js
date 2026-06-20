@@ -18,14 +18,24 @@ window.fazerLogout = async function() {
     window.location.href = 'login.html';
 };
 
+// Função global de OCR aprimorada
 window.processarOCR = async function(imagemBase64) {
     const status = document.getElementById('status');
     if (status) status.innerText = "Lendo recibo, aguarde...";
+    
     try {
         const { data: { text } } = await Tesseract.recognize(imagemBase64, 'por');
-        const extrair = (regex) => (text.match(regex) || [])[1] || "N/A";
-        window.dadosExtraidos = { container: extrair(/CONTAINER:\s*([A-Z0-9\.\-]+)/i) };
-        if (status) status.innerText = "Leitura concluída!";
+        console.log("TEXTO EXTRAÍDO:", text);
+
+        // Regex robusta para encontrar padrão de container independente da palavra "CONTAINER:"
+        // Busca 4 letras seguidas de 6 a 12 caracteres alfanuméricos/pontos/traços
+        const containerMatch = text.match(/\b[A-Z]{4}\s?[\d\.\-\s]{6,12}/i);
+
+        window.dadosExtraidos = {
+            container: containerMatch ? containerMatch[0].trim() : "N/A"
+        };
+
+        if (status) status.innerText = "Leitura concluída: " + window.dadosExtraidos.container;
     } catch (err) {
         console.error("Erro no OCR:", err);
         if (status) status.innerText = "Erro ao ler imagem.";
@@ -36,20 +46,19 @@ async function checarPermissaoMaster() {
     if (!clienteSupabase) return false;
     try {
         const { data: { user } } = await clienteSupabase.auth.getUser();
-        if (!user) return false;
         
-        const { data: userData, error } = await clienteSupabase
-            .from('usuarios')
-            .select('perfil, status')
-            .eq('email', user.email)
-            .single();
+        if (user) {
+            const { data: userData } = await clienteSupabase
+                .from('usuarios')
+                .select('perfil, status')
+                .eq('email', user.email)
+                .single();
 
-        if (error) console.warn("Erro ao buscar usuário:", error.message);
-        
-        if (userData && 
-            (userData.perfil === 'master' || userData.perfil === 'mestre' || userData.perfil === 'administrador') &&
-            userData.status === 'aprovado') {
-            return true;
+            if (userData && 
+                (userData.perfil === 'master' || userData.perfil === 'mestre' || userData.perfil === 'administrador') &&
+                userData.status === 'aprovado') {
+                return true;
+            }
         }
     } catch (e) {
         console.error("Erro ao checar permissão:", e);
@@ -57,19 +66,17 @@ async function checarPermissaoMaster() {
     return false;
 }
 
-// Inicialização com tentativa (Retry) para garantir que o DOM e o Banco respondam
-async function inicializarPainel(tentativa = 0) {
+async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
-    const adminContainer = document.getElementById('admin-container');
+    console.log("Painel administrativo liberado:", isMaster);
     
-    if (isMaster && adminContainer) {
-        adminContainer.style.display = 'flex';
-        console.log("Painel administrativo liberado.");
-    } else if (tentativa < 5) {
-        // Tenta novamente em 500ms se não funcionar de primeira
-        setTimeout(() => inicializarPainel(tentativa + 1), 500);
-    } else {
-        console.log("Painel administrativo oculto ou sem permissão.");
+    const adminContainer = document.getElementById('admin-container');
+    if (adminContainer) {
+        if (isMaster) {
+            adminContainer.style.display = 'flex'; 
+        } else {
+            adminContainer.style.display = 'none';
+        }
     }
 }
 
@@ -86,6 +93,7 @@ window.carregarTransportadoras = async function() {
     try {
         const { data, error } = await clienteSupabase.from('transportadoras').select('nome');
         const sel = document.getElementById('novaTransportadora');
+        
         if (sel && data) {
             sel.innerHTML = '<option value="">SELECIONE...</option>';
             data.forEach(t => {
@@ -100,7 +108,7 @@ window.carregarTransportadoras = async function() {
     }
 };
 
-// ... (Mantenha as funções de UI: popularArmadores, popularLocais, renderCalendar, etc.)
+// Funções de UI
 function popularArmadores() { const sel = document.getElementById('armadorSelect'); if(sel) { sel.innerHTML = '<option value="">SELECIONE...</option>'; armadores.forEach(a => sel.add(new Option(a, a))); } }
 function popularLocais() { const sel = document.getElementById('localColetaSelect'); if(sel) { sel.innerHTML = '<option value="">SELECIONE...</option>'; locaisColeta.forEach(local => sel.add(new Option(local, local))); } }
 function autoFill() { const val = document.getElementById('cnt')?.value; if(val === "TEMU9295736") { document.getElementById('tara').value = "4730"; document.getElementById('gross').value = "35000"; } }
