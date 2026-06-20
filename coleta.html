@@ -84,7 +84,7 @@
                         });
                     });
 
-                    // Geocodificação Reversa
+                    // Geocodificação Reversa via Nominatim
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
@@ -98,8 +98,10 @@
                         const cidade = addr.city || addr.town || '';
                         const estado = addr.state || addr.state_district || '';
                         
-                        // Monta o endereço formatado
-                        localizacao = `${rua}${num ? ', ' + num : ''} - ${bairro} - ${cidade} - ${estado}`.replace(/^ - | - $/, '');
+                        // Monta o endereço formatado de forma limpa
+                        localizacao = [rua, num, bairro, cidade, estado]
+                            .filter(Boolean)
+                            .join(' - ');
                     } else {
                         localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
                     }
@@ -108,7 +110,7 @@
                     localizacao = "GPS Bloqueado";
                 }
 
-                // 2. Busca transportadora
+                // 2. Busca transportadora na tabela usuários
                 const { data: userData } = await clienteSupabase
                     .from('usuarios')
                     .select('transportadora')
@@ -125,13 +127,13 @@
                 
                 if (uploadError) throw uploadError;
 
-                // 4. Salvar no banco
+                // 4. Salvar no banco (com transportadora garantida)
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
                     email_usuario: user.email,
-                    container: window.dadosExtraidos.container,
+                    container: window.dadosExtraidos.container || "N/A",
                     foto_url: fileName,
                     localizacao: localizacao,
-                    transportadora: userData ? userData.transportadora : "N/A",
+                    transportadora: userData?.transportadora || "N/A",
                     created_at: new Date().toISOString()
                 }]);
 

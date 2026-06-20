@@ -27,7 +27,6 @@
 
         <!-- Centro: Texto -->
         <div style="flex: 1; text-align: center;">
-            <!-- ID atualizado para exibir o nome formatado -->
             <h1 id="welcome-message" style="color: var(--navy); font-size: 1.5rem;">Carregando...</h1>
             <p style="font-size: 0.8rem;">Sistema ColetaWeb - Logística Internacional</p>
         </div>
@@ -45,10 +44,12 @@
         <div class="side-col" style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 15px;">
             <button class="btn-main" onclick="window.location.href='coleta.html'" style="width: 100%;">REGISTRAR COLETA</button>
             
-            <!-- Bloco Administrativo -->
+            <!-- Botão Histórico (Visível para todos os usuários) -->
+            <button class="btn-main" style="width: 100%; background: var(--gold);" onclick="window.location.href='historico.html'">HISTÓRICO</button>
+
+            <!-- Bloco Administrativo (Aparece apenas para Master/Admin) -->
             <div id="admin-container" style="display:none; flex-direction: column; gap: 15px;">
                 <button class="btn-main" style="width: 100%; background: var(--red);" onclick="window.location.href='admin.html'">GERENCIAMENTO</button>
-                <button class="btn-main" style="width: 100%; background: var(--gold);" onclick="window.location.href='historico.html'">HISTÓRICO</button>
             </div>
         </div>
 
@@ -86,16 +87,15 @@
                 return;
             }
 
-            const { data: { user } } = await clienteSupabase.auth.getUser();
+            const { data: { session } } = await clienteSupabase.auth.getSession();
             
-            if (!user) {
+            if (!session) {
                 window.location.href = 'login.html';
                 return;
             }
             
             // Lógica para formatar o nome: rhemerson.rezende -> Rhemerson Rezende
-            const parteEmail = user.email.split('@')[0];
-            // Substitui pontos, underlines ou hifens por espaço para depois capitalizar
+            const parteEmail = session.user.email.split('@')[0];
             const nomeFormatado = parteEmail.split(/[._-]/)
                 .map(parte => parte.charAt(0).toUpperCase() + parte.slice(1))
                 .join(' ');
