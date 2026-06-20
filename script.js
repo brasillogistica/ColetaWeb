@@ -14,27 +14,6 @@ window.dadosExtraidos = { container: "N/A" };
 const armadores = ["MSC", "CMA", "MAERSK", "HAPAG", "ALPHA", "HAPPAG", "VUXX", "TOZZO", "HAPAG LLOYD", "PIL", "ONE"];
 const locaisColeta = ["oceanic", "Lechman terminais", "VMG Terminais"];
 
-// Função para buscar transportadoras no banco de dados e preencher o select
-window.carregarTransportadoras = async function() {
-    if (!clienteSupabase) return;
-    try {
-        const { data, error } = await clienteSupabase.from('transportadoras').select('nome');
-        const sel = document.getElementById('novaTransportadora');
-        
-        if (sel && data) {
-            sel.innerHTML = '<option value="">SELECIONE...</option>';
-            data.forEach(t => {
-                let option = document.createElement('option');
-                option.value = t.nome;
-                option.text = t.nome;
-                sel.add(option);
-            });
-        }
-    } catch (e) {
-        console.error("Erro ao carregar transportadoras:", e);
-    }
-};
-
 // Funções Globais Registradas no Objeto Window
 window.fazerLogout = async function() {
     if (clienteSupabase) await clienteSupabase.auth.signOut();
@@ -63,7 +42,7 @@ window.processarOCR = async function(imagemBase64) {
     }
 };
 
-// Função para verificar se o usuário tem perfil administrativo
+// Função para verificar acesso administrativo
 async function checarPermissaoMaster() {
     if (!clienteSupabase) return false;
     try {
@@ -72,11 +51,14 @@ async function checarPermissaoMaster() {
         if (user) {
             const { data: userData } = await clienteSupabase
                 .from('usuarios')
-                .select('perfil')
+                .select('perfil, status')
                 .eq('email', user.email)
                 .single();
 
-            if (userData && (userData.perfil === 'master' || userData.perfil === 'mestre' || userData.perfil === 'administrador')) {
+            // Libera apenas se for admin/master E estiver aprovado
+            if (userData && 
+                (userData.perfil === 'master' || userData.perfil === 'mestre' || userData.perfil === 'administrador') &&
+                userData.status === 'aprovado') {
                 return true;
             }
         }
@@ -86,6 +68,7 @@ async function checarPermissaoMaster() {
     return false;
 }
 
+// Função para inicializar o painel
 async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
     if (isMaster) {
@@ -103,6 +86,27 @@ async function protegerPaginaAdmin() {
         window.location.href = 'index.html';
     }
 }
+
+// Carregar transportadoras do banco
+window.carregarTransportadoras = async function() {
+    if (!clienteSupabase) return;
+    try {
+        const { data, error } = await clienteSupabase.from('transportadoras').select('nome');
+        const sel = document.getElementById('novaTransportadora');
+        
+        if (sel && data) {
+            sel.innerHTML = '<option value="">SELECIONE...</option>';
+            data.forEach(t => {
+                let option = document.createElement('option');
+                option.value = t.nome;
+                option.text = t.nome;
+                sel.add(option);
+            });
+        }
+    } catch (e) {
+        console.error("Erro ao carregar transportadoras:", e);
+    }
+};
 
 function popularArmadores() {
     const sel = document.getElementById('armadorSelect');
