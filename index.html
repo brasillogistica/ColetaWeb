@@ -27,7 +27,7 @@
 
         <!-- Centro: Texto -->
         <div style="flex: 1; text-align: center;">
-            <!-- ID adicionado para trocar o nome dinamicamente -->
+            <!-- ID atualizado para exibir o nome formatado -->
             <h1 id="welcome-message" style="color: var(--navy); font-size: 1.5rem;">Carregando...</h1>
             <p style="font-size: 0.8rem;">Sistema ColetaWeb - Logística Internacional</p>
         </div>
@@ -93,9 +93,13 @@
                 return;
             }
             
-            // Lógica para exibir o nome do usuário
-            const email = user.email;
-            const nomeFormatado = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
+            // Lógica para formatar o nome: rhemerson.rezende -> Rhemerson Rezende
+            const parteEmail = user.email.split('@')[0];
+            // Substitui pontos, underlines ou hifens por espaço para depois capitalizar
+            const nomeFormatado = parteEmail.split(/[._-]/)
+                .map(parte => parte.charAt(0).toUpperCase() + parte.slice(1))
+                .join(' ');
+            
             document.getElementById('welcome-message').innerText = "Bem-vindo, " + nomeFormatado;
             
             renderCalendar();
