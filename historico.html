@@ -4,60 +4,75 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
     <title>Histórico | ColetaWeb</title>
-    <!-- Carrega a biblioteca Supabase primeiro -->
+    <!-- Supabase e Biblioteca para Excel -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body style="padding: 40px; background: #f2f2f2;">
 
     <div class="card">
         <h2 style="color: var(--navy); margin-bottom: 20px;">HISTÓRICO DE COLETA</h2>
-        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-            <thead>
-                <tr style="background: var(--navy); color: white;">
-                    <th style="padding: 10px; text-align: left;">Data/Hora</th>
-                    <th style="padding: 10px; text-align: left;">Container</th>
-                    <th style="padding: 10px; text-align: left;">GPS</th>
-                    <th style="padding: 10px; text-align: left;">Foto</th>
-                </tr>
-            </thead>
-            <tbody id="historico-body">
-                <!-- Dados carregados via JS -->
-            </tbody>
-        </table>
+        
+        <div style="margin-bottom: 15px;">
+            <button class="btn-main" style="background: var(--navy); padding: 10px 20px; font-size: 12px;" onclick="exportarExcel()">EXPORTAR PARA EXCEL</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                    <tr style="background: var(--navy); color: white;">
+                        <th style="padding: 10px; text-align: left;">Data</th>
+                        <th style="padding: 10px; text-align: left;">Hora</th>
+                        <th style="padding: 10px; text-align: left;">Container</th>
+                        <th id="th-transportadora" style="padding: 10px; text-align: left; display: none;">Transportadora</th>
+                        <th style="padding: 10px; text-align: left;">GPS</th>
+                        <th style="padding: 10px; text-align: left;">Foto</th>
+                    </tr>
+                </thead>
+                <tbody id="historico-body">
+                    <!-- Dados carregados via JS -->
+                </tbody>
+            </table>
+        </div>
+        
         <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
+    </div>
+
+    <!-- Modal para exibir a foto -->
+    <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center;">
+        <span onclick="fecharFoto()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold;">&times;</span>
+        <img id="foto-ampliada" style="max-width:90%; max-height:80%; border-radius:10px; border: 3px solid white;">
     </div>
 
     <script src="script.js"></script>
     <script>
-        // Função com "Retry" para garantir que o clienteSupabase esteja disponível
+        let dadosExportacao = [];
+
         async function carregarHistorico(tentativas = 0) {
-            // Se o objeto não existir ainda, tenta de novo em 500ms
             if (typeof clienteSupabase === 'undefined' || clienteSupabase === null) {
                 if (tentativas < 10) {
                     setTimeout(() => carregarHistorico(tentativas + 1), 500);
                     return;
-                } else {
-                    console.error("Supabase não carregou após várias tentativas.");
-                    return;
                 }
+                return;
             }
 
-            // 1. Obtém o usuário atual
             const { data: { user } } = await clienteSupabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
 
-            // 2. Busca o perfil e transportadora do usuário
             const { data: userData } = await clienteSupabase
                 .from('usuarios')
                 .select('perfil, transportadora')
                 .eq('email', user.email)
                 .single();
 
-            // 3. Prepara a busca na tabela de coletas
-            let query = clienteSupabase.from('coletas').select('*');
+            const perfil = userData ? userData.perfil.trim().toLowerCase() : "";
+            const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
 
-            // 4. Lógica de filtro
-            if (userData && userData.perfil !== 'master' && userData.perfil !== 'mestre' && userData.perfil !== 'administrador') {
+            if (ehAdmin) document.getElementById('th-transportadora').style.display = 'table-cell';
+
+            let query = clienteSupabase.from('coletas').select('*');
+            if (!ehAdmin && userData.transportadora) {
                 query = query.eq('transportadora', userData.transportadora);
             }
             
@@ -65,33 +80,49 @@
             
             if (error) { alert("Erro ao carregar histórico: " + error.message); return; }
 
+            dadosExportacao = data;
             const tbody = document.getElementById('historico-body');
             tbody.innerHTML = '';
             
             data.forEach(item => {
-                // Formatação de Data e Hora
                 const dataHora = new Date(item.created_at);
-                const dataFormatada = dataHora.toLocaleDateString() + ' ' + dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                // Monta a URL da foto
                 const fotoUrl = item.foto_url 
                     ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
                     : null;
                 
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 10px;">${dataFormatada}</td>
+                        <td style="padding: 10px;">${dataHora.toLocaleDateString()}</td>
+                        <td style="padding: 10px;">${dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                         <td style="padding: 10px;">${item.container || "N/A"}</td>
+                        ${ehAdmin ? `<td style="padding: 10px;">${item.transportadora || "N/A"}</td>` : ""}
                         <td style="padding: 10px;">${item.localizacao || "N/A"}</td>
                         <td style="padding: 10px;">
-                            ${fotoUrl ? `<a href="${fotoUrl}" target="_blank"><img src="${fotoUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"></a>` : "Sem foto"}
+                            ${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : "Sem foto"}
                         </td>
                     </tr>
                 `;
             });
         }
         
-        // Inicia a função ao carregar a página
+        // Funções para abrir/fechar foto
+        function abrirFoto(url) {
+            document.getElementById('foto-ampliada').src = url;
+            document.getElementById('foto-modal').style.display = 'flex';
+        }
+
+        function fecharFoto() {
+            document.getElementById('foto-modal').style.display = 'none';
+        }
+
+        function exportarExcel() {
+            if(dadosExportacao.length === 0) return alert("Sem dados para exportar");
+            const ws = XLSX.utils.json_to_sheet(dadosExportacao);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Coletas");
+            XLSX.writeFile(wb, "Historico_Coletas.xlsx");
+        }
+
         window.onload = () => carregarHistorico();
     </script>
 </body>
