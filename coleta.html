@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Registro | ColetaWeb</title>
+    <!-- Biblioteca Tesseract -->
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 </head>
 <body style="display: flex; justify-content: center; padding: 40px;">
@@ -12,28 +13,7 @@
     <div class="card" style="width: 450px;">
         <h2 style="color: var(--navy); margin-bottom: 20px;">NOVO REGISTRO</h2>
         
-        <div class="form-group"><label>Transportadora</label><input type="text" value="Dallastra" disabled></div>
-        <div class="form-group"><label>Container</label><input type="text" id="cnt" placeholder="CONTAINER"></div>
-        
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;"><label>Tara</label><input type="text" id="tara"></div>
-            <div class="form-group" style="flex: 1;"><label>Max Gross</label><input type="text" id="gross"></div>
-        </div>
-
-        <div class="form-group"><label>Motorista</label><input type="text" id="motorista"></div>
-        <div class="form-group"><label>Veículo</label><input type="text" id="veiculo"></div>
-        <div class="form-group"><label>Lacre</label><input type="text" id="lacre"></div>
-
-        <div class="form-group">
-            <label>Armador</label>
-            <select id="armadorSelect"><option value="">SELECIONE...</option></select>
-        </div>
-
-        <div class="form-group">
-            <label>Local da Coleta</label>
-            <select id="localColetaSelect"><option value="">SELECIONE...</option></select>
-        </div>
-
+        <!-- Campo de Câmera/Foto -->
         <div class="form-group">
             <label>FOTO DO RECIBO</label>
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="border: none; padding: 10px 0; font-size: 14px;">
@@ -43,15 +23,16 @@
         
         <div style="margin-top: 20px; display: flex; gap: 10px;">
             <button class="btn-main" style="background: #6c757d; padding: 10px 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
-            <button class="btn-main" style="background: #E84D53; padding: 10px 20px;">SALVAR</button>
+            <button class="btn-main" id="btnSalvar" style="background: #E84D53; padding: 10px 20px;" onclick="salvarColeta()">SALVAR</button>
         </div>
     </div>
 
     <script src="script.js"></script>
     <script>
-        popularArmadores();
-        popularLocais();
+        // Inicializa a variável de dados na memória
+        window.dadosExtraidos = { container: "N/A" };
 
+        // Lógica de captura disparando a função global do script.js
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -59,6 +40,8 @@
                 reader.onload = async function(event) {
                     document.getElementById('preview').src = event.target.result;
                     document.getElementById('preview').style.display = 'block';
+                    
+                    // Chama a função processarOCR do script.js
                     if(typeof window.processarOCR === 'function') {
                         await window.processarOCR(event.target.result);
                     }
@@ -66,6 +49,34 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // Função para salvar no Supabase
+        async function salvarColeta() {
+            const status = document.getElementById('status');
+            const { data: userData } = await clienteSupabase.auth.getUser();
+            
+            if (!userData.user) {
+                alert("Usuário não autenticado!");
+                return;
+            }
+            
+            status.innerText = "Salvando no banco...";
+
+            // Salva usando os dados extraídos pelo OCR que estão na memória
+            const { error } = await clienteSupabase.from('coletas').insert([{
+                usuario_email: userData.user.email,
+                container: window.dadosExtraidos.container,
+                created_at: new Date()
+            }]);
+
+            if (error) {
+                alert("Erro ao salvar: " + error.message);
+                status.innerText = "Erro ao salvar.";
+            } else {
+                alert("Registro salvo com sucesso!");
+                window.location.href = 'index.html';
+            }
+        }
     </script>
 </body>
 </html>

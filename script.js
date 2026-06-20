@@ -5,7 +5,10 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Inicialização
 const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Variáveis Globais
+// Variáveis Globais para OCR
+window.dadosExtraidos = { container: "N/A" };
+
+// Variáveis Globais de interface
 const armadores = ["MSC", "CMA", "MAERSK", "HAPAG", "ALPHA", "HAPPAG", "VUXX", "TOZZO", "HAPAG LLOYD", "PIL", "ONE"];
 const locaisColeta = ["oceanic", "Lechman terminais", "VMG Terminais"];
 
@@ -15,7 +18,7 @@ window.fazerLogout = async function() {
     window.location.href = 'login.html';
 };
 
-// Função global de OCR para ser chamada pelo coleta.html
+// Função global de OCR
 window.processarOCR = async function(imagemBase64) {
     const status = document.getElementById('status');
     if (status) status.innerText = "Lendo recibo, aguarde...";
@@ -24,15 +27,12 @@ window.processarOCR = async function(imagemBase64) {
         const { data: { text } } = await Tesseract.recognize(imagemBase64, 'por');
         console.log("TEXTO EXTRAÍDO:", text);
 
-        const extrair = (regex) => (text.match(regex) || [])[1] || "";
+        const extrair = (regex) => (text.match(regex) || [])[1] || "N/A";
 
-        // Preenchimento automático dos campos
-        if (document.getElementById('cnt')) document.getElementById('cnt').value = extrair(/CONTAINER:\s*([A-Z0-9\.\-]+)/i);
-        if (document.getElementById('tara')) document.getElementById('tara').value = extrair(/TARA\s*(\d+)/i);
-        if (document.getElementById('gross')) document.getElementById('gross').value = extrair(/MGW\s*(\d+)/i);
-        if (document.getElementById('motorista')) document.getElementById('motorista').value = extrair(/MOTORISTA:\s*([A-Z\s]+)/i);
-        if (document.getElementById('veiculo')) document.getElementById('veiculo').value = extrair(/VEICULO:\s*([A-Z0-9\-]+)/i);
-        if (document.getElementById('lacre')) document.getElementById('lacre').value = extrair(/LACRE:\s*([A-Z0-9\/\s]+)/i);
+        // Armazena na variável global para ser usada pela função salvarColeta no HTML
+        window.dadosExtraidos = {
+            container: extrair(/CONTAINER:\s*([A-Z0-9\.\-]+)/i)
+        };
 
         if (status) status.innerText = "Leitura concluída!";
     } catch (err) {
