@@ -9,30 +9,43 @@
     <title>Home | ColetaWeb</title>
 </head>
 <body>
-    <!-- Cabeçalho com Logo e Texto Centralizado -->
+    <!-- Cabeçalho com Logo, Texto e Botão SAIR -->
     <div class="card" style="margin-bottom: 20px; display: flex; align-items: center; padding: 15px 25px;">
+        <!-- Lado Esquerdo: Logo -->
         <div style="flex: 0 0 150px; font-size: 20px; font-weight: 800; cursor: default;">
             <span style="color: var(--navy);">minerva</span><span style="color: var(--red);">foods</span>
         </div>
+
+        <!-- Centro: Texto -->
         <div style="flex: 1; text-align: center;">
             <h1 style="color: var(--navy); font-size: 1.5rem;">Bem-vindo, Leandro</h1>
             <p>Sistema ColetaWeb - Logística Internacional</p>
         </div>
-        <div style="flex: 0 0 150px;"></div>
+
+        <!-- Lado Direito: Botão SAIR -->
+        <div style="flex: 0 0 150px; text-align: right;">
+            <button onclick="fazerLogout()" style="background: none; border: none; color: var(--red); font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 12px;">Sair</button>
+        </div>
     </div>
 
     <!-- Container com Layout Lateral -->
     <div class="card" style="display: flex; gap: 40px; align-items: flex-start;">
+        
+        <!-- Coluna da Esquerda: Botões -->
         <div style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 15px;">
             <button class="btn-main" onclick="window.location.href='coleta.html'" style="width: 100%;">+ REGISTRO DE COLETA</button>
+            
+            <!-- Botão Administrativo (Inicialmente invisível) -->
             <div id="admin-container" style="display:none;">
                 <button class="btn-main" style="width: 100%; background: var(--red);" onclick="window.location.href='admin.html'">PAINEL MASTER</button>
             </div>
         </div>
 
+        <!-- Coluna da Direita: Calendário (Alinhado à direita) -->
         <div style="flex: 1; display: flex; justify-content: flex-end;">
             <div style="width: 100%; max-width: 600px;">
                 <div id="calendar-header" style="text-align: center; font-weight: 800; color: var(--navy); margin-bottom: 15px;"></div>
+                
                 <div id="calendar-grid" class="calendar-grid" style="margin-top: 0; width: 100%;">
                     <div class="cal-cell head">Nº</div>
                     <div class="cal-cell head">Seg</div>
@@ -56,8 +69,14 @@
 
     <script src="script.js"></script>
     <script>
+        // Função para proteger a página e verificar login
         async function verificarInicializacao() {
-            // Usamos a variável 'clienteSupabase' que definimos no seu script.js
+            // Verifica se a biblioteca foi carregada (ajuste de segurança)
+            if (typeof clienteSupabase === 'undefined') {
+                console.error("Supabase não carregado! Verifique a ordem dos scripts.");
+                return;
+            }
+
             const { data: { session } } = await clienteSupabase.auth.getSession();
             
             if (!session) {
