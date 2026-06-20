@@ -11,6 +11,14 @@
 
     <div class="card">
         <h2 style="color: var(--navy); margin-bottom: 20px;">GERENCIAMENTO DE USUÁRIOS</h2>
+        
+        <!-- Formulário para Novo Usuário -->
+        <div style="margin-bottom: 30px; padding: 15px; border: 1px solid var(--gold); border-radius: 10px; background: #fafafa;">
+            <h3 style="color: var(--navy); margin-bottom: 10px; font-size: 14px;">Adicionar novo usuário (E-mail)</h3>
+            <input type="email" id="novoEmail" placeholder="email@minervafoods.com" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 5px;">
+            <button class="btn-main" style="padding: 8px 15px; background: var(--navy); font-size: 12px;" onclick="criarUsuario()">CRIAR</button>
+        </div>
+
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <thead>
                 <tr style="background: var(--navy); color: white;">
@@ -28,16 +36,16 @@
     <script src="script.js"></script>
     <script>
         async function carregarUsuarios() {
-            // Verifica se está logado
             const { data: { session } } = await clienteSupabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html';
-                return;
-            }
+            if (!session) { window.location.href = 'login.html'; return; }
 
-            // Verifica se é Master ou Administrador para acessar
-            const isMaster = await checarPermissaoMaster();
-            if (!isMaster) {
+            const { data: userData } = await clienteSupabase
+                .from('usuarios')
+                .select('perfil')
+                .eq('email', session.user.email)
+                .single();
+
+            if (!userData || (userData.perfil !== 'master' && userData.perfil !== 'administrador')) {
                 alert("Acesso Negado: Área restrita.");
                 window.location.href = 'index.html';
                 return;
@@ -50,19 +58,34 @@
             tbody.innerHTML = '';
             
             data.forEach(user => {
+                let perfilTd = user.perfil;
+                
+                // Regra: Apenas Master pode alterar, e o Master é fixo (não pode ser alterado)
+                if (userData.perfil === 'master' && user.perfil !== 'master') {
+                    perfilTd = `
+                        <select onchange="alterarPerfil('${user.email}', this.value)" style="padding: 5px;">
+                            <option value="user" ${user.perfil === 'user' ? 'selected' : ''}>User</option>
+                            <option value="administrador" ${user.perfil === 'administrador' ? 'selected' : ''}>Administrador</option>
+                        </select>
+                    `;
+                }
+                
                 tbody.innerHTML += `
                     <tr>
                         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.email}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                            <select onchange="alterarPerfil('${user.email}', this.value)" style="padding: 5px;">
-                                <option value="user" ${user.perfil === 'user' ? 'selected' : ''}>User</option>
-                                <option value="administrador" ${user.perfil === 'administrador' ? 'selected' : ''}>Administrador</option>
-                                <option value="master" ${user.perfil === 'master' ? 'selected' : ''}>Master</option>
-                            </select>
-                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${perfilTd}</td>
                     </tr>
                 `;
             });
+        }
+
+        async function criarUsuario() {
+            const email = document.getElementById('novoEmail').value;
+            if(!email) return alert("Digite um e-mail");
+            
+            const { error } = await clienteSupabase.from('usuarios').insert([{ email: email, perfil: 'user' }]);
+            if (error) alert("Erro ao criar: " + error.message);
+            else { alert("Usuário criado!"); document.getElementById('novoEmail').value = ''; carregarUsuarios(); }
         }
 
         async function alterarPerfil(email, novoPerfil) {
@@ -72,7 +95,7 @@
                 .eq('email', email);
             
             if (error) alert("Erro ao atualizar: " + error.message);
-            else { alert("Perfil atualizado para: " + novoPerfil); }
+            else { alert("Perfil atualizado para: " + novoPerfil); carregarUsuarios(); }
         }
 
         window.onload = carregarUsuarios;
