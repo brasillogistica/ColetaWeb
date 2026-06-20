@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Histórico | ColetaWeb</title>
+</head>
+<body style="padding: 40px; background: #f2f2f2;">
+
+    <div class="card">
+        <h2 style="color: var(--navy); margin-bottom: 20px;">HISTÓRICO DE COLETA</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <thead>
+                <tr style="background: var(--navy); color: white;">
+                    <th style="padding: 10px; text-align: left;">Data</th>
+                    <th style="padding: 10px; text-align: left;">Container</th>
+                    <th style="padding: 10px; text-align: left;">Responsável</th>
+                    <th style="padding: 10px; text-align: left;">Local</th>
+                </tr>
+            </thead>
+            <tbody id="historico-body">
+                <!-- Dados carregados aqui -->
+            </tbody>
+        </table>
+        <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        async function carregarHistorico() {
+            // 1. Obtém o usuário atual
+            const { data: { user } } = await clienteSupabase.auth.getUser();
+            if (!user) { window.location.href = 'login.html'; return; }
+
+            // 2. Busca o perfil e transportadora do usuário
+            const { data: userData } = await clienteSupabase
+                .from('usuarios')
+                .select('perfil, transportadora')
+                .eq('email', user.email)
+                .single();
+
+            // 3. Prepara a busca na tabela de coletas
+            let query = clienteSupabase.from('coletas').select('*');
+
+            // 4. Lógica de filtro: Se não for Master/Mestre, filtra pela transportadora
+            if (userData.perfil !== 'master' && userData.perfil !== 'mestre') {
+                query = query.eq('transportadora', userData.transportadora);
+            }
+            
+            const { data, error } = await query.order('created_at', { ascending: false });
+            
+            if (error) { alert("Erro ao carregar histórico: " + error.message); return; }
+
+            const tbody = document.getElementById('historico-body');
+            tbody.innerHTML = '';
+            
+            data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px;">${new Date(item.created_at).toLocaleDateString()}</td>
+                        <td style="padding: 10px;">${item.container}</td>
+                        <td style="padding: 10px;">${item.usuario_email}</td>
+                        <td style="padding: 10px;">${item.local}</td>
+                    </tr>
+                `;
+            });
+        }
+        window.onload = carregarHistorico;
+    </script>
+</body>
+</html>

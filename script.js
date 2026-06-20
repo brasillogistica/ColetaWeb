@@ -170,3 +170,10 @@ function closeFullCalendar() {
     const modal = document.getElementById('full-calendar-modal');
     if (modal) modal.style.display = 'none';
 }
+async function protegerPaginaAdmin() {
+    const isMaster = await checarPermissaoMaster();
+    if (!isMaster) {
+        alert("Acesso negado!");
+        window.location.href = 'index.html';
+    }
+}

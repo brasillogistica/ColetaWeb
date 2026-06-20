@@ -22,7 +22,7 @@
             <p>Sistema ColetaWeb - Logística Internacional</p>
         </div>
 
-        <!-- Lado Direito: Botão SAIR (Estilizado como btn-main com texto vermelho) -->
+        <!-- Lado Direito: Botão SAIR -->
         <div style="flex: 0 0 150px; text-align: right;">
             <button class="btn-main" onclick="fazerLogout()" style="background: white; border: 2px solid var(--red); color: var(--red); padding: 10px 20px; width: 100%; max-width: 120px; font-size: 12px;">SAIR</button>
         </div>
@@ -35,13 +35,14 @@
         <div style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 15px;">
             <button class="btn-main" onclick="window.location.href='coleta.html'" style="width: 100%;">+ REGISTRO DE COLETA</button>
             
-            <!-- Botão Administrativo (Inicialmente invisível) -->
-            <div id="admin-container" style="display:none;">
+            <!-- Bloco Administrativo (Aparece apenas para Master) -->
+            <div id="admin-container" style="display:none; display: flex; flex-direction: column; gap: 10px;">
                 <button class="btn-main" style="width: 100%; background: var(--red);" onclick="window.location.href='admin.html'">PAINEL MASTER</button>
+                <button class="btn-main" style="width: 100%; background: var(--gold);" onclick="window.location.href='historico.html'">HISTÓRICO</button>
             </div>
         </div>
 
-        <!-- Coluna da Direita: Calendário (Alinhado à direita) -->
+        <!-- Coluna da Direita: Calendário -->
         <div style="flex: 1; display: flex; justify-content: flex-end;">
             <div style="width: 100%; max-width: 600px;">
                 <div id="calendar-header" style="text-align: center; font-weight: 800; color: var(--navy); margin-bottom: 15px;"></div>
@@ -70,7 +71,6 @@
     <script src="script.js"></script>
     <script>
         async function verificarInicializacao() {
-            // Verifica se a variável do Supabase está carregada
             if (typeof clienteSupabase === 'undefined') {
                 console.error("Supabase não carregado! Verifique script.js.");
                 return;
@@ -83,12 +83,10 @@
                 return;
             }
             
-            // Renderiza o conteúdo após validar a sessão
             renderCalendar();
             inicializarPainel();
         }
 
-        // Aguarda o carregamento total
         window.addEventListener('load', verificarInicializacao);
     </script>
 </body>
