@@ -7,36 +7,41 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
     <title>Home | ColetaWeb</title>
+    <style>
+        /* Ajuste responsivo para celulares */
+        @media (max-width: 768px) {
+            .responsive-card { flex-direction: column !important; gap: 20px !important; }
+            .side-col { flex: 0 0 100% !important; }
+            .header-card { flex-direction: column; gap: 15px; text-align: center; }
+            .header-left, .header-right { flex: 0 0 100% !important; text-align: center !important; }
+        }
+    </style>
 </head>
 <body>
     <!-- Cabeçalho com Logo, Texto e Botão SAIR -->
-    <div class="card" style="margin-bottom: 20px; display: flex; align-items: center; padding: 15px 25px;">
-        <!-- Lado Esquerdo: Logo -->
-        <div style="flex: 0 0 150px; font-size: 20px; font-weight: 800; cursor: default;">
+    <div class="card header-card" style="margin-bottom: 20px; display: flex; align-items: center; padding: 15px 25px;">
+        <div class="header-left" style="flex: 0 0 150px; font-size: 20px; font-weight: 800; cursor: default;">
             <span style="color: var(--navy);">minerva</span><span style="color: var(--red);">foods</span>
         </div>
 
-        <!-- Centro: Texto -->
         <div style="flex: 1; text-align: center;">
             <h1 style="color: var(--navy); font-size: 1.5rem;">Bem-vindo, Leandro</h1>
-            <p>Sistema ColetaWeb - Logística Internacional</p>
+            <p style="font-size: 0.8rem;">Sistema ColetaWeb - Logística Internacional</p>
         </div>
 
-        <!-- Lado Direito: Botão SAIR -->
-        <div style="flex: 0 0 150px; text-align: right;">
-            <button class="btn-main" onclick="fazerLogout()" style="background: white; border: 2px solid var(--red); color: var(--red); padding: 10px 20px; width: 100%; max-width: 120px; font-size: 12px;">SAIR</button>
+        <div class="header-right" style="flex: 0 0 150px; text-align: right;">
+            <button class="btn-main" onclick="fazerLogout()" style="background: white; border: 2px solid var(--red); color: var(--red); padding: 8px 15px; width: 100%; max-width: 100px; font-size: 10px;">SAIR</button>
         </div>
     </div>
 
     <!-- Container com Layout Lateral -->
-    <div class="card" style="display: flex; gap: 40px; align-items: flex-start;">
+    <div class="card responsive-card" style="display: flex; gap: 40px; align-items: flex-start;">
         
         <!-- Coluna da Esquerda: Botões -->
-        <div style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 15px;">
-            <!-- Botão renomeado para REGISTRAR COLETA -->
+        <div class="side-col" style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 15px;">
             <button class="btn-main" onclick="window.location.href='coleta.html'" style="width: 100%;">REGISTRAR COLETA</button>
             
-            <!-- Bloco Administrativo (Aparece apenas para Master/Admin) -->
+            <!-- Bloco Administrativo -->
             <div id="admin-container" style="display:none; flex-direction: column; gap: 15px;">
                 <button class="btn-main" style="width: 100%; background: var(--red);" onclick="window.location.href='admin.html'">GERENCIAMENTO</button>
                 <button class="btn-main" style="width: 100%; background: var(--gold);" onclick="window.location.href='historico.html'">HISTÓRICO</button>
@@ -44,7 +49,7 @@
         </div>
 
         <!-- Coluna da Direita: Calendário -->
-        <div style="flex: 1; display: flex; justify-content: flex-end;">
+        <div class="side-col" style="flex: 1; display: flex; justify-content: flex-end;">
             <div style="width: 100%; max-width: 600px;">
                 <div id="calendar-header" style="text-align: center; font-weight: 800; color: var(--navy); margin-bottom: 15px;"></div>
                 

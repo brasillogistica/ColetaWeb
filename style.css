@@ -60,8 +60,8 @@ body {
     background: #eee; 
     border: 1px solid #ddd; 
     margin-top: 10px; 
-    max-width: 600px; /* Limita o tamanho máximo do calendário */
-    margin-left: auto; /* Alinha à direita dentro do card */
+    max-width: 600px; 
+    margin-left: auto; 
     margin-right: 0;
 }
 
@@ -106,7 +106,7 @@ body {
 /* Calendário Anual (Modal) */
 #full-calendar-content {
     display: grid; 
-    grid-template-columns: repeat(4, 1fr); /* 4 meses por linha */
+    grid-template-columns: repeat(4, 1fr); 
     gap: 20px; 
     padding: 20px;
     max-width: 1400px;
@@ -122,4 +122,35 @@ body {
 
 .annual-weekend {
     background: #f0f7ff; 
+}
+
+/* --- Ajustes Responsivos para Mobile --- */
+@media (max-width: 768px) {
+    body { padding: 10px; }
+    
+    /* Layout principal empilhado */
+    .card[style*="display: flex"] {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+
+    /* Força os botões e calendários a ocuparem a largura total */
+    .side-col, [style*="flex: 0 0 250px"], [style*="flex: 1"] {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    /* Calendário ajustado para caber no celular */
+    .calendar-grid {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* Ajuste no cabeçalho */
+    .card:first-child {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
 }
