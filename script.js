@@ -18,24 +18,14 @@ window.fazerLogout = async function() {
     window.location.href = 'login.html';
 };
 
-// Função global de OCR aprimorada
 window.processarOCR = async function(imagemBase64) {
     const status = document.getElementById('status');
     if (status) status.innerText = "Lendo recibo, aguarde...";
-    
     try {
         const { data: { text } } = await Tesseract.recognize(imagemBase64, 'por');
-        console.log("TEXTO EXTRAÍDO:", text);
-
-        // Regex robusta para encontrar padrão de container independente da palavra "CONTAINER:"
-        // Busca 4 letras seguidas de 6 a 12 caracteres alfanuméricos/pontos/traços
-        const containerMatch = text.match(/\b[A-Z]{4}\s?[\d\.\-\s]{6,12}/i);
-
-        window.dadosExtraidos = {
-            container: containerMatch ? containerMatch[0].trim() : "N/A"
-        };
-
-        if (status) status.innerText = "Leitura concluída: " + window.dadosExtraidos.container;
+        const extrair = (regex) => (text.match(regex) || [])[1] || "N/A";
+        window.dadosExtraidos = { container: extrair(/CONTAINER:\s*([A-Z0-9\.\-]+)/i) };
+        if (status) status.innerText = "Leitura concluída!";
     } catch (err) {
         console.error("Erro no OCR:", err);
         if (status) status.innerText = "Erro ao ler imagem.";
@@ -46,7 +36,6 @@ async function checarPermissaoMaster() {
     if (!clienteSupabase) return false;
     try {
         const { data: { user } } = await clienteSupabase.auth.getUser();
-        
         if (user) {
             const { data: userData } = await clienteSupabase
                 .from('usuarios')
@@ -54,10 +43,14 @@ async function checarPermissaoMaster() {
                 .eq('email', user.email)
                 .single();
 
-            if (userData && 
-                (userData.perfil === 'master' || userData.perfil === 'mestre' || userData.perfil === 'administrador') &&
-                userData.status === 'aprovado') {
-                return true;
+            if (userData) {
+                const perfil = userData.perfil ? userData.perfil.trim().toLowerCase() : "";
+                const status = userData.status ? userData.status.trim().toLowerCase() : "";
+                
+                // Se for MASTER, ignora o status 'pendente' e libera tudo.
+                // Se for Administrador, exige status 'aprovado'.
+                if (perfil === 'master' || perfil === 'mestre') return true;
+                if (perfil === 'administrador' && status === 'aprovado') return true;
             }
         }
     } catch (e) {
@@ -69,14 +62,9 @@ async function checarPermissaoMaster() {
 async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
     console.log("Painel administrativo liberado:", isMaster);
-    
     const adminContainer = document.getElementById('admin-container');
     if (adminContainer) {
-        if (isMaster) {
-            adminContainer.style.display = 'flex'; 
-        } else {
-            adminContainer.style.display = 'none';
-        }
+        adminContainer.style.display = isMaster ? 'flex' : 'none'; 
     }
 }
 
@@ -91,24 +79,18 @@ async function protegerPaginaAdmin() {
 window.carregarTransportadoras = async function() {
     if (!clienteSupabase) return;
     try {
-        const { data, error } = await clienteSupabase.from('transportadoras').select('nome');
+        const { data } = await clienteSupabase.from('transportadoras').select('nome');
         const sel = document.getElementById('novaTransportadora');
-        
         if (sel && data) {
             sel.innerHTML = '<option value="">SELECIONE...</option>';
-            data.forEach(t => {
-                let option = document.createElement('option');
-                option.value = t.nome;
-                option.text = t.nome;
-                sel.add(option);
-            });
+            data.forEach(t => sel.add(new Option(t.nome, t.nome)));
         }
     } catch (e) {
         console.error("Erro ao carregar transportadoras:", e);
     }
 };
 
-// Funções de UI
+// ... (Mantenha as funções de UI: popularArmadores, popularLocais, renderCalendar, etc.)
 function popularArmadores() { const sel = document.getElementById('armadorSelect'); if(sel) { sel.innerHTML = '<option value="">SELECIONE...</option>'; armadores.forEach(a => sel.add(new Option(a, a))); } }
 function popularLocais() { const sel = document.getElementById('localColetaSelect'); if(sel) { sel.innerHTML = '<option value="">SELECIONE...</option>'; locaisColeta.forEach(local => sel.add(new Option(local, local))); } }
 function autoFill() { const val = document.getElementById('cnt')?.value; if(val === "TEMU9295736") { document.getElementById('tara').value = "4730"; document.getElementById('gross').value = "35000"; } }
