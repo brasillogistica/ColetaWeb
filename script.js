@@ -18,6 +18,7 @@ window.fazerLogout = async function() {
     window.location.href = 'login.html';
 };
 
+// Função global de OCR com Regex aprimorado
 window.processarOCR = async function(imagemBase64) {
     const status = document.getElementById('status');
     if (status) status.innerText = "Lendo recibo, aguarde...";
@@ -26,10 +27,11 @@ window.processarOCR = async function(imagemBase64) {
         const { data: { text } } = await Tesseract.recognize(imagemBase64, 'por');
         console.log("TEXTO EXTRAÍDO:", text);
 
-        const extrair = (regex) => (text.match(regex) || [])[1] || "N/A";
+        // Regex flexível: Procura 4 letras, espaço opcional, e 7 a 12 caracteres (números, pontos, traços)
+        const containerMatch = text.match(/\b[A-Z]{4}\s?[\d\.\-\s]{7,12}/i);
 
         window.dadosExtraidos = {
-            container: extrair(/CONTAINER:\s*([A-Z0-9\.\-]+)/i)
+            container: containerMatch ? containerMatch[0].trim() : "N/A"
         };
 
         if (status) status.innerText = "Leitura concluída!";
@@ -63,19 +65,17 @@ async function checarPermissaoMaster() {
     return false;
 }
 
-// Inicialização robusta do Painel
 async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
     console.log("Painel administrativo liberado:", isMaster);
     
-    // Tentamos encontrar o container
     const adminContainer = document.getElementById('admin-container');
-    
-    if (isMaster && adminContainer) {
-        // Forçamos a exibição
-        adminContainer.style.setProperty('display', 'flex', 'important');
-    } else if (adminContainer) {
-        adminContainer.style.display = 'none';
+    if (adminContainer) {
+        if (isMaster) {
+            adminContainer.style.display = 'flex'; 
+        } else {
+            adminContainer.style.display = 'none';
+        }
     }
 }
 
@@ -107,7 +107,7 @@ window.carregarTransportadoras = async function() {
     }
 };
 
-// Funções de UI
+// Funções de UI mantidas conforme o original
 function popularArmadores() { const sel = document.getElementById('armadorSelect'); if(sel) { sel.innerHTML = '<option value="">SELECIONE...</option>'; armadores.forEach(a => sel.add(new Option(a, a))); } }
 function popularLocais() { const sel = document.getElementById('localColetaSelect'); if(sel) { sel.innerHTML = '<option value="">SELECIONE...</option>'; locaisColeta.forEach(local => sel.add(new Option(local, local))); } }
 function autoFill() { const val = document.getElementById('cnt')?.value; if(val === "TEMU9295736") { document.getElementById('tara').value = "4730"; document.getElementById('gross').value = "35000"; } }
