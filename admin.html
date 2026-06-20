@@ -24,8 +24,7 @@
                 </select>
 
                 <select id="novaTransportadora" style="padding: 8px;">
-                    <option value="Dallastra">Dallastra</option>
-                    <option value="Outra">Outra</option>
+                    <option value="">Carregando transportadoras...</option>
                 </select>
 
                 <button class="btn-main" style="padding: 8px 15px; background: var(--navy); font-size: 12px;" onclick="criarUsuario()">CRIAR</button>
@@ -84,7 +83,6 @@
                         </select>`;
                 }
 
-                // Seletor de Status (Aprovado/Pendente)
                 const statusTd = `
                     <select onchange="atualizarCampo('${user.email}', 'status', this.value)" style="padding: 5px;">
                         <option value="pendente" ${user.status === 'pendente' ? 'selected' : ''}>Pendente</option>
@@ -108,6 +106,7 @@
             const transportadora = document.getElementById('novaTransportadora').value;
 
             if(!email) return alert("Digite um e-mail");
+            if(!transportadora) return alert("Selecione uma transportadora");
             
             const { error } = await clienteSupabase.from('usuarios').insert([{ 
                 email: email, 
@@ -133,7 +132,10 @@
             else { alert("Atualizado com sucesso!"); carregarUsuarios(); }
         }
 
-        window.onload = carregarUsuarios;
+        window.onload = async () => {
+            await carregarUsuarios();
+            await carregarTransportadoras(); // Carrega dinamicamente do banco
+        };
     </script>
 </body>
 </html>
