@@ -33,45 +33,6 @@
     <script src="script.js"></script>
     <script>
         async function fazerLogin() {
-            const email = document.getElementById('email').value.trim(); // .trim() remove espaços acidentais
-            const password = document.getElementById('password').value;
-
-            if (!email || !password) {
-                alert("Por favor, preencha e-mail e senha.");
-                return;
-            }
-
-            console.log("Tentando logar com:", email);
-
-            try {
-                // Usamos 'clienteSupabase' definido no seu script.js
-                const { data, error } = await clienteSupabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
-
-                if (error) {
-                    console.error("Erro do Supabase:", error);
-                    alert("Erro ao entrar: " + error.message);
-                } else {
-                    console.log("Login bem-sucedido!");
-                    window.location.href = 'index.html';
-                }
-            } catch (err) {
-                console.error("Erro inesperado:", err);
-                alert("Erro inesperado na conexão.");
-            }
-        }
-    </script>
-</body>
-</html>
-<!-- ... (resto do código) -->
-    <script src="script.js"></script>
-    <script>
-        console.log("Script carregado. Função fazerLogin disponível?");
-        
-        async function fazerLogin() {
-            console.log("Botão clicado!");
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
@@ -81,7 +42,6 @@
             }
 
             try {
-                // Verifique se o objeto existe
                 if (typeof clienteSupabase === 'undefined') {
                     alert("Erro: O cliente Supabase não foi carregado.");
                     return;
@@ -95,13 +55,20 @@
                 if (error) {
                     alert("Erro no Login: " + error.message);
                 } else {
-                    console.log("Login OK");
                     window.location.href = 'index.html';
                 }
             } catch (err) {
                 console.error("Erro crítico:", err);
             }
         }
+
+        // Permite logar ao apertar "Enter" no campo de senha
+        document.getElementById("password").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                fazerLogin();
+            }
+        });
     </script>
 </body>
 </html>
