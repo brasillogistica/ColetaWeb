@@ -9,22 +9,26 @@ const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const armadores = ["MSC", "CMA", "MAERSK", "HAPAG", "ALPHA", "HAPPAG", "VUXX", "TOZZO", "HAPAG LLOYD", "PIL", "ONE"];
 const locaisColeta = ["oceanic", "Lechman terminais", "VMG Terminais"];
 
-// Funções Globais Registradas no Objeto Window para garantir que o HTML as enxergue
+// Funções Globais Registradas no Objeto Window
 window.fazerLogout = async function() {
     await clienteSupabase.auth.signOut();
     window.location.href = 'login.html';
 };
 
+// Função para verificar se o usuário tem perfil administrativo (Master ou Administrador)
 async function checarPermissaoMaster() {
     try {
         const { data: { user } } = await clienteSupabase.auth.getUser();
+        
         if (user) {
             const { data: userData } = await clienteSupabase
                 .from('usuarios')
                 .select('perfil')
                 .eq('email', user.email)
                 .single();
-            if (userData && (userData.perfil === 'master' || userData.perfil === 'mestre')) {
+
+            // Adicionado suporte a 'administrador'
+            if (userData && (userData.perfil === 'master' || userData.perfil === 'mestre' || userData.perfil === 'administrador')) {
                 return true;
             }
         }
@@ -34,13 +38,22 @@ async function checarPermissaoMaster() {
     return false;
 }
 
+// Função para inicializar o painel e mostrar elementos administrativos
 async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
     if (isMaster) {
         const adminContainer = document.getElementById('admin-container');
         if (adminContainer) {
-            adminContainer.style.display = 'block';
+            adminContainer.style.display = 'flex'; // Ajustado para flex conforme seu index.html
         }
+    }
+}
+
+async function protegerPaginaAdmin() {
+    const isMaster = await checarPermissaoMaster();
+    if (!isMaster) {
+        alert("Acesso negado!");
+        window.location.href = 'index.html';
     }
 }
 
@@ -169,11 +182,4 @@ function expandCalendar() {
 function closeFullCalendar() {
     const modal = document.getElementById('full-calendar-modal');
     if (modal) modal.style.display = 'none';
-}
-async function protegerPaginaAdmin() {
-    const isMaster = await checarPermissaoMaster();
-    if (!isMaster) {
-        alert("Acesso negado!");
-        window.location.href = 'index.html';
-    }
 }

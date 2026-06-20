@@ -5,18 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
-    <title>Painel Master | ColetaWeb</title>
+    <title>Gerenciamento | ColetaWeb</title>
 </head>
 <body style="padding: 40px; background: #f2f2f2;">
 
     <div class="card">
-        <h2 style="color: var(--navy); margin-bottom: 20px;">GERENCIAR USUÁRIOS</h2>
+        <h2 style="color: var(--navy); margin-bottom: 20px;">GERENCIAMENTO DE USUÁRIOS</h2>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <thead>
                 <tr style="background: var(--navy); color: white;">
                     <th style="padding: 10px; text-align: left;">E-mail</th>
                     <th style="padding: 10px; text-align: left;">Perfil</th>
-                    <th style="padding: 10px; text-align: left;">Ações</th>
                 </tr>
             </thead>
             <tbody id="user-table-body">
@@ -26,7 +25,6 @@
         <button class="btn-main" style="background: var(--grey);" onclick="window.location.href='index.html'">VOLTAR</button>
     </div>
 
-    <!-- Caminho simples, sem ../ pois estão na mesma pasta -->
     <script src="script.js"></script>
     <script>
         async function carregarUsuarios() {
@@ -37,7 +35,7 @@
                 return;
             }
 
-            // Verifica se é Master
+            // Verifica se é Master ou Administrador para acessar
             const isMaster = await checarPermissaoMaster();
             if (!isMaster) {
                 alert("Acesso Negado: Área restrita.");
@@ -52,15 +50,15 @@
             tbody.innerHTML = '';
             
             data.forEach(user => {
-                const novoPerfil = user.perfil === 'mestre' ? 'usuario' : 'mestre';
                 tbody.innerHTML += `
                     <tr>
                         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.email}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.perfil}</td>
                         <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                            <button onclick="alterarPerfil('${user.email}', '${novoPerfil}')" style="cursor:pointer; padding: 5px 10px;">
-                                Alternar para ${novoPerfil}
-                            </button>
+                            <select onchange="alterarPerfil('${user.email}', this.value)" style="padding: 5px;">
+                                <option value="user" ${user.perfil === 'user' ? 'selected' : ''}>User</option>
+                                <option value="administrador" ${user.perfil === 'administrador' ? 'selected' : ''}>Administrador</option>
+                                <option value="master" ${user.perfil === 'master' ? 'selected' : ''}>Master</option>
+                            </select>
                         </td>
                     </tr>
                 `;
@@ -73,8 +71,8 @@
                 .update({ perfil: novoPerfil })
                 .eq('email', email);
             
-            if (error) alert("Erro: " + error.message);
-            else { alert("Perfil atualizado!"); carregarUsuarios(); }
+            if (error) alert("Erro ao atualizar: " + error.message);
+            else { alert("Perfil atualizado para: " + novoPerfil); }
         }
 
         window.onload = carregarUsuarios;
