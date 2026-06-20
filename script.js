@@ -63,17 +63,13 @@ async function checarPermissaoMaster() {
     return false;
 }
 
-// AUMENTAMOS O TEMPO DE ESPERA PARA GARANTIR QUE O DOM EXISTE
+// Inicialização imediata sem setTimeout para evitar pulos visuais
 async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
     console.log("Painel administrativo liberado:", isMaster);
-    if (isMaster) {
-        setTimeout(() => {
-            const adminContainer = document.getElementById('admin-container');
-            if (adminContainer) {
-                adminContainer.style.display = 'flex'; 
-            }
-        }, 300);
+    const adminContainer = document.getElementById('admin-container');
+    if (isMaster && adminContainer) {
+        adminContainer.style.display = 'flex'; 
     }
 }
 
@@ -105,7 +101,7 @@ window.carregarTransportadoras = async function() {
     }
 };
 
-// ... Restante das funções (popularArmadores, popularLocais, renderCalendar, etc.) permanecem idênticas
+// Funções de UI
 function popularArmadores() { const sel = document.getElementById('armadorSelect'); if(sel) { sel.innerHTML = '<option value="">SELECIONE...</option>'; armadores.forEach(a => sel.add(new Option(a, a))); } }
 function popularLocais() { const sel = document.getElementById('localColetaSelect'); if(sel) { sel.innerHTML = '<option value="">SELECIONE...</option>'; locaisColeta.forEach(local => sel.add(new Option(local, local))); } }
 function autoFill() { const val = document.getElementById('cnt')?.value; if(val === "TEMU9295736") { document.getElementById('tara').value = "4730"; document.getElementById('gross').value = "35000"; } }

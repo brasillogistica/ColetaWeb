@@ -23,6 +23,11 @@ body {
     border: 1px solid var(--gold); 
 }
 
+/* Força o container administrativo a ficar oculto antes do JS carregar */
+#admin-container {
+    display: none !important;
+}
+
 .btn-main { 
     background: var(--navy); 
     color: white; 
