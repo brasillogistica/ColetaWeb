@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Login | ColetaWeb</title>
+    <!-- Carrega a biblioteca Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
 
@@ -29,23 +31,75 @@
     </div>
 
     <script src="script.js"></script>
-    <!-- Adicione a biblioteca do Supabase aqui no seu script -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Lógica de Login
         async function fazerLogin() {
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim(); // .trim() remove espaços acidentais
             const password = document.getElementById('password').value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            if (!email || !password) {
+                alert("Por favor, preencha e-mail e senha.");
+                return;
+            }
 
-            if (error) {
-                alert("Erro ao entrar: " + error.message);
-            } else {
-                window.location.href = 'index.html';
+            console.log("Tentando logar com:", email);
+
+            try {
+                // Usamos 'clienteSupabase' definido no seu script.js
+                const { data, error } = await clienteSupabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    console.error("Erro do Supabase:", error);
+                    alert("Erro ao entrar: " + error.message);
+                } else {
+                    console.log("Login bem-sucedido!");
+                    window.location.href = 'index.html';
+                }
+            } catch (err) {
+                console.error("Erro inesperado:", err);
+                alert("Erro inesperado na conexão.");
+            }
+        }
+    </script>
+</body>
+</html>
+<!-- ... (resto do código) -->
+    <script src="script.js"></script>
+    <script>
+        console.log("Script carregado. Função fazerLogin disponível?");
+        
+        async function fazerLogin() {
+            console.log("Botão clicado!");
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert("Por favor, preencha e-mail e senha.");
+                return;
+            }
+
+            try {
+                // Verifique se o objeto existe
+                if (typeof clienteSupabase === 'undefined') {
+                    alert("Erro: O cliente Supabase não foi carregado.");
+                    return;
+                }
+
+                const { data, error } = await clienteSupabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    alert("Erro no Login: " + error.message);
+                } else {
+                    console.log("Login OK");
+                    window.location.href = 'index.html';
+                }
+            } catch (err) {
+                console.error("Erro crítico:", err);
             }
         }
     </script>
