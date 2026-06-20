@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Registro | ColetaWeb</title>
-    <!-- Biblioteca Tesseract -->
+    <!-- 1. Carrega o Supabase primeiro de tudo -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 2. Biblioteca Tesseract -->
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 </head>
 <body style="display: flex; justify-content: center; padding: 40px;">
@@ -27,12 +29,14 @@
         </div>
     </div>
 
+    <!-- 3. Carrega o seu script por último -->
     <script src="script.js"></script>
+    
     <script>
         // Inicializa a variável de dados na memória
         window.dadosExtraidos = { container: "N/A" };
 
-        // Lógica de captura disparando a função global do script.js
+        // Lógica de captura
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -41,7 +45,6 @@
                     document.getElementById('preview').src = event.target.result;
                     document.getElementById('preview').style.display = 'block';
                     
-                    // Chama a função processarOCR do script.js
                     if(typeof window.processarOCR === 'function') {
                         await window.processarOCR(event.target.result);
                     }
@@ -52,19 +55,24 @@
 
         // Função para salvar no Supabase
         async function salvarColeta() {
+            // Verifica se clienteSupabase já foi carregado do script.js
+            if (typeof clienteSupabase === 'undefined') {
+                alert("Erro: O sistema ainda está carregando. Aguarde um segundo.");
+                return;
+            }
+
             const status = document.getElementById('status');
-            const { data: userData } = await clienteSupabase.auth.getUser();
+            const { data: { user } } = await clienteSupabase.auth.getUser();
             
-            if (!userData.user) {
+            if (!user) {
                 alert("Usuário não autenticado!");
                 return;
             }
             
             status.innerText = "Salvando no banco...";
 
-            // Salva usando os dados extraídos pelo OCR que estão na memória
             const { error } = await clienteSupabase.from('coletas').insert([{
-                usuario_email: userData.user.email,
+                usuario_email: user.email,
                 container: window.dadosExtraidos.container,
                 created_at: new Date()
             }]);

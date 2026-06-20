@@ -14,12 +14,12 @@
                 <tr style="background: var(--navy); color: white;">
                     <th style="padding: 10px; text-align: left;">Data</th>
                     <th style="padding: 10px; text-align: left;">Container</th>
-                    <th style="padding: 10px; text-align: left;">Responsável</th>
-                    <th style="padding: 10px; text-align: left;">Local</th>
+                    <th style="padding: 10px; text-align: left;">GPS</th>
+                    <th style="padding: 10px; text-align: left;">Foto</th>
                 </tr>
             </thead>
             <tbody id="historico-body">
-                <!-- Dados carregados aqui -->
+                <!-- Dados carregados via JS -->
             </tbody>
         </table>
         <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
@@ -43,7 +43,7 @@
             let query = clienteSupabase.from('coletas').select('*');
 
             // 4. Lógica de filtro: Se não for Master/Mestre, filtra pela transportadora
-            if (userData.perfil !== 'master' && userData.perfil !== 'mestre') {
+            if (userData.perfil !== 'master' && userData.perfil !== 'mestre' && userData.perfil !== 'administrador') {
                 query = query.eq('transportadora', userData.transportadora);
             }
             
@@ -55,12 +55,19 @@
             tbody.innerHTML = '';
             
             data.forEach(item => {
+                // Monta a URL da foto salva no bucket 'coletas-fotos'
+                const fotoUrl = item.foto_url 
+                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
+                    : null;
+                
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #ddd;">
                         <td style="padding: 10px;">${new Date(item.created_at).toLocaleDateString()}</td>
-                        <td style="padding: 10px;">${item.container}</td>
-                        <td style="padding: 10px;">${item.usuario_email}</td>
-                        <td style="padding: 10px;">${item.local}</td>
+                        <td style="padding: 10px;">${item.container || "N/A"}</td>
+                        <td style="padding: 10px;">${item.localizacao || "N/A"}</td>
+                        <td style="padding: 10px;">
+                            ${fotoUrl ? `<a href="${fotoUrl}" target="_blank"><img src="${fotoUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"></a>` : "Sem foto"}
+                        </td>
                     </tr>
                 `;
             });

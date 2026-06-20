@@ -52,6 +52,14 @@ body {
     font-weight: 700; 
 }
 
+/* Tabela Responsiva para Histórico */
+.card table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    width: 100%;
+}
+
 /* Calendário Principal */
 .calendar-grid { 
     display: grid; 
@@ -130,27 +138,23 @@ body {
     
     .card { padding: 15px; }
 
-    /* Layout principal empilhado */
     .card[style*="display: flex"] {
         flex-direction: column !important;
         gap: 20px !important;
     }
 
-    /* Ajuste para garantir colunas cheias */
     [style*="flex: 0 0 250px"], [style*="flex: 1"] {
         flex: 0 0 100% !important;
         width: 100% !important;
     }
 
-    /* Calendário ajustado para celular */
     .calendar-grid {
         margin-left: 0 !important;
         margin-right: 0 !important;
         max-width: 100% !important;
-        grid-template-columns: 30px repeat(7, 1fr); /* Célula da semana mais fina */
+        grid-template-columns: 30px repeat(7, 1fr);
     }
 
-    /* Cabeçalho responsivo */
     .card:first-child {
         text-align: center;
     }

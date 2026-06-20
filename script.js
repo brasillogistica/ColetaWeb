@@ -2,8 +2,10 @@
 const SUPABASE_URL = 'https://ekmcgifpvqrdgcikvepe.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbWNnaWZwdnFyZGdjaWt2ZXBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDY4NTgsImV4cCI6MjA5NTE4Mjg1OH0.sLIg__XSOSM7VD95FcUDr2ZCuDFCxxCWlF98sJkyBTg';
 
-// Inicialização
-const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Inicialização segura
+const clienteSupabase = (typeof supabase !== 'undefined') 
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
+    : null;
 
 // Variáveis Globais para OCR
 window.dadosExtraidos = { container: "N/A" };
@@ -14,7 +16,7 @@ const locaisColeta = ["oceanic", "Lechman terminais", "VMG Terminais"];
 
 // Funções Globais Registradas no Objeto Window
 window.fazerLogout = async function() {
-    await clienteSupabase.auth.signOut();
+    if (clienteSupabase) await clienteSupabase.auth.signOut();
     window.location.href = 'login.html';
 };
 
@@ -43,6 +45,7 @@ window.processarOCR = async function(imagemBase64) {
 
 // Função para verificar se o usuário tem perfil administrativo
 async function checarPermissaoMaster() {
+    if (!clienteSupabase) return false;
     try {
         const { data: { user } } = await clienteSupabase.auth.getUser();
         
