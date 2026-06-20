@@ -22,9 +22,9 @@
             <p>Sistema ColetaWeb - Logística Internacional</p>
         </div>
 
-        <!-- Lado Direito: Botão SAIR -->
+        <!-- Lado Direito: Botão SAIR (Estilizado como btn-main com texto vermelho) -->
         <div style="flex: 0 0 150px; text-align: right;">
-            <button onclick="fazerLogout()" style="background: none; border: none; color: var(--red); font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 12px;">Sair</button>
+            <button class="btn-main" onclick="fazerLogout()" style="background: white; border: 2px solid var(--red); color: var(--red); padding: 10px 20px; width: 100%; max-width: 120px; font-size: 12px;">SAIR</button>
         </div>
     </div>
 
@@ -69,11 +69,10 @@
 
     <script src="script.js"></script>
     <script>
-        // Função para proteger a página e verificar login
         async function verificarInicializacao() {
-            // Verifica se a biblioteca foi carregada (ajuste de segurança)
+            // Verifica se a variável do Supabase está carregada
             if (typeof clienteSupabase === 'undefined') {
-                console.error("Supabase não carregado! Verifique a ordem dos scripts.");
+                console.error("Supabase não carregado! Verifique script.js.");
                 return;
             }
 
@@ -89,7 +88,7 @@
             inicializarPainel();
         }
 
-        // Aguarda o carregamento total para evitar conflitos
+        // Aguarda o carregamento total
         window.addEventListener('load', verificarInicializacao);
     </script>
 </body>

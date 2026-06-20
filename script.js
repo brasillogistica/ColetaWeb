@@ -2,25 +2,29 @@
 const SUPABASE_URL = 'https://ekmcgifpvqrdgcikvepe.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbWNnaWZwdnFyZGdjaWt2ZXBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDY4NTgsImV4cCI6MjA5NTE4Mjg1OH0.sLIg__XSOSM7VD95FcUDr2ZCuDFCxxCWlF98sJkyBTg';
 
-// Renomeamos para 'clienteSupabase' para evitar conflito com a variável global do CDN
+// Inicialização
 const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Variáveis Globais
 const armadores = ["MSC", "CMA", "MAERSK", "HAPAG", "ALPHA", "HAPPAG", "VUXX", "TOZZO", "HAPAG LLOYD", "PIL", "ONE"];
 const locaisColeta = ["oceanic", "Lechman terminais", "VMG Terminais"];
 
-// Função para verificar se o usuário logado é Master
+// Funções Globais Registradas no Objeto Window para garantir que o HTML as enxergue
+window.fazerLogout = async function() {
+    await clienteSupabase.auth.signOut();
+    window.location.href = 'login.html';
+};
+
 async function checarPermissaoMaster() {
     try {
         const { data: { user } } = await clienteSupabase.auth.getUser();
-        
         if (user) {
             const { data: userData } = await clienteSupabase
                 .from('usuarios')
                 .select('perfil')
                 .eq('email', user.email)
                 .single();
-
-            if (userData && userData.perfil === 'master') {
+            if (userData && (userData.perfil === 'master' || userData.perfil === 'mestre')) {
                 return true;
             }
         }
@@ -30,7 +34,6 @@ async function checarPermissaoMaster() {
     return false;
 }
 
-// Função para inicializar o painel e mostrar elementos administrativos
 async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
     if (isMaster) {
