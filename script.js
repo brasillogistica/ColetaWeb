@@ -63,13 +63,19 @@ async function checarPermissaoMaster() {
     return false;
 }
 
-// Inicialização imediata sem setTimeout para evitar pulos visuais
+// Inicialização robusta do Painel
 async function inicializarPainel() {
     const isMaster = await checarPermissaoMaster();
     console.log("Painel administrativo liberado:", isMaster);
+    
+    // Tentamos encontrar o container
     const adminContainer = document.getElementById('admin-container');
+    
     if (isMaster && adminContainer) {
-        adminContainer.style.display = 'flex'; 
+        // Forçamos a exibição
+        adminContainer.style.setProperty('display', 'flex', 'important');
+    } else if (adminContainer) {
+        adminContainer.style.display = 'none';
     }
 }
 
