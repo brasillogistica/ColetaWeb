@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Cadastro Transportadora | ColetaWeb</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="padding: 40px; background: #f2f2f2;">
+
+    <div class="card" style="max-width: 400px; margin: auto;">
+        <h2 style="color: var(--navy); margin-bottom: 20px;">NOVA TRANSPORTADORA</h2>
+        
+        <div class="form-group">
+            <label>NOME DA TRANSPORTADORA</label>
+            <input type="text" id="nomeTransportadora" placeholder="Digite o nome aqui...">
+        </div>
+
+        <button class="btn-main" style="width: 100%; margin-top: 10px;" onclick="salvarTransportadora()">SALVAR</button>
+        <button class="btn-main" style="width: 100%; margin-top: 10px; background: var(--grey);" onclick="window.location.href='index.html'">VOLTAR</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        async function salvarTransportadora() {
+            const nome = document.getElementById('nomeTransportadora').value;
+            if (!nome) return alert("Preencha o nome!");
+
+            const { error } = await clienteSupabase
+                .from('transportadoras')
+                .insert([{ nome: nome }]);
+
+            if (error) alert("Erro ao salvar: " + error.message);
+            else {
+                alert("Transportadora cadastrada com sucesso!");
+                document.getElementById('nomeTransportadora').value = '';
+            }
+        }
+    </script>
+</body>
+</html>
