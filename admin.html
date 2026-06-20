@@ -37,7 +37,6 @@
                     <th style="padding: 10px; text-align: left;">E-mail</th>
                     <th style="padding: 10px; text-align: left;">Transportadora</th>
                     <th style="padding: 10px; text-align: left;">Perfil</th>
-                    <th style="padding: 10px; text-align: left;">Status</th>
                 </tr>
             </thead>
             <tbody id="user-table-body">
@@ -50,7 +49,6 @@
     <script src="script.js"></script>
     <script>
         async function carregarUsuarios() {
-            // Pequeno delay para garantir carregamento do script.js
             if (typeof clienteSupabase === 'undefined') {
                 setTimeout(carregarUsuarios, 500);
                 return;
@@ -80,26 +78,21 @@
             data.forEach(user => {
                 let perfilTd = user.perfil;
                 
+                // Regra: Apenas Master pode alterar, Master é fixo e Admin não altera Master
                 if (userData.perfil === 'master' && user.perfil !== 'master') {
                     perfilTd = `
                         <select onchange="atualizarCampo('${user.email}', 'perfil', this.value)" style="padding: 5px;">
                             <option value="user" ${user.perfil === 'user' ? 'selected' : ''}>User</option>
                             <option value="administrador" ${user.perfil === 'administrador' ? 'selected' : ''}>Administrador</option>
+                            <option value="master" ${user.perfil === 'master' ? 'selected' : ''}>Master</option>
                         </select>`;
                 }
-
-                const statusTd = `
-                    <select onchange="atualizarCampo('${user.email}', 'status', this.value)" style="padding: 5px;">
-                        <option value="pendente" ${user.status === 'pendente' ? 'selected' : ''}>Pendente</option>
-                        <option value="aprovado" ${user.status === 'aprovado' ? 'selected' : ''}>Aprovado</option>
-                    </select>`;
                 
                 tbody.innerHTML += `
                     <tr>
                         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.email}</td>
                         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.transportadora || 'N/A'}</td>
                         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${perfilTd}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${statusTd}</td>
                     </tr>
                 `;
             });
@@ -113,15 +106,16 @@
             if(!email) return alert("Digite um e-mail");
             if(!transportadora) return alert("Selecione uma transportadora");
             
+            // Inserindo com status 'aprovado' fixo
             const { error } = await clienteSupabase.from('usuarios').insert([{ 
                 email: email, 
                 perfil: perfil, 
                 transportadora: transportadora,
-                status: 'pendente' 
+                status: 'aprovado' 
             }]);
             
             if (error) alert("Erro ao criar: " + error.message);
-            else { alert("Usuário criado com sucesso!"); document.getElementById('novoEmail').value = ''; carregarUsuarios(); }
+            else { alert("Usuário criado e aprovado!"); document.getElementById('novoEmail').value = ''; carregarUsuarios(); }
         }
 
         async function atualizarCampo(email, campo, valor) {
@@ -139,7 +133,7 @@
 
         window.onload = async () => {
             await carregarUsuarios();
-            await carregarTransportadoras(); // Busca transportadoras do banco
+            await carregarTransportadoras();
         };
     </script>
 </body>
