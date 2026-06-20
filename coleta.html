@@ -53,7 +53,7 @@
             }
         });
 
-        // Função para salvar no Supabase com Endereço
+        // Função para salvar no Supabase com Endereço e Estado
         async function salvarColeta() {
             if (typeof clienteSupabase === 'undefined') {
                 alert("Erro: O sistema ainda está carregando.");
@@ -84,7 +84,7 @@
                         });
                     });
 
-                    // Geocodificação Reversa via Nominatim
+                    // Geocodificação Reversa
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
@@ -92,7 +92,14 @@
                     
                     if (data && data.address) {
                         const addr = data.address;
-                        localizacao = `${addr.road || ''}, ${addr.house_number || ''} - ${addr.suburb || addr.neighbourhood || ''} - ${addr.city || addr.town || ''}`.replace(/^, | ,/g, '');
+                        const rua = addr.road || '';
+                        const num = addr.house_number || '';
+                        const bairro = addr.suburb || addr.neighbourhood || '';
+                        const cidade = addr.city || addr.town || '';
+                        const estado = addr.state || addr.state_district || '';
+                        
+                        // Monta o endereço formatado
+                        localizacao = `${rua}${num ? ', ' + num : ''} - ${bairro} - ${cidade} - ${estado}`.replace(/^ - | - $/, '');
                     } else {
                         localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
                     }
@@ -101,7 +108,7 @@
                     localizacao = "GPS Bloqueado";
                 }
 
-                // 2. Busca transportadora na tabela usuários
+                // 2. Busca transportadora
                 const { data: userData } = await clienteSupabase
                     .from('usuarios')
                     .select('transportadora')
