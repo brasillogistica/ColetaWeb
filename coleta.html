@@ -53,7 +53,7 @@
             }
         });
 
-        // Função para salvar no Supabase
+        // Função para salvar no Supabase com GPS
         async function salvarColeta() {
             if (typeof clienteSupabase === 'undefined') {
                 alert("Erro: O sistema ainda está carregando. Aguarde um segundo.");
@@ -71,19 +71,31 @@
                 return;
             }
             
-            status.innerText = "Buscando dados do usuário...";
-
-            // 1. Busca a transportadora vinculada ao e-mail do usuário
-            const { data: userData } = await clienteSupabase
-                .from('usuarios')
-                .select('transportadora')
-                .eq('email', user.email)
-                .single();
-
-            status.innerText = "Enviando foto...";
+            status.innerText = "Obtendo GPS e enviando...";
 
             try {
-                // 2. Upload da foto
+                // 1. Obter Localização GPS
+                let localizacao = "Sem GPS";
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 10000
+                        });
+                    });
+                    localizacao = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+                } catch (e) {
+                    console.warn("GPS não disponível:", e);
+                }
+
+                // 2. Busca transportadora
+                const { data: userData } = await clienteSupabase
+                    .from('usuarios')
+                    .select('transportadora')
+                    .eq('email', user.email)
+                    .single();
+
+                // 3. Upload da foto
                 const fileName = `${Date.now()}_${user.email}.jpg`;
                 const { error: uploadError } = await clienteSupabase.storage
                     .from('coletas-fotos')
@@ -91,12 +103,13 @@
                 
                 if (uploadError) throw uploadError;
 
-                // 3. Salvar no banco (agora enviando a transportadora encontrada)
+                // 4. Salvar no banco
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
                     email_usuario: user.email,
                     container: window.dadosExtraidos.container,
                     foto_url: fileName,
-                    transportadora: userData ? userData.transportadora : "N/A", 
+                    localizacao: localizacao, // Adicionado GPS
+                    transportadora: userData ? userData.transportadora : "N/A",
                     created_at: new Date().toISOString()
                 }]);
 

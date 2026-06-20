@@ -14,7 +14,7 @@
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
             <thead>
                 <tr style="background: var(--navy); color: white;">
-                    <th style="padding: 10px; text-align: left;">Data</th>
+                    <th style="padding: 10px; text-align: left;">Data/Hora</th>
                     <th style="padding: 10px; text-align: left;">Container</th>
                     <th style="padding: 10px; text-align: left;">GPS</th>
                     <th style="padding: 10px; text-align: left;">Foto</th>
@@ -69,13 +69,18 @@
             tbody.innerHTML = '';
             
             data.forEach(item => {
+                // Formatação de Data e Hora
+                const dataHora = new Date(item.created_at);
+                const dataFormatada = dataHora.toLocaleDateString() + ' ' + dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                // Monta a URL da foto
                 const fotoUrl = item.foto_url 
                     ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
                     : null;
                 
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 10px;">${new Date(item.created_at).toLocaleDateString()}</td>
+                        <td style="padding: 10px;">${dataFormatada}</td>
                         <td style="padding: 10px;">${item.container || "N/A"}</td>
                         <td style="padding: 10px;">${item.localizacao || "N/A"}</td>
                         <td style="padding: 10px;">
