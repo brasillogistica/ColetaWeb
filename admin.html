@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+    <title>Painel Master | ColetaWeb</title>
+</head>
+<body style="padding: 40px; background: #f2f2f2;">
+
+    <div class="card">
+        <h2 style="color: var(--navy); margin-bottom: 20px;">GERENCIAR USUÁRIOS</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr style="background: var(--navy); color: white;">
+                    <th style="padding: 10px; text-align: left;">E-mail</th>
+                    <th style="padding: 10px; text-align: left;">Perfil</th>
+                    <th style="padding: 10px; text-align: left;">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="user-table-body">
+                <!-- Usuários carregados via JS -->
+            </tbody>
+        </table>
+        <button class="btn-main" style="background: var(--grey);" onclick="window.location.href='index.html'">VOLTAR</button>
+    </div>
+
+    <!-- Caminho simples, sem ../ pois estão na mesma pasta -->
+    <script src="script.js"></script>
+    <script>
+        async function carregarUsuarios() {
+            // Verifica se está logado
+            const { data: { session } } = await clienteSupabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Verifica se é Master
+            const isMaster = await checarPermissaoMaster();
+            if (!isMaster) {
+                alert("Acesso Negado: Área restrita.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const { data, error } = await clienteSupabase.from('usuarios').select('*');
+            if (error) { console.error(error); return; }
+
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = '';
+            
+            data.forEach(user => {
+                const novoPerfil = user.perfil === 'mestre' ? 'usuario' : 'mestre';
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.email}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.perfil}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                            <button onclick="alterarPerfil('${user.email}', '${novoPerfil}')" style="cursor:pointer; padding: 5px 10px;">
+                                Alternar para ${novoPerfil}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function alterarPerfil(email, novoPerfil) {
+            const { error } = await clienteSupabase
+                .from('usuarios')
+                .update({ perfil: novoPerfil })
+                .eq('email', email);
+            
+            if (error) alert("Erro: " + error.message);
+            else { alert("Perfil atualizado!"); carregarUsuarios(); }
+        }
+
+        window.onload = carregarUsuarios;
+    </script>
+</body>
+</html>
