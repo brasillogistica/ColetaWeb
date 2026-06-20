@@ -71,10 +71,19 @@
                 return;
             }
             
+            status.innerText = "Buscando dados do usuário...";
+
+            // 1. Busca a transportadora vinculada ao e-mail do usuário
+            const { data: userData } = await clienteSupabase
+                .from('usuarios')
+                .select('transportadora')
+                .eq('email', user.email)
+                .single();
+
             status.innerText = "Enviando foto...";
 
             try {
-                // 1. Upload da foto
+                // 2. Upload da foto
                 const fileName = `${Date.now()}_${user.email}.jpg`;
                 const { error: uploadError } = await clienteSupabase.storage
                     .from('coletas-fotos')
@@ -82,11 +91,12 @@
                 
                 if (uploadError) throw uploadError;
 
-                // 2. Salvar no banco usando os nomes exatos das colunas do seu print
+                // 3. Salvar no banco (agora enviando a transportadora encontrada)
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
-                    email_usuario: user.email,        // Ajustado para 'email_usuario' conforme seu print
+                    email_usuario: user.email,
                     container: window.dadosExtraidos.container,
                     foto_url: fileName,
+                    transportadora: userData ? userData.transportadora : "N/A", 
                     created_at: new Date().toISOString()
                 }]);
 
