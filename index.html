@@ -20,15 +20,19 @@
 <body>
     <!-- Cabeçalho com Logo, Texto e Botão SAIR -->
     <div class="card header-card" style="margin-bottom: 20px; display: flex; align-items: center; padding: 15px 25px;">
+        <!-- Lado Esquerdo: Logo -->
         <div class="header-left" style="flex: 0 0 150px; font-size: 20px; font-weight: 800; cursor: default;">
             <span style="color: var(--navy);">minerva</span><span style="color: var(--red);">foods</span>
         </div>
 
+        <!-- Centro: Texto -->
         <div style="flex: 1; text-align: center;">
-            <h1 style="color: var(--navy); font-size: 1.5rem;">Bem-vindo, Leandro</h1>
+            <!-- ID adicionado para trocar o nome dinamicamente -->
+            <h1 id="welcome-message" style="color: var(--navy); font-size: 1.5rem;">Carregando...</h1>
             <p style="font-size: 0.8rem;">Sistema ColetaWeb - Logística Internacional</p>
         </div>
 
+        <!-- Lado Direito: Botão SAIR -->
         <div class="header-right" style="flex: 0 0 150px; text-align: right;">
             <button class="btn-main" onclick="fazerLogout()" style="background: white; border: 2px solid var(--red); color: var(--red); padding: 8px 15px; width: 100%; max-width: 100px; font-size: 10px;">SAIR</button>
         </div>
@@ -82,12 +86,17 @@
                 return;
             }
 
-            const { data: { session } } = await clienteSupabase.auth.getSession();
+            const { data: { user } } = await clienteSupabase.auth.getUser();
             
-            if (!session) {
+            if (!user) {
                 window.location.href = 'login.html';
                 return;
             }
+            
+            // Lógica para exibir o nome do usuário
+            const email = user.email;
+            const nomeFormatado = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
+            document.getElementById('welcome-message').innerText = "Bem-vindo, " + nomeFormatado;
             
             renderCalendar();
             inicializarPainel();
