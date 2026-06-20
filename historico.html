@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
     <title>Histórico | ColetaWeb</title>
+    <!-- Adicionado script do Supabase no head para garantir carregamento -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body style="padding: 40px; background: #f2f2f2;">
 
@@ -28,6 +30,12 @@
     <script src="script.js"></script>
     <script>
         async function carregarHistorico() {
+            // Verifica se a variável do Supabase foi inicializada no script.js
+            if (typeof clienteSupabase === 'undefined') {
+                console.error("Supabase não carregado!");
+                return;
+            }
+
             // 1. Obtém o usuário atual
             const { data: { user } } = await clienteSupabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
@@ -42,8 +50,8 @@
             // 3. Prepara a busca na tabela de coletas
             let query = clienteSupabase.from('coletas').select('*');
 
-            // 4. Lógica de filtro: Se não for Master/Mestre, filtra pela transportadora
-            if (userData.perfil !== 'master' && userData.perfil !== 'mestre' && userData.perfil !== 'administrador') {
+            // 4. Lógica de filtro: Se não for Master/Mestre/Admin, filtra pela transportadora
+            if (userData && userData.perfil !== 'master' && userData.perfil !== 'mestre' && userData.perfil !== 'administrador') {
                 query = query.eq('transportadora', userData.transportadora);
             }
             
@@ -55,7 +63,7 @@
             tbody.innerHTML = '';
             
             data.forEach(item => {
-                // Monta a URL da foto salva no bucket 'coletas-fotos'
+                // Monta a URL da foto
                 const fotoUrl = item.foto_url 
                     ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
                     : null;
@@ -72,7 +80,9 @@
                 `;
             });
         }
-        window.onload = carregarHistorico;
+        
+        // Usa load para garantir que tudo (incluindo Supabase) esteja pronto
+        window.addEventListener('load', carregarHistorico);
     </script>
 </body>
 </html>

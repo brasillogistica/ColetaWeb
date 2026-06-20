@@ -2,7 +2,7 @@
 const SUPABASE_URL = 'https://ekmcgifpvqrdgcikvepe.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbWNnaWZwdnFyZGdjaWt2ZXBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDY4NTgsImV4cCI6MjA5NTE4Mjg1OH0.sLIg__XSOSM7VD95FcUDr2ZCuDFCxxCWlF98sJkyBTg';
 
-// Inicialização segura
+// Inicialização segura com verificação de existência da biblioteca global
 const clienteSupabase = (typeof supabase !== 'undefined') 
     ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
     : null;
@@ -31,7 +31,6 @@ window.processarOCR = async function(imagemBase64) {
 
         const extrair = (regex) => (text.match(regex) || [])[1] || "N/A";
 
-        // Armazena na variável global para ser usada pela função salvarColeta no HTML
         window.dadosExtraidos = {
             container: extrair(/CONTAINER:\s*([A-Z0-9\.\-]+)/i)
         };
@@ -211,7 +210,6 @@ function closeFullCalendar() {
     if (modal) modal.style.display = 'none';
 }
 
-// Lógica para visualizar a foto da câmera
 document.getElementById('cameraInput')?.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
