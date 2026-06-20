@@ -21,6 +21,7 @@
                 <select id="novoPerfil" style="padding: 8px;">
                     <option value="user">User</option>
                     <option value="administrador">Administrador</option>
+                    <!-- Opção Master removida daqui -->
                 </select>
 
                 <select id="novaTransportadora" style="padding: 8px;">
@@ -49,10 +50,7 @@
     <script src="script.js"></script>
     <script>
         async function carregarUsuarios() {
-            if (typeof clienteSupabase === 'undefined') {
-                setTimeout(carregarUsuarios, 500);
-                return;
-            }
+            if (typeof clienteSupabase === 'undefined') { setTimeout(carregarUsuarios, 500); return; }
 
             const { data: { session } } = await clienteSupabase.auth.getSession();
             if (!session) { window.location.href = 'login.html'; return; }
@@ -64,7 +62,7 @@
                 .single();
 
             if (!userData || (userData.perfil !== 'master' && userData.perfil !== 'administrador')) {
-                alert("Acesso Negado: Área restrita.");
+                alert("Acesso Negado.");
                 window.location.href = 'index.html';
                 return;
             }
@@ -78,13 +76,13 @@
             data.forEach(user => {
                 let perfilTd = user.perfil;
                 
-                // Regra: Apenas Master pode alterar, Master é fixo e Admin não altera Master
+                // Apenas Master pode alterar, e APENAS para os perfis permitidos
+                // A opção 'master' foi removida do HTML e não aparece aqui
                 if (userData.perfil === 'master' && user.perfil !== 'master') {
                     perfilTd = `
                         <select onchange="atualizarCampo('${user.email}', 'perfil', this.value)" style="padding: 5px;">
                             <option value="user" ${user.perfil === 'user' ? 'selected' : ''}>User</option>
                             <option value="administrador" ${user.perfil === 'administrador' ? 'selected' : ''}>Administrador</option>
-                            <option value="master" ${user.perfil === 'master' ? 'selected' : ''}>Master</option>
                         </select>`;
                 }
                 
@@ -106,7 +104,7 @@
             if(!email) return alert("Digite um e-mail");
             if(!transportadora) return alert("Selecione uma transportadora");
             
-            // Inserindo com status 'aprovado' fixo
+            // O código agora força o perfil apenas entre 'user' e 'administrador'
             const { error } = await clienteSupabase.from('usuarios').insert([{ 
                 email: email, 
                 perfil: perfil, 
@@ -115,16 +113,13 @@
             }]);
             
             if (error) alert("Erro ao criar: " + error.message);
-            else { alert("Usuário criado e aprovado!"); document.getElementById('novoEmail').value = ''; carregarUsuarios(); }
+            else { alert("Usuário criado com sucesso!"); document.getElementById('novoEmail').value = ''; carregarUsuarios(); }
         }
 
         async function atualizarCampo(email, campo, valor) {
-            const updateObj = {};
-            updateObj[campo] = valor;
-            
             const { error } = await clienteSupabase
                 .from('usuarios')
-                .update(updateObj)
+                .update({ [campo]: valor })
                 .eq('email', email);
             
             if (error) alert("Erro ao atualizar: " + error.message);
