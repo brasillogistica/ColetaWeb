@@ -14,14 +14,13 @@
         
         <!-- Formulário para Novo Usuário -->
         <div style="margin-bottom: 30px; padding: 15px; border: 1px solid var(--gold); border-radius: 10px; background: #fafafa;">
-            <h3 style="color: var(--navy); margin-bottom: 15px; font-size: 14px;">Adicionar novo usuário</h3>
+            <h3 style="color: var(--navy); margin-bottom: 15px; font-size: 14px;">Adicionar novo usuário (Cadastre antes em Authentication)</h3>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <input type="email" id="novoEmail" placeholder="email@minervafoods.com" style="padding: 8px; width: 220px; border: 1px solid #ccc; border-radius: 5px;">
                 
                 <select id="novoPerfil" style="padding: 8px;">
                     <option value="user">User</option>
                     <option value="administrador">Administrador</option>
-                    <!-- Opção Master removida daqui -->
                 </select>
 
                 <select id="novaTransportadora" style="padding: 8px;">
@@ -62,7 +61,7 @@
                 .single();
 
             if (!userData || (userData.perfil !== 'master' && userData.perfil !== 'administrador')) {
-                alert("Acesso Negado.");
+                alert("Acesso Negado: Área restrita.");
                 window.location.href = 'index.html';
                 return;
             }
@@ -76,8 +75,7 @@
             data.forEach(user => {
                 let perfilTd = user.perfil;
                 
-                // Apenas Master pode alterar, e APENAS para os perfis permitidos
-                // A opção 'master' foi removida do HTML e não aparece aqui
+                // Regra: Master não pode ter o perfil alterado aqui
                 if (userData.perfil === 'master' && user.perfil !== 'master') {
                     perfilTd = `
                         <select onchange="atualizarCampo('${user.email}', 'perfil', this.value)" style="padding: 5px;">
@@ -104,7 +102,7 @@
             if(!email) return alert("Digite um e-mail");
             if(!transportadora) return alert("Selecione uma transportadora");
             
-            // O código agora força o perfil apenas entre 'user' e 'administrador'
+            // Inserção direta no banco sem enviar e-mail
             const { error } = await clienteSupabase.from('usuarios').insert([{ 
                 email: email, 
                 perfil: perfil, 
@@ -113,13 +111,16 @@
             }]);
             
             if (error) alert("Erro ao criar: " + error.message);
-            else { alert("Usuário criado com sucesso!"); document.getElementById('novoEmail').value = ''; carregarUsuarios(); }
+            else { alert("Usuário vinculado com sucesso no banco!"); document.getElementById('novoEmail').value = ''; carregarUsuarios(); }
         }
 
         async function atualizarCampo(email, campo, valor) {
+            const updateObj = {};
+            updateObj[campo] = valor;
+            
             const { error } = await clienteSupabase
                 .from('usuarios')
-                .update({ [campo]: valor })
+                .update(updateObj)
                 .eq('email', email);
             
             if (error) alert("Erro ao atualizar: " + error.message);
