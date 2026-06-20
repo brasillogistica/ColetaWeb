@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Login | ColetaWeb</title>
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+
+    <div class="card" style="width: 400px; text-align: center;">
+        <div style="font-size: 24px; font-weight: 800; margin-bottom: 30px;">
+            <span style="color: var(--navy);">minerva</span><span style="color: var(--red);">foods</span>
+        </div>
+        
+        <h2 style="color: var(--navy); margin-bottom: 20px; font-size: 1.2rem;">LOGIN - COLETAWEB</h2>
+        
+        <div class="form-group" style="text-align: left;">
+            <label>E-MAIL</label>
+            <input type="email" id="email" placeholder="seu.email@minervafoods.com">
+        </div>
+        
+        <div class="form-group" style="text-align: left;">
+            <label>SENHA</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+        
+        <button class="btn-main" style="width: 100%; margin-top: 20px; background: var(--red);" onclick="fazerLogin()">ENTRAR</button>
+    </div>
+
+    <script src="script.js"></script>
+    <!-- Adicione a biblioteca do Supabase aqui no seu script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Lógica de Login
+        async function fazerLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                alert("Erro ao entrar: " + error.message);
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

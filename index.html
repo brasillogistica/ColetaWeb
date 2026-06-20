@@ -3,40 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Script do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
     <title>Home | ColetaWeb</title>
 </head>
 <body>
     <!-- Cabeçalho com Logo e Texto Centralizado -->
     <div class="card" style="margin-bottom: 20px; display: flex; align-items: center; padding: 15px 25px;">
-        <!-- Lado Esquerdo: Logo -->
         <div style="flex: 0 0 150px; font-size: 20px; font-weight: 800; cursor: default;">
             <span style="color: var(--navy);">minerva</span><span style="color: var(--red);">foods</span>
         </div>
-
-        <!-- Centro: Texto -->
         <div style="flex: 1; text-align: center;">
             <h1 style="color: var(--navy); font-size: 1.5rem;">Bem-vindo, Leandro</h1>
             <p>Sistema ColetaWeb - Logística Internacional</p>
         </div>
-
-        <!-- Lado Direito: Espaçador para centralização perfeita -->
         <div style="flex: 0 0 150px;"></div>
     </div>
 
     <!-- Container com Layout Lateral -->
     <div class="card" style="display: flex; gap: 40px; align-items: flex-start;">
-        
-        <!-- Coluna da Esquerda: Botão de Registro -->
-        <div style="flex: 0 0 250px;">
+        <div style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 15px;">
             <button class="btn-main" onclick="window.location.href='coleta.html'" style="width: 100%;">+ REGISTRO DE COLETA</button>
+            <div id="admin-container" style="display:none;">
+                <button class="btn-main" style="width: 100%; background: var(--red);" onclick="window.location.href='admin.html'">PAINEL MASTER</button>
+            </div>
         </div>
 
-        <!-- Coluna da Direita: Calendário (Alinhado à direita) -->
         <div style="flex: 1; display: flex; justify-content: flex-end;">
             <div style="width: 100%; max-width: 600px;">
                 <div id="calendar-header" style="text-align: center; font-weight: 800; color: var(--navy); margin-bottom: 15px;"></div>
-                
                 <div id="calendar-grid" class="calendar-grid" style="margin-top: 0; width: 100%;">
                     <div class="cal-cell head">Nº</div>
                     <div class="cal-cell head">Seg</div>
@@ -60,7 +56,22 @@
 
     <script src="script.js"></script>
     <script>
-        renderCalendar();
+        async function verificarInicializacao() {
+            // Usamos a variável 'clienteSupabase' que definimos no seu script.js
+            const { data: { session } } = await clienteSupabase.auth.getSession();
+            
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Renderiza o conteúdo após validar a sessão
+            renderCalendar();
+            inicializarPainel();
+        }
+
+        // Aguarda o carregamento total para evitar conflitos
+        window.addEventListener('load', verificarInicializacao);
     </script>
 </body>
 </html>

@@ -1,12 +1,49 @@
-const armadores = ["MSC", "CMA", "MAERSK", "HAPAG", "ALPHA", "HAPPAG", "VUXX", "TOZZO", "HAPAG LLOYD", "PIL", "ONE"];
+// Configuração do Supabase
+const SUPABASE_URL = 'https://ekmcgifpvqrdgcikvepe.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbWNnaWZwdnFyZGdjaWt2ZXBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDY4NTgsImV4cCI6MjA5NTE4Mjg1OH0.sLIg__XSOSM7VD95FcUDr2ZCuDFCxxCWlF98sJkyBTg';
 
-// Lista corrigida apenas com os locais da aba específica
+// Renomeamos para 'clienteSupabase' para evitar conflito com a variável global do CDN
+const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const armadores = ["MSC", "CMA", "MAERSK", "HAPAG", "ALPHA", "HAPPAG", "VUXX", "TOZZO", "HAPAG LLOYD", "PIL", "ONE"];
 const locaisColeta = ["oceanic", "Lechman terminais", "VMG Terminais"];
+
+// Função para verificar se o usuário logado é Master
+async function checarPermissaoMaster() {
+    try {
+        const { data: { user } } = await clienteSupabase.auth.getUser();
+        
+        if (user) {
+            const { data: userData } = await clienteSupabase
+                .from('usuarios')
+                .select('perfil')
+                .eq('email', user.email)
+                .single();
+
+            if (userData && userData.perfil === 'master') {
+                return true;
+            }
+        }
+    } catch (e) {
+        console.error("Erro ao checar permissão:", e);
+    }
+    return false;
+}
+
+// Função para inicializar o painel e mostrar elementos administrativos
+async function inicializarPainel() {
+    const isMaster = await checarPermissaoMaster();
+    if (isMaster) {
+        const adminContainer = document.getElementById('admin-container');
+        if (adminContainer) {
+            adminContainer.style.display = 'block';
+        }
+    }
+}
 
 function popularArmadores() {
     const sel = document.getElementById('armadorSelect');
     if(sel) {
-        // Limpa antes de popular para evitar duplicatas
         sel.innerHTML = '<option value="">SELECIONE...</option>';
         armadores.forEach(a => sel.add(new Option(a, a)));
     }
@@ -15,7 +52,6 @@ function popularArmadores() {
 function popularLocais() {
     const sel = document.getElementById('localColetaSelect');
     if(sel) {
-        // Limpa antes de popular
         sel.innerHTML = '<option value="">SELECIONE...</option>';
         locaisColeta.forEach(local => sel.add(new Option(local, local)));
     }
@@ -58,8 +94,8 @@ function renderCalendar() {
     
     let currentWeek = getWeekNumber(new Date(year, month, 1));
 
-    const dynamicElements = grid.querySelectorAll('.day-number, .week-number, .cal-cell:not(.head)');
-    dynamicElements.forEach(el => el.remove());
+    const elementsToRemove = grid.querySelectorAll('.day-number, .week-number, .cal-cell:not(.head)');
+    elementsToRemove.forEach(el => el.remove());
 
     grid.innerHTML += `<div class="cal-cell week-number">${currentWeek}</div>`;
     
@@ -89,42 +125,45 @@ function renderCalendar() {
 function expandCalendar() {
     const modal = document.getElementById('full-calendar-modal');
     const container = document.getElementById('full-calendar-content');
-    modal.style.display = 'block';
+    if (modal) modal.style.display = 'block';
     
-    container.innerHTML = '';
-    const now = new Date();
-    const year = now.getFullYear();
-    const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-    
-    meses.forEach((mes, mIndex) => {
-        const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
-        const firstDay = new Date(year, mIndex, 1).getDay();
+    if (container) {
+        container.innerHTML = '';
+        const now = new Date();
+        const year = now.getFullYear();
+        const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         
-        let gridHTML = `
-            <div class="card" style="padding:10px;">
-                <h3 style="color: var(--navy); margin-bottom: 5px; font-size: 14px; text-align:center;">${mes}</h3>
-                <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 11px; text-align:center;">
-                    <div style="font-weight:bold; color:var(--navy);">S</div><div style="font-weight:bold; color:var(--navy);">T</div>
-                    <div style="font-weight:bold; color:var(--navy);">Q</div><div style="font-weight:bold; color:var(--navy);">Q</div>
-                    <div style="font-weight:bold; color:var(--navy);">S</div><div style="font-weight:bold; color:var(--navy);">S</div>
-                    <div style="font-weight:bold; color:var(--navy);">D</div>`;
-
-        let offset = (firstDay === 0) ? 6 : firstDay - 1;
-        for(let i = 0; i < offset; i++) gridHTML += `<div></div>`;
-
-        for(let d = 1; d <= daysInMonth; d++) {
-            const date = new Date(year, mIndex, d);
-            const dayOfWeek = date.getDay();
-            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        meses.forEach((mes, mIndex) => {
+            const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+            const firstDay = new Date(year, mIndex, 1).getDay();
             
-            gridHTML += `<div class="annual-day ${isWeekend ? 'annual-weekend' : ''}">${d}</div>`;
-        }
-        
-        gridHTML += `</div></div>`;
-        container.innerHTML += gridHTML;
-    });
+            let gridHTML = `
+                <div class="card" style="padding:10px;">
+                    <h3 style="color: var(--navy); margin-bottom: 5px; font-size: 14px; text-align:center;">${mes}</h3>
+                    <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 11px; text-align:center;">
+                        <div style="font-weight:bold; color:var(--navy);">S</div><div style="font-weight:bold; color:var(--navy);">T</div>
+                        <div style="font-weight:bold; color:var(--navy);">Q</div><div style="font-weight:bold; color:var(--navy);">Q</div>
+                        <div style="font-weight:bold; color:var(--navy);">S</div><div style="font-weight:bold; color:var(--navy);">S</div>
+                        <div style="font-weight:bold; color:var(--navy);">D</div>`;
+
+            let offset = (firstDay === 0) ? 6 : firstDay - 1;
+            for(let i = 0; i < offset; i++) gridHTML += `<div></div>`;
+
+            for(let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(year, mIndex, d);
+                const dayOfWeek = date.getDay();
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                
+                gridHTML += `<div class="annual-day ${isWeekend ? 'annual-weekend' : ''}">${d}</div>`;
+            }
+            
+            gridHTML += `</div></div>`;
+            container.innerHTML += gridHTML;
+        });
+    }
 }
 
 function closeFullCalendar() {
-    document.getElementById('full-calendar-modal').style.display = 'none';
+    const modal = document.getElementById('full-calendar-modal');
+    if (modal) modal.style.display = 'none';
 }
