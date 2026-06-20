@@ -15,6 +15,31 @@ window.fazerLogout = async function() {
     window.location.href = 'login.html';
 };
 
+// Função global de OCR para ser chamada pelo coleta.html
+window.processarOCR = async function(imagemBase64) {
+    const status = document.getElementById('status');
+    if (status) status.innerText = "Lendo recibo, aguarde...";
+    
+    try {
+        const { data: { text } } = await Tesseract.recognize(imagemBase64, 'por');
+        console.log("Texto extraído:", text);
+
+        // Regex para extrair dados - Ajuste conforme necessidade
+        const containerMatch = text.match(/[A-Z]{4}\s?\d{3}\.?\d{3}\-?\d/i);
+        const taraMatch = text.match(/TARA\D*(\d+)/i);
+        const grossMatch = text.match(/MGW\D*(\d+)/i) || text.match(/MG\D*(\d+)/i);
+
+        if (containerMatch) document.getElementById('cnt').value = containerMatch[0];
+        if (taraMatch) document.getElementById('tara').value = taraMatch[1];
+        if (grossMatch) document.getElementById('gross').value = grossMatch[1];
+
+        if (status) status.innerText = "Leitura concluída!";
+    } catch (err) {
+        console.error("Erro no OCR:", err);
+        if (status) status.innerText = "Erro ao ler imagem.";
+    }
+};
+
 // Função para verificar se o usuário tem perfil administrativo
 async function checarPermissaoMaster() {
     try {

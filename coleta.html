@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Registro | ColetaWeb</title>
+    <!-- Biblioteca Tesseract -->
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 </head>
 <body style="display: flex; justify-content: center; padding: 40px;">
 
@@ -31,8 +33,9 @@
 
         <!-- Campo de Acesso à Câmera -->
         <div class="form-group">
-            <label>FOTO DO CONTAINER</label>
+            <label>FOTO DO RECIBO</label>
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="border: none; padding: 10px 0; font-size: 14px;">
+            <div id="status" style="font-size: 12px; color: var(--red); font-weight: bold; margin-top:5px;"></div>
             <img id="preview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
         </div>
         
@@ -44,19 +47,25 @@
 
     <script src="script.js"></script>
     <script>
-        // Preenche as listas dinâmicas ao carregar a página
         popularArmadores();
         popularLocais();
 
-        // Lógica para mostrar o preview da foto
+        // Lógica de captura disparando a função global do script.js
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = async function(event) {
                     const preview = document.getElementById('preview');
                     preview.src = event.target.result;
                     preview.style.display = 'block';
+                    
+                    // Chama a função processarOCR que está no seu script.js
+                    if(typeof window.processarOCR === 'function') {
+                        await window.processarOCR(event.target.result);
+                    } else {
+                        console.error("Função processarOCR não encontrada no script.js");
+                    }
                 }
                 reader.readAsDataURL(file);
             }

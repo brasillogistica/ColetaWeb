@@ -128,29 +128,30 @@ body {
 @media (max-width: 768px) {
     body { padding: 10px; }
     
+    .card { padding: 15px; }
+
     /* Layout principal empilhado */
     .card[style*="display: flex"] {
         flex-direction: column !important;
         gap: 20px !important;
     }
 
-    /* Força os botões e calendários a ocuparem a largura total */
-    .side-col, [style*="flex: 0 0 250px"], [style*="flex: 1"] {
+    /* Ajuste para garantir colunas cheias */
+    [style*="flex: 0 0 250px"], [style*="flex: 1"] {
         flex: 0 0 100% !important;
         width: 100% !important;
-        justify-content: center !important;
     }
 
-    /* Calendário ajustado para caber no celular */
+    /* Calendário ajustado para celular */
     .calendar-grid {
         margin-left: 0 !important;
         margin-right: 0 !important;
         max-width: 100% !important;
+        grid-template-columns: 30px repeat(7, 1fr); /* Célula da semana mais fina */
     }
 
-    /* Ajuste no cabeçalho */
+    /* Cabeçalho responsivo */
     .card:first-child {
-        flex-direction: column !important;
-        gap: 15px !important;
+        text-align: center;
     }
 }
