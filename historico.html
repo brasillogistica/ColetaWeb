@@ -38,15 +38,17 @@
         <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
     </div>
 
-    <!-- Modal para exibir a foto com suporte a zoom nativo -->
-    <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center;" onclick="fecharFoto()">
-        <span style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold;">&times;</span>
-        <img id="foto-ampliada" style="max-width:100%; max-height:100%; object-fit: contain; cursor: zoom-in;">
+    <!-- Modal para exibir a foto com suporte a zoom -->
+    <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center;">
+        <span onclick="fecharFoto()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold; z-index: 2001;">&times;</span>
+        <img id="foto-ampliada" style="max-width:90%; max-height:80%; transition: transform 0.2s; cursor: grab;">
     </div>
 
     <script src="script.js"></script>
     <script>
         let dadosExportacao = [];
+        let scale = 1;
+        const img = document.getElementById('foto-ampliada');
 
         async function carregarHistorico(tentativas = 0) {
             if (typeof clienteSupabase === 'undefined' || clienteSupabase === null) {
@@ -106,13 +108,23 @@
         }
         
         function abrirFoto(url) {
-            document.getElementById('foto-ampliada').src = url;
+            img.src = url;
+            scale = 1;
+            img.style.transform = `scale(${scale})`;
             document.getElementById('foto-modal').style.display = 'flex';
         }
 
         function fecharFoto() {
             document.getElementById('foto-modal').style.display = 'none';
         }
+
+        // Zoom com a roda do mouse
+        img.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            scale = Math.min(Math.max(0.5, scale + delta), 5);
+            img.style.transform = `scale(${scale})`;
+        });
 
         function exportarExcel() {
             if(dadosExportacao.length === 0) return alert("Sem dados para exportar");
