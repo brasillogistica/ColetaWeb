@@ -38,16 +38,23 @@
         <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
     </div>
 
-    <!-- Modal para exibir a foto com suporte a zoom -->
-    <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center;">
+    <!-- Modal para exibir a foto com suporte a zoom e arrasto -->
+    <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); overflow: hidden; cursor: grab;">
         <span onclick="fecharFoto()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold; z-index: 2001;">&times;</span>
-        <img id="foto-ampliada" style="max-width:90%; max-height:80%; transition: transform 0.2s; cursor: grab;">
+        
+        <div id="container-img" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; transition: transform 0.1s;">
+            <img id="foto-ampliada" style="max-width:90%; max-height:90%; user-select: none;">
+        </div>
     </div>
 
     <script src="script.js"></script>
     <script>
         let dadosExportacao = [];
         let scale = 1;
+        let isDragging = false;
+        let startX, startY, transX = 0, transY = 0;
+        
+        const containerImg = document.getElementById('container-img');
         const img = document.getElementById('foto-ampliada');
 
         async function carregarHistorico(tentativas = 0) {
@@ -109,8 +116,8 @@
         
         function abrirFoto(url) {
             img.src = url;
-            scale = 1;
-            img.style.transform = `scale(${scale})`;
+            scale = 1; transX = 0; transY = 0;
+            updateTransform();
             document.getElementById('foto-modal').style.display = 'flex';
         }
 
@@ -118,12 +125,30 @@
             document.getElementById('foto-modal').style.display = 'none';
         }
 
-        // Zoom com a roda do mouse
-        img.addEventListener('wheel', (e) => {
+        function updateTransform() {
+            containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
+        }
+
+        // Zoom com roda do mouse
+        document.getElementById('foto-modal').addEventListener('wheel', (e) => {
             e.preventDefault();
-            const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            scale = Math.min(Math.max(0.5, scale + delta), 5);
-            img.style.transform = `scale(${scale})`;
+            scale += e.deltaY * -0.001;
+            scale = Math.min(Math.max(0.5, scale), 5);
+            updateTransform();
+        });
+
+        // Arrastar com mouse
+        containerImg.addEventListener('mousedown', (e) => { 
+            isDragging = true; 
+            startX = e.clientX - transX; 
+            startY = e.clientY - transY; 
+        });
+        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            transX = e.clientX - startX;
+            transY = e.clientY - startY;
+            updateTransform();
         });
 
         function exportarExcel() {
