@@ -18,7 +18,15 @@
         <!-- Campo de Câmera/Foto -->
         <div class="form-group">
             <label>FOTO DO RECIBO</label>
-            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="border: none; padding: 10px 0; font-size: 14px;">
+            <!-- Input invisível que a câmera aciona -->
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+            
+            <!-- Botão personalizado -->
+            <button type="button" class="btn-main" onclick="document.getElementById('cameraInput').click()" 
+                    style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
+                <span style="font-size: 20px;">📷</span> TIRAR FOTO
+            </button>
+            
             <div id="status" style="font-size: 12px; color: var(--red); font-weight: bold; margin-top:5px;"></div>
             <img id="preview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
         </div>
@@ -53,7 +61,7 @@
             }
         });
 
-        // Função para salvar no Supabase com Endereço e Estado
+        // Função para salvar no Supabase com GPS
         async function salvarColeta() {
             if (typeof clienteSupabase === 'undefined') {
                 alert("Erro: O sistema ainda está carregando.");
@@ -127,13 +135,13 @@
                 
                 if (uploadError) throw uploadError;
 
-                // 4. Salvar no banco (com transportadora garantida)
+                // 4. Salvar no banco
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
                     email_usuario: user.email,
                     container: window.dadosExtraidos.container || "N/A",
                     foto_url: fileName,
                     localizacao: localizacao,
-                    transportadora: userData?.transportadora || "N/A",
+                    transportadora: userData ? userData.transportadora : "N/A",
                     created_at: new Date().toISOString()
                 }]);
 
