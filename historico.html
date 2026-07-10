@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
     <title>Histórico | ColetaWeb</title>
-    <!-- Supabase e Biblioteca para Excel -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -18,15 +17,20 @@
         </div>
 
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead>
                     <tr style="background: var(--navy); color: white;">
-                        <th style="padding: 10px; text-align: center;">Data</th>
-                        <th style="padding: 10px; text-align: center;">Hora</th>
-                        <th style="padding: 10px; text-align: center;">Container</th>
-                        <th id="th-transportadora" style="padding: 10px; text-align: center; display: none;">Transportadora</th>
-                        <th style="padding: 10px; text-align: center;">GPS</th>
-                        <th style="padding: 10px; text-align: center;">Foto</th>
+                        <th style="padding: 8px; text-align: center;">Data/Hora</th>
+                        <th style="padding: 8px; text-align: center;">Data Retirada</th>
+                        <th style="padding: 8px; text-align: center;">Armador</th>
+                        <th style="padding: 8px; text-align: center;">Container</th>
+                        <th style="padding: 8px; text-align: center;">Placa</th>
+                        <th style="padding: 8px; text-align: center;">Tara</th>
+                        <th style="padding: 8px; text-align: center;">Max Gross</th>
+                        <th style="padding: 8px; text-align: center;">C/P</th>
+                        <th id="th-transportadora" style="padding: 8px; text-align: center; display: none;">Transportadora</th>
+                        <th style="padding: 8px; text-align: center;">GPS</th>
+                        <th style="padding: 8px; text-align: center;">Foto</th>
                     </tr>
                 </thead>
                 <tbody id="historico-body">
@@ -38,10 +42,9 @@
         <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
     </div>
 
-    <!-- Modal para exibir a foto com suporte a zoom e arrasto -->
+    <!-- Modal Foto -->
     <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); overflow: hidden; cursor: grab;">
         <span onclick="fecharFoto()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold; z-index: 2001;">&times;</span>
-        
         <div id="container-img" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; transition: transform 0.1s;">
             <img id="foto-ampliada" style="max-width:90%; max-height:90%; user-select: none;">
         </div>
@@ -101,9 +104,14 @@
                 
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 10px; text-align: center;">${dataHora.toLocaleDateString()}</td>
-                        <td style="padding: 10px; text-align: center;">${dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                        <td style="padding: 10px; text-align: center;">${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                        <td style="padding: 10px; text-align: center;">${item.data_retirada || "N/A"}</td>
+                        <td style="padding: 10px; text-align: center;">${item.armador || "N/A"}</td>
                         <td style="padding: 10px; text-align: center;">${item.container || "N/A"}</td>
+                        <td style="padding: 10px; text-align: center;">${item.placa || "N/A"}</td>
+                        <td style="padding: 10px; text-align: center;">${item.tara || "N/A"}</td>
+                        <td style="padding: 10px; text-align: center;">${item.max_gross || "N/A"}</td>
+                        <td style="padding: 10px; text-align: center;">${item.carga_pulmao || "N/A"}</td>
                         ${ehAdmin ? `<td style="padding: 10px; text-align: center;">${item.transportadora || "N/A"}</td>` : ""}
                         <td style="padding: 10px; text-align: center;">${item.localizacao || "N/A"}</td>
                         <td style="padding: 10px; text-align: center;">
@@ -129,7 +137,6 @@
             containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         }
 
-        // Zoom com roda do mouse
         document.getElementById('foto-modal').addEventListener('wheel', (e) => {
             e.preventDefault();
             scale += e.deltaY * -0.001;
@@ -137,7 +144,6 @@
             updateTransform();
         });
 
-        // Arrastar com mouse
         containerImg.addEventListener('mousedown', (e) => { 
             isDragging = true; 
             startX = e.clientX - transX; 

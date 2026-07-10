@@ -5,23 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Registro | ColetaWeb</title>
-    <!-- 1. Carrega o Supabase primeiro -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- 2. Biblioteca Tesseract -->
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 </head>
 <body style="display: flex; justify-content: center; padding: 40px;">
 
-    <div class="card" style="width: 450px;">
+    <div class="card" style="width: 550px;">
         <h2 style="color: var(--navy); margin-bottom: 20px;">NOVO REGISTRO</h2>
         
+        <!-- Campos Manuais -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label>DATA DA RETIRADA</label>
+                <input type="date" id="dataRetirada">
+            </div>
+            <div class="form-group">
+                <label>CARGA OU PULMÃO</label>
+                <select id="cargaPulmao">
+                    <option value="">SELECIONE...</option>
+                    <option value="Carga">Carga</option>
+                    <option value="Pulmão">Pulmão</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>ARMADOR</label>
+                <input type="text" id="armador" placeholder="Digite o nome do armador">
+            </div>
+            <div class="form-group">
+                <label>PLACA</label>
+                <input type="text" id="placa" placeholder="Digite a placa">
+            </div>
+            <div class="form-group">
+                <label>TARA</label>
+                <input type="text" id="tara" placeholder="Ex: 4730">
+            </div>
+            <div class="form-group">
+                <label>MAX GROSS</label>
+                <input type="text" id="maxGross" placeholder="Ex: 35000">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>CONTAINER (Preenchido pelo OCR / Edite se necessário)</label>
+                <input type="text" id="containerInput" placeholder="Ex: TEMU9295736">
+            </div>
+        </div>
+
         <!-- Campo de Câmera/Foto -->
-        <div class="form-group">
+        <div class="form-group" style="border-top: 1px solid #eee; padding-top: 20px;">
             <label>FOTO DO RECIBO</label>
-            <!-- Input invisível que a câmera aciona -->
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
             
-            <!-- Botão personalizado -->
             <button type="button" class="btn-main" onclick="document.getElementById('cameraInput').click()" 
                     style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
                 <span style="font-size: 20px;">📷</span> TIRAR FOTO
@@ -37,14 +69,12 @@
         </div>
     </div>
 
-    <!-- 3. Carrega o seu script -->
     <script src="script.js"></script>
     
     <script>
-        // Inicializa a variável de dados na memória
         window.dadosExtraidos = { container: "N/A" };
 
-        // Lógica de captura
+        // Lógica de captura e OCR
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -55,21 +85,31 @@
                     
                     if(typeof window.processarOCR === 'function') {
                         await window.processarOCR(event.target.result);
+                        // Auto-preenche o campo container com o que foi identificado no OCR
+                        if(window.dadosExtraidos && window.dadosExtraidos.container) {
+                            document.getElementById('containerInput').value = window.dadosExtraidos.container;
+                        }
                     }
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        // Função para salvar no Supabase com GPS
         async function salvarColeta() {
             if (typeof clienteSupabase === 'undefined') {
                 alert("Erro: O sistema ainda está carregando.");
                 return;
             }
 
+            // Validações
+            const dataRetirada = document.getElementById('dataRetirada').value;
+            if(!dataRetirada) return alert("Por favor, preencha a Data da Retirada.");
+            
+            const cargaPulmao = document.getElementById('cargaPulmao').value;
+            if(!cargaPulmao) return alert("Por favor, selecione entre Carga ou Pulmão.");
+            
             const fileInput = document.getElementById('cameraInput');
-            if (!fileInput.files[0]) { alert("Tire uma foto primeiro!"); return; }
+            if (!fileInput.files[0]) { alert("Tire uma foto do recibo primeiro!"); return; }
 
             const status = document.getElementById('status');
             const { data: { user } } = await clienteSupabase.auth.getUser();
@@ -82,17 +122,12 @@
             status.innerText = "Obtendo endereço e enviando...";
 
             try {
-                // 1. Obter Localização e Converter para Endereço
+                // 1. Obter Localização
                 let localizacao = "Sem GPS";
                 try {
                     const pos = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000
-                        });
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
                     });
-
-                    // Geocodificação Reversa via Nominatim
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
@@ -105,11 +140,7 @@
                         const bairro = addr.suburb || addr.neighbourhood || '';
                         const cidade = addr.city || addr.town || '';
                         const estado = addr.state || addr.state_district || '';
-                        
-                        // Monta o endereço formatado de forma limpa
-                        localizacao = [rua, num, bairro, cidade, estado]
-                            .filter(Boolean)
-                            .join(' - ');
+                        localizacao = [rua, num, bairro, cidade, estado].filter(Boolean).join(' - ');
                     } else {
                         localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
                     }
@@ -118,7 +149,7 @@
                     localizacao = "GPS Bloqueado";
                 }
 
-                // 2. Busca transportadora na tabela usuários
+                // 2. Busca transportadora do usuário
                 const { data: userData } = await clienteSupabase
                     .from('usuarios')
                     .select('transportadora')
@@ -135,10 +166,23 @@
                 
                 if (uploadError) throw uploadError;
 
-                // 4. Salvar no banco
+                // 4. Coletando valores manuais
+                const armador = document.getElementById('armador').value;
+                const container = document.getElementById('containerInput').value || window.dadosExtraidos.container || "N/A";
+                const placa = document.getElementById('placa').value;
+                const tara = document.getElementById('tara').value;
+                const maxGross = document.getElementById('maxGross').value;
+
+                // 5. Salvar no banco com as novas colunas
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
                     email_usuario: user.email,
-                    container: window.dadosExtraidos.container || "N/A",
+                    data_retirada: dataRetirada,
+                    armador: armador,
+                    container: container,
+                    placa: placa,
+                    tara: tara,
+                    max_gross: maxGross,
+                    carga_pulmao: cargaPulmao,
                     foto_url: fileName,
                     localizacao: localizacao,
                     transportadora: userData ? userData.transportadora : "N/A",
