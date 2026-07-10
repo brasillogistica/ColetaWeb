@@ -52,8 +52,8 @@
                 <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro...">
             </div>
             <div class="form-group" style="grid-column: 1 / -1;">
-                <label>CONTAINER (Preenchido pelo OCR / Edite se necessário)</label>
-                <input type="text" id="containerInput" placeholder="Ex: TEMU9295736">
+                <label>CONTAINER (Preenchido pelo OCR se você deixar vazio)</label>
+                <input type="text" id="containerInput" placeholder="Digite aqui ou tire a foto">
             </div>
         </div>
 
@@ -82,6 +82,7 @@
     <script>
         window.dadosExtraidos = { container: "N/A" };
 
+        // Lógica de captura e OCR CORRIGIDA
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -92,8 +93,11 @@
                     
                     if(typeof window.processarOCR === 'function') {
                         await window.processarOCR(event.target.result);
-                        if(window.dadosExtraidos && window.dadosExtraidos.container) {
-                            document.getElementById('containerInput').value = window.dadosExtraidos.container;
+                        
+                        // CORREÇÃO AQUI: Só preenche se o usuário NÃO tiver digitado nada ainda
+                        const inputContainer = document.getElementById('containerInput');
+                        if (window.dadosExtraidos && window.dadosExtraidos.container && inputContainer.value.trim() === '') {
+                            inputContainer.value = window.dadosExtraidos.container;
                         }
                     }
                 }
@@ -171,21 +175,24 @@
                 
                 if (uploadError) throw uploadError;
 
-                // 4. Coletando valores manuais
+                // 4. Coletando valores manuais e tratando o Container
                 const armador = document.getElementById('armador').value;
-                const container = document.getElementById('containerInput').value || window.dadosExtraidos.container || "N/A";
                 const placa = document.getElementById('placa').value;
                 const tara = document.getElementById('tara').value;
                 const maxGross = document.getElementById('maxGross').value;
                 const terminalColeta = document.getElementById('terminalColeta').value;
                 const cidade = document.getElementById('cidade').value;
+                
+                // CORREÇÃO NO SALVAMENTO: Prioriza o que o usuário digitou
+                const inputContainerValue = document.getElementById('containerInput').value.trim();
+                const containerFinal = inputContainerValue !== '' ? inputContainerValue : (window.dadosExtraidos.container || "N/A");
 
-                // 5. Salvar no banco com as novas colunas
+                // 5. Salvar no banco
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
                     email_usuario: user.email,
                     data_retirada: dataRetirada,
                     armador: armador,
-                    container: container,
+                    container: containerFinal, // Salva o valor correto
                     placa: placa,
                     tara: tara,
                     max_gross: maxGross,
