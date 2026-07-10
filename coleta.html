@@ -43,6 +43,14 @@
                 <label>MAX GROSS</label>
                 <input type="text" id="maxGross" placeholder="Ex: 35000">
             </div>
+            <div class="form-group">
+                <label>TERMINAL DE COLETA</label>
+                <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG...">
+            </div>
+            <div class="form-group">
+                <label>CIDADE</label>
+                <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro...">
+            </div>
             <div class="form-group" style="grid-column: 1 / -1;">
                 <label>CONTAINER (Preenchido pelo OCR / Edite se necessário)</label>
                 <input type="text" id="containerInput" placeholder="Ex: TEMU9295736">
@@ -74,7 +82,6 @@
     <script>
         window.dadosExtraidos = { container: "N/A" };
 
-        // Lógica de captura e OCR
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -85,7 +92,6 @@
                     
                     if(typeof window.processarOCR === 'function') {
                         await window.processarOCR(event.target.result);
-                        // Auto-preenche o campo container com o que foi identificado no OCR
                         if(window.dadosExtraidos && window.dadosExtraidos.container) {
                             document.getElementById('containerInput').value = window.dadosExtraidos.container;
                         }
@@ -101,7 +107,6 @@
                 return;
             }
 
-            // Validações
             const dataRetirada = document.getElementById('dataRetirada').value;
             if(!dataRetirada) return alert("Por favor, preencha a Data da Retirada.");
             
@@ -172,6 +177,8 @@
                 const placa = document.getElementById('placa').value;
                 const tara = document.getElementById('tara').value;
                 const maxGross = document.getElementById('maxGross').value;
+                const terminalColeta = document.getElementById('terminalColeta').value;
+                const cidade = document.getElementById('cidade').value;
 
                 // 5. Salvar no banco com as novas colunas
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
@@ -183,6 +190,8 @@
                     tara: tara,
                     max_gross: maxGross,
                     carga_pulmao: cargaPulmao,
+                    terminal_coleta: terminalColeta,
+                    cidade: cidade,
                     foto_url: fileName,
                     localizacao: localizacao,
                     transportadora: userData ? userData.transportadora : "N/A",

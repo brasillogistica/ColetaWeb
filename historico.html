@@ -17,20 +17,22 @@
         </div>
 
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                 <thead>
                     <tr style="background: var(--navy); color: white;">
-                        <th style="padding: 8px; text-align: center;">Data/Hora</th>
-                        <th style="padding: 8px; text-align: center;">Data Retirada</th>
-                        <th style="padding: 8px; text-align: center;">Armador</th>
-                        <th style="padding: 8px; text-align: center;">Container</th>
-                        <th style="padding: 8px; text-align: center;">Placa</th>
-                        <th style="padding: 8px; text-align: center;">Tara</th>
-                        <th style="padding: 8px; text-align: center;">Max Gross</th>
-                        <th style="padding: 8px; text-align: center;">C/P</th>
-                        <th id="th-transportadora" style="padding: 8px; text-align: center; display: none;">Transportadora</th>
-                        <th style="padding: 8px; text-align: center;">GPS</th>
-                        <th style="padding: 8px; text-align: center;">Foto</th>
+                        <th style="padding: 6px; text-align: center;">Data/Hora</th>
+                        <th style="padding: 6px; text-align: center;">Retirada</th>
+                        <th style="padding: 6px; text-align: center;">Armador</th>
+                        <th style="padding: 6px; text-align: center;">Container</th>
+                        <th style="padding: 6px; text-align: center;">Placa</th>
+                        <th style="padding: 6px; text-align: center;">Tara</th>
+                        <th style="padding: 6px; text-align: center;">Max Gross</th>
+                        <th style="padding: 6px; text-align: center;">C/P</th>
+                        <th style="padding: 6px; text-align: center;">Terminal</th>
+                        <th style="padding: 6px; text-align: center;">Cidade</th>
+                        <th id="th-transportadora" style="padding: 6px; text-align: center; display: none;">Transportadora</th>
+                        <th style="padding: 6px; text-align: center;">GPS</th>
+                        <th style="padding: 6px; text-align: center;">Foto</th>
                     </tr>
                 </thead>
                 <tbody id="historico-body">
@@ -104,17 +106,19 @@
                 
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 10px; text-align: center;">${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                        <td style="padding: 10px; text-align: center;">${item.data_retirada || "N/A"}</td>
-                        <td style="padding: 10px; text-align: center;">${item.armador || "N/A"}</td>
-                        <td style="padding: 10px; text-align: center;">${item.container || "N/A"}</td>
-                        <td style="padding: 10px; text-align: center;">${item.placa || "N/A"}</td>
-                        <td style="padding: 10px; text-align: center;">${item.tara || "N/A"}</td>
-                        <td style="padding: 10px; text-align: center;">${item.max_gross || "N/A"}</td>
-                        <td style="padding: 10px; text-align: center;">${item.carga_pulmao || "N/A"}</td>
-                        ${ehAdmin ? `<td style="padding: 10px; text-align: center;">${item.transportadora || "N/A"}</td>` : ""}
-                        <td style="padding: 10px; text-align: center;">${item.localizacao || "N/A"}</td>
-                        <td style="padding: 10px; text-align: center;">
+                        <td style="padding: 8px; text-align: center;">${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                        <td style="padding: 8px; text-align: center;">${item.data_retirada || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.armador || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.container || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.placa || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.tara || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.max_gross || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.carga_pulmao || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.terminal_coleta || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.cidade || "N/A"}</td>
+                        ${ehAdmin ? `<td style="padding: 8px; text-align: center;">${item.transportadora || "N/A"}</td>` : ""}
+                        <td style="padding: 8px; text-align: center;">${item.localizacao || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">
                             ${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : "Sem foto"}
                         </td>
                     </tr>
