@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="style.css">
     <title>Registro | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 </head>
 <body style="display: flex; justify-content: center; padding: 40px;">
 
@@ -52,8 +51,8 @@
                 <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro...">
             </div>
             <div class="form-group" style="grid-column: 1 / -1;">
-                <label>CONTAINER (Preenchido pelo OCR se você deixar vazio)</label>
-                <input type="text" id="containerInput" placeholder="Digite aqui ou tire a foto">
+                <label>CONTAINER (Preenchimento manual)</label>
+                <input type="text" id="containerInput" placeholder="Digite o número do container">
             </div>
         </div>
 
@@ -80,27 +79,15 @@
     <script src="script.js"></script>
     
     <script>
-        window.dadosExtraidos = { container: "N/A" };
-
-        // Lógica de captura e OCR CORRIGIDA
+        // Lógica de captura da foto (apenas exibe preview)
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = async function(event) {
+                reader.onload = function(event) {
                     document.getElementById('preview').src = event.target.result;
                     document.getElementById('preview').style.display = 'block';
-                    
-                    if(typeof window.processarOCR === 'function') {
-                        await window.processarOCR(event.target.result);
-                        
-                        // CORREÇÃO AQUI: Só preenche se o usuário NÃO tiver digitado nada ainda
-                        const inputContainer = document.getElementById('containerInput');
-                        if (window.dadosExtraidos && window.dadosExtraidos.container && inputContainer.value.trim() === '') {
-                            inputContainer.value = window.dadosExtraidos.container;
-                        }
-                    }
-                }
+                };
                 reader.readAsDataURL(file);
             }
         });
@@ -175,24 +162,21 @@
                 
                 if (uploadError) throw uploadError;
 
-                // 4. Coletando valores manuais e tratando o Container
+                // 4. Coletando valores manuais
                 const armador = document.getElementById('armador').value;
                 const placa = document.getElementById('placa').value;
                 const tara = document.getElementById('tara').value;
                 const maxGross = document.getElementById('maxGross').value;
                 const terminalColeta = document.getElementById('terminalColeta').value;
                 const cidade = document.getElementById('cidade').value;
-                
-                // CORREÇÃO NO SALVAMENTO: Prioriza o que o usuário digitou
-                const inputContainerValue = document.getElementById('containerInput').value.trim();
-                const containerFinal = inputContainerValue !== '' ? inputContainerValue : (window.dadosExtraidos.container || "N/A");
+                const containerFinal = document.getElementById('containerInput').value.trim() || "N/A";
 
                 // 5. Salvar no banco
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
                     email_usuario: user.email,
                     data_retirada: dataRetirada,
                     armador: armador,
-                    container: containerFinal, // Salva o valor correto
+                    container: containerFinal,
                     placa: placa,
                     tara: tara,
                     max_gross: maxGross,

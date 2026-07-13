@@ -23,7 +23,6 @@ body {
     border: 1px solid var(--gold); 
 }
 
-/* Alteração aqui: removido o !important para permitir que o JS controle a visibilidade */
 #admin-container {
     display: none;
 }
@@ -57,7 +56,6 @@ body {
     font-weight: 700; 
 }
 
-/* Tabela Responsiva para Histórico */
 .card table {
     display: block;
     overflow-x: auto;
@@ -65,7 +63,6 @@ body {
     width: 100%;
 }
 
-/* Calendário Principal */
 .calendar-grid { 
     display: grid; 
     grid-template-columns: 50px repeat(7, 1fr); 
@@ -101,7 +98,6 @@ body {
     font-weight: 800; 
 }
 
-/* Destaques do Calendário */
 .today { 
     color: var(--red) !important; 
     font-weight: 900 !important; 
@@ -116,7 +112,6 @@ body {
     font-weight: 700 !important; 
 }
 
-/* Calendário Anual (Modal) */
 #full-calendar-content {
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
@@ -137,7 +132,6 @@ body {
     background: #f0f7ff; 
 }
 
-/* --- Ajustes Responsivos para Mobile --- */
 @media (max-width: 768px) {
     body { padding: 10px; }
     
