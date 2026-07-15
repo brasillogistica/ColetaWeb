@@ -76,6 +76,14 @@
         </div>
     </div>
 
+    <!-- Modal personalizado (substitui o alert) -->
+    <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px 40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; max-width:350px; width:90%;">
+            <p style="font-size:1.2rem; font-weight:bold; color:#2d4b5e; margin-bottom:20px;" id="custom-alert-msg">Registro salvo com sucesso!</p>
+            <button onclick="fecharAlerta()" style="background: #2d4b5e; color:white; border:none; padding:10px 30px; border-radius:99px; font-weight:bold; cursor:pointer; text-transform:uppercase;">OK</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     
     <script>
@@ -92,26 +100,40 @@
             }
         });
 
+        // Funções do modal personalizado
+        function mostrarAlerta(mensagem, callback) {
+            document.getElementById('custom-alert-msg').textContent = mensagem;
+            document.getElementById('custom-alert').style.display = 'flex';
+            window._callbackAlerta = callback;
+        }
+
+        function fecharAlerta() {
+            document.getElementById('custom-alert').style.display = 'none';
+            if (typeof window._callbackAlerta === 'function') {
+                window._callbackAlerta();
+            }
+        }
+
         async function salvarColeta() {
             if (typeof clienteSupabase === 'undefined') {
-                alert("Erro: O sistema ainda está carregando.");
+                mostrarAlerta("Erro: O sistema ainda está carregando.");
                 return;
             }
 
             const dataRetirada = document.getElementById('dataRetirada').value;
-            if(!dataRetirada) return alert("Por favor, preencha a Data da Retirada.");
+            if(!dataRetirada) return mostrarAlerta("Por favor, preencha a Data da Retirada.");
             
             const cargaPulmao = document.getElementById('cargaPulmao').value;
-            if(!cargaPulmao) return alert("Por favor, selecione entre Carga ou Pulmão.");
+            if(!cargaPulmao) return mostrarAlerta("Por favor, selecione entre Carga ou Pulmão.");
             
             const fileInput = document.getElementById('cameraInput');
-            if (!fileInput.files[0]) { alert("Tire uma foto do recibo primeiro!"); return; }
+            if (!fileInput.files[0]) { mostrarAlerta("Tire uma foto do recibo primeiro!"); return; }
 
             const status = document.getElementById('status');
             const { data: { user } } = await clienteSupabase.auth.getUser();
             
             if (!user) {
-                alert("Usuário não autenticado!");
+                mostrarAlerta("Usuário não autenticado!");
                 return;
             }
             
@@ -191,11 +213,13 @@
 
                 if (dbError) throw dbError;
 
-                alert("Registro salvo com sucesso!");
-                window.location.href = 'index.html';
+                // Substituição do alert nativo pelo modal personalizado
+                mostrarAlerta("Registro salvo com sucesso!", function() {
+                    window.location.href = 'index.html';
+                });
             } catch (err) {
                 console.error(err);
-                alert("Erro ao salvar: " + err.message);
+                mostrarAlerta("Erro ao salvar: " + err.message);
                 status.innerText = "Erro ao salvar.";
             }
         }
