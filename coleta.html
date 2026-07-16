@@ -129,7 +129,7 @@
             const fileInput = document.getElementById('cameraInput');
             if (!fileInput.files[0]) { mostrarAlerta("Tire uma foto do recibo primeiro!"); return; }
 
-            const status = document.getElementById('status');
+            const statusElement = document.getElementById('status');
             const { data: { user } } = await clienteSupabase.auth.getUser();
             
             if (!user) {
@@ -137,7 +137,7 @@
                 return;
             }
             
-            status.innerText = "Obtendo endereço e enviando...";
+            statusElement.innerText = "Obtendo endereço e enviando...";
 
             try {
                 // 1. Obter Localização
@@ -174,7 +174,7 @@
                     .eq('email', user.email)
                     .single();
 
-                status.innerText = "Enviando foto...";
+                statusElement.innerText = "Enviando foto...";
 
                 // 3. Upload da foto
                 const fileName = `${Date.now()}_${user.email}.jpg`;
@@ -193,7 +193,10 @@
                 const cidade = document.getElementById('cidade').value;
                 const containerFinal = document.getElementById('containerInput').value.trim() || "N/A";
 
-                // 5. Salvar no banco
+                // Define status inicial baseado na seleção
+                const statusInicial = (cargaPulmao === 'Pulmão') ? 'ag. locação' : 'ag. carregamento';
+
+                // 5. Salvar no banco (incluindo os novos campos status e finalizado)
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([{
                     email_usuario: user.email,
                     data_retirada: dataRetirada,
@@ -208,6 +211,8 @@
                     foto_url: fileName,
                     localizacao: localizacao,
                     transportadora: userData ? userData.transportadora : "N/A",
+                    status: statusInicial,      // NOVO
+                    finalizado: false,          // NOVO
                     created_at: new Date().toISOString()
                 }]);
 
@@ -220,7 +225,7 @@
             } catch (err) {
                 console.error(err);
                 mostrarAlerta("Erro ao salvar: " + err.message);
-                status.innerText = "Erro ao salvar.";
+                statusElement.innerText = "Erro ao salvar.";
             }
         }
     </script>
