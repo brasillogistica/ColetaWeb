@@ -7,87 +7,85 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* Melhorias visuais gerais */
         * {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
         }
 
-        body {
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        .filters-grid .form-group label {
+            text-align: center;
         }
 
-        .status-red { color: #E84D53; font-weight: bold; }
-        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Bloco unificado de data (início e fim lado a lado) */
+        .date-range {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .date-range input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Status exibido como texto com borda suave */
+        .status-text {
+            display: inline-block;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            color: #333;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        /* Joinha de confirmação */
+        .thumbs-up {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .thumbs-up.show {
+            opacity: 1;
+        }
+
+        /* Botões */
         .btn-status { 
             background: var(--navy); color: white; border: none; 
             padding: 5px 10px; border-radius: 5px; cursor: pointer; 
-            font-size: 11px; margin: 0 3px; font-weight: 600;
+            font-size: 12px; margin: 0 2px; font-weight: 700;
         }
         .btn-status:disabled { background: #ccc; cursor: not-allowed; }
-        
-        .filters-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-            gap: 15px; 
-            margin-bottom: 25px;
-        }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--navy);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-            text-align: center;   /* centraliza os nomes dos filtros */
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            background: white;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: var(--gold);
-            outline: none;
-        }
-
-        /* Botões de ação */
-        .action-btn {
-            background: var(--navy);
-            color: white;
+        .btn-confirm {
             border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
+            padding: 5px 10px;
+            margin: 0 2px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
             cursor: pointer;
-            margin-right: 8px;
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
+        .btn-sim { background: #28a745; color: white; }
+        .btn-nao { background: #dc3545; color: white; }
+        .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .action-btn:hover {
-            background: #1d3a4a;
-        }
-
-        /* Tabela mais limpa */
+        /* Tabela */
         table {
             border-collapse: separate;
             border-spacing: 0;
@@ -97,7 +95,6 @@
             overflow: hidden;
             box-shadow: 0 1px 4px rgba(0,0,0,0.05);
         }
-
         th {
             background: var(--navy);
             color: white;
@@ -105,45 +102,30 @@
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
-
         td {
             padding: 10px 8px;
             border-bottom: 1px solid #eee;
             font-size: 12px;
             color: #333;
         }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Modal foto */
-        #foto-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            overflow: hidden;
-            cursor: grab;
-        }
     </style>
 </head>
 <body style="padding: 40px; background: #f2f2f2;">
 
     <div class="card">
-        <h2 style="color: var(--navy); margin-bottom: 25px; font-weight: 800; letter-spacing: -0.3px;">PROCESSOS - CONTAINER</h2>
+        <h2 style="color: var(--navy); margin-bottom: 25px; font-weight: 800;">PROCESSOS - CONTAINER</h2>
         
-        <!-- Área de Filtros -->
+        <!-- Filtros -->
         <div class="filters-grid">
+            <!-- Filtro de Data Registro unificado -->
             <div class="form-group">
                 <label>Data Registro</label>
-                <input type="date" id="filtroDataRegistro">
+                <div class="date-range">
+                    <input type="date" id="filtroDataInicio" placeholder="Início">
+                    <span style="font-size: 12px; color: var(--navy); font-weight: 700;">até</span>
+                    <input type="date" id="filtroDataFim" placeholder="Fim">
+                </div>
             </div>
             <div class="form-group">
                 <label>Data Retirada</label>
@@ -151,15 +133,15 @@
             </div>
             <div class="form-group">
                 <label>Armador</label>
-                <input type="text" id="filtroArmador" placeholder="Digite o armador">
+                <input type="text" id="filtroArmador" placeholder="Nome do armador">
             </div>
             <div class="form-group">
                 <label>Container</label>
-                <input type="text" id="filtroContainer" placeholder="Número do container">
+                <input type="text" id="filtroContainer" placeholder="Número">
             </div>
             <div class="form-group">
                 <label>Placa</label>
-                <input type="text" id="filtroPlaca" placeholder="Placa do veículo">
+                <input type="text" id="filtroPlaca" placeholder="Placa">
             </div>
             <div class="form-group">
                 <label>Carga / Pulmão</label>
@@ -171,7 +153,7 @@
             </div>
             <div class="form-group">
                 <label>Terminal</label>
-                <input type="text" id="filtroTerminal" placeholder="Nome do terminal">
+                <input type="text" id="filtroTerminal" placeholder="Terminal">
             </div>
             <div class="form-group">
                 <label>Cidade</label>
@@ -185,22 +167,20 @@
                 <label>Status</label>
                 <select id="filtroStatus">
                     <option value="">Todos</option>
-                    <option value="ag. locação">Ag. Locação</option>
-                    <option value="ag. carregamento">Ag. Carregamento</option>
-                    <option value="pendencia logistica">Pendência Logística</option>
-                    <option value="faturado">Faturado</option>
-                    <option value="ag. liberação">Ag. Liberação</option>
-                    <option value="em viagem">Em Viagem</option>
-                    <option value="depositado">Depositado</option>
+                    <option value="ag. locação">AG. LOCAÇÃO</option>
+                    <option value="ag. carregamento">AG. CARREGAMENTO</option>
+                    <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
+                    <option value="faturado">FATURADO</option>
+                    <option value="ag. liberação">AG. LIBERAÇÃO</option>
+                    <option value="em viagem">EM VIAGEM</option>
+                    <option value="depositado">DEPOSITADO</option>
                 </select>
             </div>
         </div>
 
-        <!-- Botões de ação -->
-        <button class="action-btn" onclick="aplicarFiltros()">🔍 FILTRAR</button>
-        <button class="action-btn" onclick="exportarExcel()">📊 EXPORTAR EXCEL</button>
+        <button class="btn-main" style="padding: 10px 20px; font-size: 12px; margin-bottom: 10px;" onclick="aplicarFiltros()">FILTRAR</button>
+        <button class="btn-main" style="padding: 10px 20px; font-size: 12px; margin-bottom: 10px;" onclick="exportarExcel()">EXPORTAR PARA EXCEL</button>
 
-        <!-- Tabela de resultados -->
         <div style="overflow-x: auto; margin-top: 20px;">
             <table>
                 <thead>
@@ -218,21 +198,20 @@
                         <th id="th-transportadora" style="display: none;">Transportadora</th>
                         <th>Status</th>
                         <th>Ações</th>
+                        <th>Confirmar</th>
                         <th>GPS</th>
                         <th>Foto</th>
                     </tr>
                 </thead>
-                <tbody id="processos-body">
-                    <!-- Dados carregados via JS -->
-                </tbody>
+                <tbody id="processos-body"></tbody>
             </table>
         </div>
         
-        <button class="action-btn" style="background: var(--grey); margin-top: 25px;" onclick="window.location.href='index.html'">VOLTAR</button>
+        <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
     </div>
 
     <!-- Modal Foto -->
-    <div id="foto-modal">
+    <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); overflow: hidden; cursor: grab;">
         <span onclick="fecharFoto()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold; z-index:2001;">&times;</span>
         <div id="container-img" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; transition:transform 0.1s;">
             <img id="foto-ampliada" style="max-width:90%; max-height:90%; user-select:none;">
@@ -255,6 +234,8 @@
             'em viagem',
             'depositado'
         ];
+
+        const statusOriginais = {};
 
         async function carregarProcessos(filtros = {}) {
             if (typeof clienteSupabase === 'undefined') {
@@ -282,8 +263,28 @@
                 query = query.eq('transportadora', userData.transportadora);
             }
 
-            // Aplicar filtros (sem o "fim")
-            if (filtros.dataRegistro) query = query.gte('created_at', filtros.dataRegistro);
+            // Filtros de data (com o bloco unificado)
+            if (filtros.dataInicio || filtros.dataFim) {
+                const inicio = filtros.dataInicio ? new Date(filtros.dataInicio) : null;
+                const fim = filtros.dataFim ? new Date(filtros.dataFim) : null;
+
+                if (inicio && fim) {
+                    if (inicio.getTime() === fim.getTime()) {
+                        // Dia único: filtra o dia inteiro
+                        const startOfDay = new Date(inicio);
+                        startOfDay.setHours(0,0,0,0);
+                        const endOfDay = new Date(inicio);
+                        endOfDay.setHours(23,59,59,999);
+                        query = query.gte('created_at', startOfDay.toISOString()).lte('created_at', endOfDay.toISOString());
+                    } else {
+                        query = query.gte('created_at', inicio.toISOString()).lte('created_at', fim.toISOString());
+                    }
+                } else if (inicio) {
+                    query = query.gte('created_at', inicio.toISOString());
+                } else if (fim) {
+                    query = query.lte('created_at', fim.toISOString());
+                }
+            }
             if (filtros.dataRetirada) query = query.eq('data_retirada', filtros.dataRetirada);
             if (filtros.armador) query = query.ilike('armador', `%${filtros.armador}%`);
             if (filtros.container) query = query.ilike('container', `%${filtros.container}%`);
@@ -301,6 +302,7 @@
             dadosExportacao = data;
             const tbody = document.getElementById('processos-body');
             tbody.innerHTML = '';
+            for (let key in statusOriginais) delete statusOriginais[key];
             
             data.forEach(item => {
                 const dataHora = new Date(item.created_at);
@@ -309,12 +311,11 @@
                     : null;
                 
                 const statusAtual = item.status || 'ag. locação';
-                const idxStatus = statusFluxo.indexOf(statusAtual);
-                const isPendencia = (statusAtual === 'pendencia logistica');
-                const isFinalizado = item.finalizado || statusAtual === 'depositado';
+                const statusId = `status-${item.id}`;
+                const thumbsId = `thumbs-${item.id}`;
+                statusOriginais[statusId] = statusAtual;
 
-                const podeAvancar = !isFinalizado && idxStatus < statusFluxo.length - 1;
-                const podeVoltar = idxStatus > 0 && !isFinalizado;
+                const isFinalizado = item.finalizado || statusAtual === 'depositado';
 
                 tbody.innerHTML += `
                     <tr>
@@ -329,12 +330,17 @@
                         <td>${item.terminal_coleta || "N/A"}</td>
                         <td>${item.cidade || "N/A"}</td>
                         ${ehAdmin ? `<td>${item.transportadora || "N/A"}</td>` : ""}
-                        <td style="${isPendencia ? 'color:#E84D53; font-weight:bold;' : ''}">
-                            ${statusAtual}${isFinalizado ? ' (Finalizado)' : ''}
-                        </td>
                         <td>
-                            <button class="btn-status" ${!podeVoltar ? 'disabled' : ''} onclick="mudarStatus('${item.id}', -1)">◀</button>
-                            <button class="btn-status" ${!podeAvancar ? 'disabled' : ''} onclick="mudarStatus('${item.id}', 1)">▶</button>
+                            <span id="${statusId}" class="status-text" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span>
+                            <span id="${thumbsId}" class="thumbs-up">👍</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
+                            <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', 1)">▶</button>
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="btn-confirm btn-sim" ${isFinalizado ? 'disabled' : ''} onclick="confirmarStatus('${item.id}', '${statusId}', '${thumbsId}')">Sim</button>
+                            <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
                         </td>
                         <td>${item.localizacao || "N/A"}</td>
                         <td>
@@ -345,26 +351,24 @@
             });
         }
 
-        async function mudarStatus(id, direcao) {
-            const { data: registros } = await clienteSupabase.from('coletas').select('*').eq('id', id).single();
-            if (!registros) return alert("Registro não encontrado.");
-
-            const statusAtual = registros.status || 'ag. locação';
-            let idx = statusFluxo.indexOf(statusAtual);
-            if (idx === -1) idx = 0;
-
+        function navegarStatus(statusId, direcao) {
+            const span = document.getElementById(statusId);
+            if (!span) return;
+            const currentStatus = span.getAttribute('data-current') || span.getAttribute('data-original');
+            const idx = statusFluxo.indexOf(currentStatus);
+            if (idx === -1) return;
             let novoIdx = idx + direcao;
             if (novoIdx < 0 || novoIdx >= statusFluxo.length) return;
+            const newStatus = statusFluxo[novoIdx];
+            span.textContent = newStatus.toUpperCase();
+            span.setAttribute('data-current', newStatus);
+        }
 
-            let novoStatus = statusFluxo[novoIdx];
-
-            if (novoStatus === 'pendencia logistica') {
-                const temPendencia = confirm("Este contêiner possui pendência logística?");
-                if (!temPendencia) {
-                    novoIdx = statusFluxo.indexOf('faturado');
-                    novoStatus = 'faturado';
-                }
-            }
+        async function confirmarStatus(id, statusId, thumbsId) {
+            const span = document.getElementById(statusId);
+            if (!span) return;
+            let novoStatus = span.getAttribute('data-current') || span.getAttribute('data-original');
+            if (!novoStatus) return;
 
             const finalizado = (novoStatus === 'depositado');
 
@@ -373,13 +377,41 @@
                 .update({ status: novoStatus, finalizado: finalizado })
                 .eq('id', id);
 
-            if (error) alert("Erro ao atualizar status: " + error.message);
-            else carregarProcessos(obterFiltrosAtuais());
+            if (error) {
+                console.error("Erro ao atualizar status:", error);
+                alert("Erro ao salvar: " + error.message + "\nVerifique as permissões no banco de dados (RLS).");
+                return;
+            }
+
+            span.setAttribute('data-original', novoStatus);
+            span.setAttribute('data-current', '');
+            statusOriginais[statusId] = novoStatus;
+
+            const thumbs = document.getElementById(thumbsId);
+            if (thumbs) {
+                thumbs.classList.add('show');
+                setTimeout(() => {
+                    thumbs.classList.remove('show');
+                }, 2000);
+            }
+
+            carregarProcessos(obterFiltrosAtuais());
+        }
+
+        function resetarStatus(statusId) {
+            const span = document.getElementById(statusId);
+            if (!span) return;
+            const original = span.getAttribute('data-original');
+            if (original) {
+                span.textContent = original.toUpperCase();
+                span.setAttribute('data-current', '');
+            }
         }
 
         function obterFiltrosAtuais() {
             return {
-                dataRegistro: document.getElementById('filtroDataRegistro').value,
+                dataInicio: document.getElementById('filtroDataInicio').value,
+                dataFim: document.getElementById('filtroDataFim').value,
                 dataRetirada: document.getElementById('filtroDataRetirada').value,
                 armador: document.getElementById('filtroArmador').value,
                 container: document.getElementById('filtroContainer').value,
@@ -396,7 +428,7 @@
             carregarProcessos(obterFiltrosAtuais());
         }
 
-        // Funções da foto (inalteradas)
+        // Funções de foto (mantidas)
         function abrirFoto(url) {
             img.src = url;
             scale = 1; transX = 0; transY = 0;
