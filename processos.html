@@ -24,7 +24,7 @@
             margin-bottom: 20px;
         }
 
-        /* Bloco unificado de data (início e fim lado a lado) */
+        /* Bloco unificado de data */
         .date-range {
             display: flex;
             gap: 5px;
@@ -35,7 +35,7 @@
             min-width: 0;
         }
 
-        /* Status exibido como texto com borda suave */
+        /* Status centralizado com fundo mais destacado */
         .status-text {
             display: inline-block;
             padding: 6px 10px;
@@ -43,15 +43,15 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            border: 1px solid #dcdcdc;
+            border: 1px solid #d0d0d0;
             border-radius: 6px;
-            background-color: #f9f9f9;
+            background-color: #eaeaea;
             color: #333;
-            min-width: 120px;
+            min-width: 140px;
             text-align: center;
         }
 
-        /* Joinha de confirmação */
+        /* Joinha */
         .thumbs-up {
             display: inline-block;
             margin-left: 5px;
@@ -63,7 +63,40 @@
             opacity: 1;
         }
 
-        /* Botões */
+        /* Botões compactos padrão Minerva */
+        .btn-action {
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 1px solid var(--gold);
+            background: transparent;
+            color: var(--navy);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-navy {
+            background: var(--navy);
+            color: white;
+            border: none;
+        }
+        .btn-grey {
+            background: var(--grey);
+            color: white;
+            border: none;
+        }
+        .btn-excel {
+            background: #107c41;
+            color: white;
+            border: none;
+        }
+        .btn-excel:hover {
+            background: #0d6b35;
+        }
+
+        /* Botões de navegação de status (menores) */
         .btn-status { 
             background: var(--navy); color: white; border: none; 
             padding: 5px 10px; border-radius: 5px; cursor: pointer; 
@@ -108,6 +141,58 @@
             border-bottom: 1px solid #eee;
             font-size: 12px;
             color: #333;
+            text-align: center;
+        }
+
+        /* Link de localização */
+        .loc-link {
+            color: var(--navy);
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .loc-link:hover {
+            color: var(--red);
+        }
+
+        /* Modal do Mapa */
+        #mapa-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .mapa-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .mapa-container iframe {
+            width: 100%;
+            height: calc(100% - 40px);
+            border: none;
+            border-radius: 10px;
+        }
+        .fechar-mapa {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 30px;
+            color: var(--navy);
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10;
         }
     </style>
 </head>
@@ -118,7 +203,6 @@
         
         <!-- Filtros -->
         <div class="filters-grid">
-            <!-- Filtro de Data Registro unificado -->
             <div class="form-group">
                 <label>Data Registro</label>
                 <div class="date-range">
@@ -178,8 +262,13 @@
             </div>
         </div>
 
-        <button class="btn-main" style="padding: 10px 20px; font-size: 12px; margin-bottom: 10px;" onclick="aplicarFiltros()">FILTRAR</button>
-        <button class="btn-main" style="padding: 10px 20px; font-size: 12px; margin-bottom: 10px;" onclick="exportarExcel()">EXPORTAR PARA EXCEL</button>
+        <!-- Botões de ação compactos estilo Minerva -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;">
+            <button class="btn-action btn-navy" onclick="aplicarFiltros()">Filtrar</button>
+            <button class="btn-action" onclick="limparFiltros()">Limpar Filtros</button>
+            <button class="btn-action btn-excel" onclick="exportarExcel()">Exportar Excel</button>
+            <button class="btn-action btn-grey" onclick="window.location.href='index.html'">Voltar</button>
+        </div>
 
         <div style="overflow-x: auto; margin-top: 20px;">
             <table>
@@ -199,15 +288,13 @@
                         <th>Status</th>
                         <th>Ações</th>
                         <th>Confirmar</th>
-                        <th>GPS</th>
+                        <th>Localização</th>
                         <th>Foto</th>
                     </tr>
                 </thead>
                 <tbody id="processos-body"></tbody>
             </table>
         </div>
-        
-        <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
     </div>
 
     <!-- Modal Foto -->
@@ -215,6 +302,14 @@
         <span onclick="fecharFoto()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold; z-index:2001;">&times;</span>
         <div id="container-img" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; transition:transform 0.1s;">
             <img id="foto-ampliada" style="max-width:90%; max-height:90%; user-select:none;">
+        </div>
+    </div>
+
+    <!-- Modal Mapa -->
+    <div id="mapa-modal">
+        <div class="mapa-container">
+            <span class="fechar-mapa" onclick="fecharMapa()">&times;</span>
+            <iframe id="mapa-iframe" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
     </div>
 
@@ -263,14 +358,13 @@
                 query = query.eq('transportadora', userData.transportadora);
             }
 
-            // Filtros de data (com o bloco unificado)
+            // Filtros de data
             if (filtros.dataInicio || filtros.dataFim) {
                 const inicio = filtros.dataInicio ? new Date(filtros.dataInicio) : null;
                 const fim = filtros.dataFim ? new Date(filtros.dataFim) : null;
 
                 if (inicio && fim) {
                     if (inicio.getTime() === fim.getTime()) {
-                        // Dia único: filtra o dia inteiro
                         const startOfDay = new Date(inicio);
                         startOfDay.setHours(0,0,0,0);
                         const endOfDay = new Date(inicio);
@@ -317,6 +411,16 @@
 
                 const isFinalizado = item.finalizado || statusAtual === 'depositado';
 
+                // Preparar a localização para o modal do Google Maps
+                let localizacaoHtml = '';
+                const loc = item.localizacao || "N/A";
+                if (loc !== "N/A" && loc !== "GPS Bloqueado" && loc !== "Sem GPS") {
+                    const queryMaps = encodeURIComponent(loc);
+                    localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${queryMaps}')" title="Ver no mapa">📍 Local</span>`;
+                } else {
+                    localizacaoHtml = loc;
+                }
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
@@ -330,7 +434,7 @@
                         <td>${item.terminal_coleta || "N/A"}</td>
                         <td>${item.cidade || "N/A"}</td>
                         ${ehAdmin ? `<td>${item.transportadora || "N/A"}</td>` : ""}
-                        <td>
+                        <td style="text-align: center;">
                             <span id="${statusId}" class="status-text" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span>
                             <span id="${thumbsId}" class="thumbs-up">👍</span>
                         </td>
@@ -342,8 +446,8 @@
                             <button class="btn-confirm btn-sim" ${isFinalizado ? 'disabled' : ''} onclick="confirmarStatus('${item.id}', '${statusId}', '${thumbsId}')">Sim</button>
                             <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
                         </td>
-                        <td>${item.localizacao || "N/A"}</td>
-                        <td>
+                        <td>${localizacaoHtml}</td>
+                        <td style="text-align: center;">
                             ${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : "Sem foto"}
                         </td>
                     </tr>
@@ -428,7 +532,26 @@
             carregarProcessos(obterFiltrosAtuais());
         }
 
-        // Funções de foto (mantidas)
+        function limparFiltros() {
+            document.getElementById('filtroDataInicio').value = '';
+            document.getElementById('filtroDataFim').value = '';
+            document.getElementById('filtroDataRetirada').value = '';
+            document.getElementById('filtroArmador').value = '';
+            document.getElementById('filtroContainer').value = '';
+            document.getElementById('filtroPlaca').value = '';
+            document.getElementById('filtroCargaPulmao').value = '';
+            document.getElementById('filtroTerminal').value = '';
+            document.getElementById('filtroCidade').value = '';
+            document.getElementById('filtroTransportadora').value = '';
+            document.getElementById('filtroStatus').value = '';
+            carregarProcessos({});
+        }
+
+        // Filtro automático APENAS para selects específicos
+        document.getElementById('filtroCargaPulmao').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
+
+        // Funções de foto
         function abrirFoto(url) {
             img.src = url;
             scale = 1; transX = 0; transY = 0;
@@ -462,6 +585,23 @@
             transX = e.clientX - startX;
             transY = e.clientY - startY;
             updateTransform();
+        });
+
+        // Funções do modal de mapa
+        function abrirMapa(query) {
+            const iframe = document.getElementById('mapa-iframe');
+            iframe.src = `https://www.google.com/maps?q=${query}&output=embed`;
+            document.getElementById('mapa-modal').style.display = 'flex';
+        }
+
+        function fecharMapa() {
+            document.getElementById('mapa-modal').style.display = 'none';
+            document.getElementById('mapa-iframe').src = '';
+        }
+
+        // Fechar modal do mapa clicando fora da caixa
+        document.getElementById('mapa-modal').addEventListener('click', function(e) {
+            if (e.target === this) fecharMapa();
         });
 
         function exportarExcel() {
