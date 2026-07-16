@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Processos Container | ColetaWeb</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .status-red { color: red; font-weight: bold; }
+        .btn-status { 
+            background: var(--navy); color: white; border: none; 
+            padding: 5px 10px; border-radius: 5px; cursor: pointer; 
+            font-size: 11px; margin: 0 3px;
+        }
+        .btn-status:disabled { background: #ccc; cursor: not-allowed; }
+        .filters-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+            gap: 10px; margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body style="padding: 40px; background: #f2f2f2;">
+
+    <div class="card">
+        <h2 style="color: var(--navy); margin-bottom: 20px;">PROCESSOS - CONTAINER</h2>
+        
+        <!-- Área de Filtros -->
+        <div class="filters-grid">
+            <div class="form-group">
+                <label>Data Registro (início)</label>
+                <input type="date" id="filtroDataRegistroInicio">
+            </div>
+            <div class="form-group">
+                <label>Data Registro (fim)</label>
+                <input type="date" id="filtroDataRegistroFim">
+            </div>
+            <div class="form-group">
+                <label>Data Retirada</label>
+                <input type="date" id="filtroDataRetirada">
+            </div>
+            <div class="form-group">
+                <label>Armador</label>
+                <input type="text" id="filtroArmador" placeholder="Nome do armador">
+            </div>
+            <div class="form-group">
+                <label>Container</label>
+                <input type="text" id="filtroContainer" placeholder="Número">
+            </div>
+            <div class="form-group">
+                <label>Placa</label>
+                <input type="text" id="filtroPlaca" placeholder="Placa">
+            </div>
+            <div class="form-group">
+                <label>Carga/Pulmão</label>
+                <select id="filtroCargaPulmao">
+                    <option value="">Todos</option>
+                    <option value="Carga">Carga</option>
+                    <option value="Pulmão">Pulmão</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Terminal</label>
+                <input type="text" id="filtroTerminal" placeholder="Terminal">
+            </div>
+            <div class="form-group">
+                <label>Cidade</label>
+                <input type="text" id="filtroCidade" placeholder="Cidade">
+            </div>
+            <div class="form-group">
+                <label>Transportadora</label>
+                <input type="text" id="filtroTransportadora" placeholder="Transportadora">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="filtroStatus">
+                    <option value="">Todos</option>
+                    <option value="ag. locação">Ag. Locação</option>
+                    <option value="ag. carregamento">Ag. Carregamento</option>
+                    <option value="pendencia logistica">Pendência Logística</option>
+                    <option value="faturado">Faturado</option>
+                    <option value="ag. liberação">Ag. Liberação</option>
+                    <option value="em viagem">Em Viagem</option>
+                    <option value="depositado">Depositado</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-main" style="background: var(--navy); padding: 10px 20px; font-size: 12px; margin-bottom: 10px;" onclick="aplicarFiltros()">FILTRAR</button>
+        <button class="btn-main" style="background: var(--navy); padding: 10px 20px; font-size: 12px; margin-bottom: 10px;" onclick="exportarExcel()">EXPORTAR PARA EXCEL</button>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                    <tr style="background: var(--navy); color: white;">
+                        <th style="padding: 6px; text-align: center;">Data/Hora</th>
+                        <th style="padding: 6px; text-align: center;">Retirada</th>
+                        <th style="padding: 6px; text-align: center;">Armador</th>
+                        <th style="padding: 6px; text-align: center;">Container</th>
+                        <th style="padding: 6px; text-align: center;">Placa</th>
+                        <th style="padding: 6px; text-align: center;">Tara</th>
+                        <th style="padding: 6px; text-align: center;">Max Gross</th>
+                        <th style="padding: 6px; text-align: center;">C/P</th>
+                        <th style="padding: 6px; text-align: center;">Terminal</th>
+                        <th style="padding: 6px; text-align: center;">Cidade</th>
+                        <th id="th-transportadora" style="padding: 6px; text-align: center; display: none;">Transportadora</th>
+                        <th style="padding: 6px; text-align: center;">Status</th>
+                        <th style="padding: 6px; text-align: center;">Ações</th>
+                        <th style="padding: 6px; text-align: center;">GPS</th>
+                        <th style="padding: 6px; text-align: center;">Foto</th>
+                    </tr>
+                </thead>
+                <tbody id="processos-body">
+                    <!-- Dados carregados via JS -->
+                </tbody>
+            </table>
+        </div>
+        
+        <button class="btn-main" style="background: var(--grey); margin-top: 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
+    </div>
+
+    <!-- Modal Foto -->
+    <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); overflow: hidden; cursor: grab;">
+        <span onclick="fecharFoto()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold; z-index: 2001;">&times;</span>
+        <div id="container-img" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; transition: transform 0.1s;">
+            <img id="foto-ampliada" style="max-width:90%; max-height:90%; user-select: none;">
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let dadosExportacao = [];
+        let scale = 1, isDragging = false, startX, startY, transX = 0, transY = 0;
+        const containerImg = document.getElementById('container-img');
+        const img = document.getElementById('foto-ampliada');
+
+        // Ordem dos status (índices para navegação)
+        const statusFluxo = [
+            'ag. locação',
+            'ag. carregamento',
+            'pendencia logistica', // opcional
+            'faturado',
+            'ag. liberação',
+            'em viagem',
+            'depositado'
+        ];
+
+        async function carregarProcessos(filtros = {}) {
+            if (typeof clienteSupabase === 'undefined') {
+                setTimeout(() => carregarProcessos(filtros), 500);
+                return;
+            }
+
+            const { data: { user } } = await clienteSupabase.auth.getUser();
+            if (!user) { window.location.href = 'login.html'; return; }
+
+            const { data: userData } = await clienteSupabase
+                .from('usuarios')
+                .select('perfil, transportadora')
+                .eq('email', user.email)
+                .single();
+
+            const perfil = userData ? userData.perfil.trim().toLowerCase() : "";
+            const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
+
+            if (ehAdmin) document.getElementById('th-transportadora').style.display = 'table-cell';
+
+            let query = clienteSupabase.from('coletas').select('*');
+            
+            // Restrição por transportadora se não for admin
+            if (!ehAdmin && userData.transportadora) {
+                query = query.eq('transportadora', userData.transportadora);
+            }
+
+            // Aplicar filtros
+            if (filtros.dataRegistroInicio) query = query.gte('created_at', filtros.dataRegistroInicio);
+            if (filtros.dataRegistroFim) query = query.lte('created_at', filtros.dataRegistroFim);
+            if (filtros.dataRetirada) query = query.eq('data_retirada', filtros.dataRetirada);
+            if (filtros.armador) query = query.ilike('armador', `%${filtros.armador}%`);
+            if (filtros.container) query = query.ilike('container', `%${filtros.container}%`);
+            if (filtros.placa) query = query.ilike('placa', `%${filtros.placa}%`);
+            if (filtros.cargaPulmao) query = query.eq('carga_pulmao', filtros.cargaPulmao);
+            if (filtros.terminal) query = query.ilike('terminal_coleta', `%${filtros.terminal}%`);
+            if (filtros.cidade) query = query.ilike('cidade', `%${filtros.cidade}%`);
+            if (filtros.transportadora) query = query.ilike('transportadora', `%${filtros.transportadora}%`);
+            if (filtros.status) query = query.eq('status', filtros.status);
+
+            const { data, error } = await query.order('created_at', { ascending: false });
+            
+            if (error) { alert("Erro ao carregar: " + error.message); return; }
+
+            dadosExportacao = data;
+            const tbody = document.getElementById('processos-body');
+            tbody.innerHTML = '';
+            
+            data.forEach(item => {
+                const dataHora = new Date(item.created_at);
+                const fotoUrl = item.foto_url 
+                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
+                    : null;
+                
+                const statusAtual = item.status || 'ag. locação';
+                const idxStatus = statusFluxo.indexOf(statusAtual);
+                const isPendencia = (statusAtual === 'pendencia logistica');
+                const isFinalizado = item.finalizado || statusAtual === 'depositado';
+
+                // Determinar se pode avançar/voltar
+                const podeAvancar = !isFinalizado && idxStatus < statusFluxo.length - 1;
+                const podeVoltar = idxStatus > 0 && !isFinalizado;
+
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 8px; text-align: center;">${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                        <td style="padding: 8px; text-align: center;">${item.data_retirada || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.armador || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.container || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.placa || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.tara || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.max_gross || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.carga_pulmao || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.terminal_coleta || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">${item.cidade || "N/A"}</td>
+                        ${ehAdmin ? `<td style="padding: 8px; text-align: center;">${item.transportadora || "N/A"}</td>` : ""}
+                        <td style="padding: 8px; text-align: center; ${isPendencia ? 'color: red; font-weight: bold;' : ''}">
+                            ${statusAtual}${isFinalizado ? ' (Finalizado)' : ''}
+                        </td>
+                        <td style="padding: 8px; text-align: center;">
+                            <button class="btn-status" ${!podeVoltar ? 'disabled' : ''} onclick="mudarStatus('${item.id}', -1)">◀</button>
+                            <button class="btn-status" ${!podeAvancar ? 'disabled' : ''} onclick="mudarStatus('${item.id}', 1)">▶</button>
+                        </td>
+                        <td style="padding: 8px; text-align: center;">${item.localizacao || "N/A"}</td>
+                        <td style="padding: 8px; text-align: center;">
+                            ${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : "Sem foto"}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function mudarStatus(id, direcao) {
+            // Buscar o registro atual
+            const { data: registros } = await clienteSupabase.from('coletas').select('*').eq('id', id).single();
+            if (!registros) return alert("Registro não encontrado.");
+
+            const statusAtual = registros.status || 'ag. locação';
+            let idx = statusFluxo.indexOf(statusAtual);
+            if (idx === -1) idx = 0;
+
+            let novoIdx = idx + direcao;
+            if (novoIdx < 0 || novoIdx >= statusFluxo.length) return;
+
+            let novoStatus = statusFluxo[novoIdx];
+
+            // Se estiver indo para pendencia logistica (avançando de ag. carregamento)
+            if (novoStatus === 'pendencia logistica') {
+                const temPendencia = confirm("Este contêiner possui pendência logística?");
+                if (!temPendencia) {
+                    // Pular direto para faturado
+                    novoIdx = statusFluxo.indexOf('faturado');
+                    novoStatus = 'faturado';
+                }
+                // Se tem pendência, mantém o status e exibe em vermelho (já está)
+            }
+
+            // Se o próximo for depositado, finaliza automaticamente
+            const finalizado = (novoStatus === 'depositado');
+
+            const { error } = await clienteSupabase
+                .from('coletas')
+                .update({ status: novoStatus, finalizado: finalizado })
+                .eq('id', id);
+
+            if (error) alert("Erro ao atualizar status: " + error.message);
+            else carregarProcessos(obterFiltrosAtuais());
+        }
+
+        function obterFiltrosAtuais() {
+            return {
+                dataRegistroInicio: document.getElementById('filtroDataRegistroInicio').value,
+                dataRegistroFim: document.getElementById('filtroDataRegistroFim').value,
+                dataRetirada: document.getElementById('filtroDataRetirada').value,
+                armador: document.getElementById('filtroArmador').value,
+                container: document.getElementById('filtroContainer').value,
+                placa: document.getElementById('filtroPlaca').value,
+                cargaPulmao: document.getElementById('filtroCargaPulmao').value,
+                terminal: document.getElementById('filtroTerminal').value,
+                cidade: document.getElementById('filtroCidade').value,
+                transportadora: document.getElementById('filtroTransportadora').value,
+                status: document.getElementById('filtroStatus').value
+            };
+        }
+
+        function aplicarFiltros() {
+            carregarProcessos(obterFiltrosAtuais());
+        }
+
+        function abrirFoto(url) {
+            img.src = url;
+            scale = 1; transX = 0; transY = 0;
+            updateTransform();
+            document.getElementById('foto-modal').style.display = 'flex';
+        }
+
+        function fecharFoto() {
+            document.getElementById('foto-modal').style.display = 'none';
+        }
+
+        function updateTransform() {
+            containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
+        }
+
+        document.getElementById('foto-modal').addEventListener('wheel', (e) => {
+            e.preventDefault();
+            scale += e.deltaY * -0.001;
+            scale = Math.min(Math.max(0.5, scale), 5);
+            updateTransform();
+        });
+
+        containerImg.addEventListener('mousedown', (e) => { 
+            isDragging = true; 
+            startX = e.clientX - transX; 
+            startY = e.clientY - transY; 
+        });
+        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            transX = e.clientX - startX;
+            transY = e.clientY - startY;
+            updateTransform();
+        });
+
+        function exportarExcel() {
+            if(dadosExportacao.length === 0) return alert("Sem dados para exportar");
+            const ws = XLSX.utils.json_to_sheet(dadosExportacao);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Processos");
+            XLSX.writeFile(wb, "Processos_Container.xlsx");
+        }
+
+        window.onload = () => carregarProcessos();
+    </script>
+</body>
+</html>
