@@ -43,8 +43,9 @@
             
             <button class="btn-main" style="width: 100%; background: var(--gold);" onclick="window.location.href='processos.html'">PROCESSOS - CONTAINER</button>
 
-            <!-- Bloco Administrativo (Oculto por padrão via CSS inline aqui para garantir override) -->
+            <!-- Bloco Administrativo (exibido apenas para master/administradores) -->
             <div id="admin-container" style="display:none; flex-direction: column; gap: 15px;">
+                <button class="btn-main" style="width: 100%; background: #2d4b5e;" onclick="window.location.href='gestao.html'">PAINEL DE GESTÃO</button>
                 <button class="btn-main" style="width: 100%; background: var(--red);" onclick="window.location.href='admin.html'">GERENCIAMENTO</button>
                 <button class="btn-main" style="width: 100%; background: var(--navy);" onclick="window.location.href='cadastro-transportadora.html'">CADASTRAR TRANSPORTADORA</button>
             </div>

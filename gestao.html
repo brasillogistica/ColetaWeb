@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão | ColetaWeb</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --navy: #2d4b5e;
+            --gold: #c5b68d;
+            --red: #E84D53;
+            --bg: #f2f2f2;
+            --white: #ffffff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); padding: 15px; color: var(--navy); max-width: 1600px; margin: 0 auto; }
+
+        .header-card {
+            background: var(--white); border: 1px solid var(--gold); border-radius: 25px;
+            padding: 10px 25px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 10px;
+        }
+        .logo-minerva { font-size: 22px; letter-spacing: -1px; user-select: none; }
+        .logo-minerva .m { color: var(--navy); font-weight: 800; }
+        .logo-minerva .f { color: var(--red); font-weight: 800; }
+        .header-title { font-weight: 800; font-size: 13px; text-transform: uppercase; }
+
+        .filter-bar {
+            background: var(--white); border: 1px solid var(--gold); border-radius: 25px;
+            padding: 8px 20px; display: flex; align-items: center; gap: 10px;
+            margin-bottom: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex-wrap: wrap;
+        }
+        .filter-group { flex: 1; display: flex; flex-direction: column; min-width: 120px; }
+        .filter-group label { font-size: 8px; font-weight: 800; color: var(--gold); text-transform: uppercase; margin-bottom: 2px; }
+        .filter-group input, .filter-group select {
+            border: none; border-bottom: 1px solid var(--gold); padding: 5px 0;
+            font-size: 10px; font-weight: 700; color: var(--navy); background: transparent;
+        }
+        .btn-filtrar, .btn-limpar, .btn-voltar {
+            padding: 5px 12px; border-radius: 99px; font-weight: 700;
+            cursor: pointer; text-transform: uppercase; font-size: 8px; border: none;
+            white-space: nowrap; align-self: flex-end; margin-bottom: 2px;
+        }
+        .btn-filtrar { background: var(--navy); color: white; }
+        .btn-limpar { background: transparent; border: 1px solid var(--navy); color: var(--navy); }
+        .btn-voltar { background: #6c757d; color: white; }
+
+        .chips-container { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; min-height: 20px; }
+        .chip {
+            background: var(--red); color: white; padding: 2px 10px; border-radius: 99px;
+            font-size: 8px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer;
+        }
+        .chip span { font-size: 11px; line-height: 1; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            max-height: calc(100vh - 320px);
+        }
+
+        .card {
+            background: var(--white); border: 1px solid var(--gold); border-radius: 20px;
+            padding: 10px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-left {
+            height: 100%;
+            max-height: 170px;
+        }
+
+        .card-right {
+            grid-column: 2;
+            grid-row: 1 / 4;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .chart-title { font-size: 9px; font-weight: 800; color: var(--navy); text-transform: uppercase; margin-bottom: 2px; }
+
+        .card-left canvas { height: 135px !important; max-height: 135px; }
+        .card-right canvas { height: 100% !important; max-height: 100%; }
+
+        .cost-card {
+            margin-bottom: 10px;
+            max-height: 190px;
+            display: flex;
+            flex-direction: column;
+        }
+        .cost-card canvas { height: 100% !important; }
+
+        .table-card { grid-column: span 2; }
+        .table-wrapper { 
+            max-height: 450px;
+            overflow-y: auto; 
+            border-radius: 12px; 
+            margin-top: 8px; 
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 8.5px;
+            table-layout: fixed;
+            font-family: 'Courier New', monospace;
+        }
+
+        thead {
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: var(--navy);
+            color: white;
+            padding: 12px 24px;          /* ajustado de 28px para 24px */
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 10;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-bottom: 2px solid var(--navy);
+        }
+
+        th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        td {
+            padding: 12px 24px;          /* mesmo ajuste */
+            border-bottom: 1px solid #f2f2f2;
+            color: var(--navy);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: var(--white);
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
+
+        .font-bold { font-weight: 800; }
+
+        .vencido-sim {
+            color: var(--red) !important;
+        }
+
+        .btn-excel-small {
+            background: var(--navy); color: white; border: none; padding: 4px 10px;
+            border-radius: 99px; font-size: 7px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+        }
+        .sem-dados { text-align: center; padding: 15px; color: #888; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 14px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: #1e2f3a;
+        }
+
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gold);
+            border-top-color: var(--navy);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="loading-overlay"><div class="spinner"></div></div>
+
+<header class="header-card">
+    <div class="logo-minerva"><span class="m">minerva</span><span class="f">foods</span></div>
+    <div class="header-title">Painel de Gestão – Progresso dos Containers</div>
+</header>
+
+<section class="filter-bar">
+    <div class="filter-group">
+        <label>Container</label>
+        <input type="text" id="filtroContainer" placeholder="Número do container">
+    </div>
+    <div class="filter-group">
+        <label>Armador</label>
+        <input type="text" id="filtroArmador" placeholder="Nome do armador">
+    </div>
+    <div class="filter-group">
+        <label>Status</label>
+        <select id="filtroStatus">
+            <option value="">Todos</option>
+            <option value="ag. locação">AG. LOCAÇÃO</option>
+            <option value="ag. carregamento">AG. CARREGAMENTO</option>
+            <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
+            <option value="faturado">FATURADO</option>
+            <option value="ag. liberação">AG. LIBERAÇÃO</option>
+            <option value="em viagem">EM VIAGEM</option>
+            <option value="depositado">DEPOSITADO</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Data Retirada</label>
+        <input type="date" id="filtroDataRetirada">
+    </div>
+    <div class="filter-group">
+        <label>Data Finalizado</label>
+        <input type="date" id="filtroDataFinalizado">
+    </div>
+    <button class="btn-filtrar" onclick="aplicarFiltrosForm()">Filtrar</button>
+    <button class="btn-limpar" onclick="limparTudo()">Limpar</button>
+    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
+</section>
+
+<div class="chips-container" id="chips-area"></div>
+
+<div class="dashboard-grid">
+    <div class="card card-left" style="grid-column: 1; grid-row: 1;">
+        <div class="chart-title">Containers por Status</div>
+        <canvas id="chartStatus"></canvas>
+    </div>
+    <div class="card card-left" style="grid-column: 1; grid-row: 2;">
+        <div class="chart-title">Free Time Consumido (%)</div>
+        <canvas id="chartFreeTime"></canvas>
+    </div>
+    <div class="card card-left" style="grid-column: 1; grid-row: 3;">
+        <div class="chart-title">Depositados em Atraso</div>
+        <canvas id="chartAtraso"></canvas>
+    </div>
+
+    <div class="card card-right">
+        <div class="chart-title">Containers por Transportadora</div>
+        <div style="flex: 1; position: relative; min-height: 0; overflow: hidden;">
+            <canvas id="chartTransportadora"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card cost-card">
+    <div class="chart-title">Custo Total em Atraso (USD)</div>
+    <div style="flex:1; position:relative;">
+        <canvas id="chartCusto"></canvas>
+    </div>
+</div>
+
+<div class="card table-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div class="chart-title" style="margin:0;">Registros de Containers</div>
+        <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
+    </div>
+    <div class="table-wrapper">
+        <table id="main-table">
+            <thead>
+                <tr>
+                    <th>Container</th>
+                    <th>Status</th>
+                    <th>Armador</th>
+                    <th>Transport.</th>
+                    <th>Terminal</th>
+                    <th>Cidade</th>
+                    <th>Registro</th>
+                    <th>Retirada</th>
+                    <th>Finalizado</th>
+                    <th>FT Total</th>
+                    <th>Dias Rest.</th>
+                    <th>Custo Diário</th>
+                    <th>Custo Total</th>
+                    <th>Vencido?</th>
+                </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+    // -------------------------------------------------------------
+    // FREE TIME RULES & CACHE
+    // -------------------------------------------------------------
+    const FREE_TIME_RULES = {
+        "PIL": { dias: 30, custo: 100 }, "HAPAG LLOYD": { dias: 30, custo: 297 }, "HAPAG": { dias: 30, custo: 297 },
+        "ONE": { dias: 30, custo: 100 }, "ALPHA SHIPPING": { dias: 30, custo: 100 }, "ALPHA": { dias: 30, custo: 100 },
+        "CMA CGM": { dias: 25, custo: 175 }, "CMA": { dias: 25, custo: 175 },
+        "YANG MING": { dias: 35, custo: 100 }, "HMM": { dias: 42, custo: 100 }, "MAERSK": { dias: 24, custo: 160 },
+        "MSC": { dias: 30, custo: 130 }, "COSCO": { dias: 35, custo: 100 }, "EVERGREEN": { dias: 35, custo: 80 },
+        "ZIM": { dias: 30, custo: 141 }, "INTERTRANS - COSCO": { dias: 21, custo: 250 },
+        "INTERTRANS - CMA CGM": { dias: 21, custo: 335 }, "INTERTRANS - HMM": { dias: 21, custo: 360 },
+        "INTERTRANS - YANG MING": { dias: 21, custo: 300 }, "BR-X CARGO": { dias: 14, custo: 353 }
+    };
+
+    const freeTimeCache = new Map();
+    function getFreeTimeRuleCached(armador) {
+        if (!armador) return null;
+        const nome = armador.trim().toUpperCase();
+        if (freeTimeCache.has(nome)) return freeTimeCache.get(nome);
+        for (const [key, value] of Object.entries(FREE_TIME_RULES)) {
+            if (nome === key.toUpperCase() || nome.includes(key.toUpperCase()) || key.toUpperCase().includes(nome)) {
+                freeTimeCache.set(nome, value);
+                return value;
+            }
+        }
+        freeTimeCache.set(nome, null);
+        return null;
+    }
+
+    // Cores suaves para os status
+    function getStatusColor(status) {
+        const colors = {
+            'ag. locação': '#FEF3C7',
+            'ag. carregamento': '#FDE68A',
+            'pendencia logistica': '#FECACA',
+            'faturado': '#DBEAFE',
+            'ag. liberação': '#E9D5FF',
+            'em viagem': '#BAE6FD',
+            'depositado': '#D1FAE5'
+        };
+        return colors[status] || '#F3F4F6';
+    }
+
+    // -------------------------------------------------------------
+    // CONSTANTS & STATE
+    // -------------------------------------------------------------
+    const STATUS_FLUXO = ['ag. locação','ag. carregamento','pendencia logistica','faturado','ag. liberação','em viagem','depositado'];
+    let dadosCompletos = [], charts = {};
+    let filtroStatusAtivo = null;
+    let filtroFreeTimeAtivo = null;
+    let filtroAtrasoAtivo = null;
+    let filtroTransportadoraAtiva = null;
+
+    function showLoading() { document.getElementById('loading-overlay').style.display = 'flex'; }
+    function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+
+    async function verificarAcesso() {
+        if (typeof clienteSupabase === 'undefined') { setTimeout(verificarAcesso, 500); return false; }
+        const { data: { user } } = await clienteSupabase.auth.getUser();
+        if (!user) { window.location.href = 'login.html'; return false; }
+        const { data: userData } = await clienteSupabase.from('usuarios').select('perfil').eq('email', user.email).single();
+        if (!userData || (userData.perfil !== 'master' && userData.perfil !== 'administrador')) {
+            alert('Acesso negado.'); window.location.href = 'index.html'; return false;
+        }
+        return true;
+    }
+
+    function calcularDiasRestantes(dataRetirada, diasFreeTime) {
+        if (!dataRetirada || !diasFreeTime) return null;
+        const retirada = new Date(dataRetirada + 'T00:00:00');
+        const agora = new Date();
+        const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
+        return Math.ceil(diff / 86400000);
+    }
+
+    function obterDadosFiltrados() {
+        const fContainer = document.getElementById('filtroContainer').value.trim().toLowerCase();
+        const fArmador = document.getElementById('filtroArmador').value.trim().toLowerCase();
+        const fStatusForm = document.getElementById('filtroStatus').value;
+        const fData = document.getElementById('filtroDataRetirada').value;
+        const fDataFin = document.getElementById('filtroDataFinalizado').value;
+
+        return dadosCompletos.filter(d => {
+            if (fContainer && !(d.container || '').toLowerCase().includes(fContainer)) return false;
+            if (fArmador && !(d.armador || '').toLowerCase().includes(fArmador)) return false;
+            if (fData && d.data_retirada !== fData) return false;
+
+            if (fDataFin) {
+                if (!d.data_finalizado) return false;
+                const dataObj = new Date(d.data_finalizado);
+                const dataFormatada = dataObj.getFullYear() + '-' + 
+                    String(dataObj.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(dataObj.getDate()).padStart(2, '0');
+                if (dataFormatada !== fDataFin) return false;
+            }
+
+            if (filtroStatusAtivo && d.status !== filtroStatusAtivo) return false;
+            if (fStatusForm && d.status !== fStatusForm) return false;
+
+            if (filtroFreeTimeAtivo) {
+                const rule = getFreeTimeRuleCached(d.armador);
+                if (!rule || !d.data_retirada) return false;
+                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+                if (rest === null) return false;
+                const pct = ((rule.dias - rest) / rule.dias) * 100;
+                const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
+                if (faixa !== filtroFreeTimeAtivo) return false;
+            }
+
+            if (filtroAtrasoAtivo) {
+                const isDepositado = d.status === 'depositado' || d.finalizado;
+                if (!isDepositado) return false;
+                const rule = getFreeTimeRuleCached(d.armador);
+                if (!rule || !d.data_retirada) return false;
+                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+                const emAtraso = rest !== null && rest < 0;
+                if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
+                if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
+            }
+
+            if (filtroTransportadoraAtiva && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
+
+            return true;
+        });
+    }
+
+    function atualizarChips() {
+        const chipArea = document.getElementById('chips-area');
+        chipArea.innerHTML = '';
+        const chips = [];
+        if (filtroStatusAtivo) chips.push({ label: filtroStatusAtivo.toUpperCase(), key: 'status' });
+        if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
+        if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
+        if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
+
+        chips.forEach(c => {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.innerHTML = `${c.label} <span>&times;</span>`;
+            chip.onclick = () => {
+                if (c.key === 'status') filtroStatusAtivo = null;
+                else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
+                else if (c.key === 'atraso') filtroAtrasoAtivo = null;
+                else if (c.key === 'transp') filtroTransportadoraAtiva = null;
+                atualizarChips();
+                aplicarTodos();
+            };
+            chipArea.appendChild(chip);
+        });
+    }
+
+    function prepararGraficos(dados) {
+        const transpMap = new Map();
+        const statusCount = new Map(STATUS_FLUXO.map(s => [s, 0]));
+        const faixas = { '0-25%':0, '26-50%':0, '51-75%':0, '76-99%':0, '≥100%':0 };
+        let depositadosNoPrazo = 0;
+        let depositadosAtrasados = 0;
+        let custoTotalAtraso = 0;
+
+        const custoMensalMap = new Map();
+
+        for (const d of dados) {
+            const t = d.transportadora || 'N/A';
+            transpMap.set(t, (transpMap.get(t) || 0) + 1);
+
+            if (statusCount.has(d.status)) {
+                statusCount.set(d.status, statusCount.get(d.status) + 1);
+            }
+
+            const rule = getFreeTimeRuleCached(d.armador);
+            if (rule && d.data_retirada) {
+                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+                if (rest !== null) {
+                    const pct = ((rule.dias - rest) / rule.dias) * 100;
+                    let faixa;
+                    if (pct >= 100) faixa = '≥100%';
+                    else if (pct >= 76) faixa = '76-99%';
+                    else if (pct >= 51) faixa = '51-75%';
+                    else if (pct >= 26) faixa = '26-50%';
+                    else faixa = '0-25%';
+                    faixas[faixa]++;
+
+                    const isDepositado = d.status === 'depositado' || d.finalizado;
+                    if (isDepositado) {
+                        if (rest < 0) {
+                            depositadosAtrasados++;
+                            const custo = Math.abs(rest) * rule.custo;
+                            custoTotalAtraso += custo;
+
+                            const retDate = new Date(d.data_retirada + 'T00:00:00');
+                            const mesAno = `${retDate.getFullYear()}-${String(retDate.getMonth() + 1).padStart(2, '0')}`;
+                            custoMensalMap.set(mesAno, (custoMensalMap.get(mesAno) || 0) + custo);
+                        } else {
+                            depositadosNoPrazo++;
+                        }
+                    }
+                }
+            }
+        }
+
+        const sortedMonths = Array.from(custoMensalMap.keys()).sort();
+        const custoMensalLabels = sortedMonths.map(m => {
+            const [ano, mes] = m.split('-');
+            const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+            return `${meses[parseInt(mes)-1]}/${ano.slice(2)}`;
+        });
+        const custoMensalValues = sortedMonths.map(m => custoMensalMap.get(m));
+
+        const transpLabels = Array.from(transpMap.keys()).sort((a,b) => transpMap.get(b) - transpMap.get(a));
+        const transpValues = transpLabels.map(k => transpMap.get(k));
+
+        const statusLabels = STATUS_FLUXO.map(s => s.substring(0,3).toUpperCase());
+        const statusValues = STATUS_FLUXO.map(s => statusCount.get(s));
+
+        return { 
+            transpLabels, transpValues, statusLabels, statusValues, faixas, 
+            atrasados: depositadosAtrasados, noPrazo: depositadosNoPrazo, 
+            custoTotalAtraso,
+            custoMensalLabels, custoMensalValues 
+        };
+    }
+
+    function renderGraficos(dadosFiltrados) {
+        const prep = prepararGraficos(dadosFiltrados);
+        const colors = { navy: '#2d4b5e', gold: '#c5b68d', red: '#E84D53' };
+        Object.values(charts).forEach(c => c.destroy());
+        charts = {};
+
+        const baseOptions = {
+            maintainAspectRatio: false,
+            layout: { padding: { top: 20, bottom: 5, left: 5, right: 5 } },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
+                datalabels: { 
+                    anchor: 'end', 
+                    align: 'top', 
+                    font: { weight: 'bold', size: 8 }, 
+                    formatter: v => v || '', 
+                    offset: 5,
+                    clip: false
+                }
+            },
+            scales: {
+                x: { 
+                    ticks: { font: { size: 9, weight: 'bold' }, color: colors.navy, maxRotation: 0 },
+                    grid: { display: false }
+                },
+                y: { 
+                    ticks: { stepSize: 1, font: { size: 9, weight: 'bold' }, color: colors.navy },
+                    grid: { display: false }
+                }
+            }
+        };
+
+        // STATUS
+        charts.status = new Chart(document.getElementById('chartStatus'), {
+            type: 'bar',
+            data: {
+                labels: prep.statusLabels,
+                datasets: [{
+                    data: prep.statusValues,
+                    backgroundColor: prep.statusValues.map((_, i) => i === STATUS_FLUXO.length-1 ? colors.red : colors.navy),
+                    borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.7
+                }]
+            },
+            options: {
+                ...baseOptions,
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const idx = elements[0].index;
+                        const status = STATUS_FLUXO[idx];
+                        filtroStatusAtivo = (filtroStatusAtivo === status) ? null : status;
+                        atualizarChips();
+                        aplicarTodos();
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // FREE TIME
+        charts.freeTime = new Chart(document.getElementById('chartFreeTime'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(prep.faixas),
+                datasets: [{
+                    data: Object.values(prep.faixas),
+                    backgroundColor: [colors.navy, colors.navy, colors.gold, colors.gold, colors.red],
+                    borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.7
+                }]
+            },
+            options: {
+                ...baseOptions,
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const faixa = Object.keys(prep.faixas)[elements[0].index];
+                        filtroFreeTimeAtivo = (filtroFreeTimeAtivo === faixa) ? null : faixa;
+                        atualizarChips();
+                        aplicarTodos();
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // DEPOSITADOS EM ATRASO
+        charts.atraso = new Chart(document.getElementById('chartAtraso'), {
+            type: 'bar',
+            data: {
+                labels: ['No Prazo', 'Em Atraso'],
+                datasets: [{
+                    data: [prep.noPrazo, prep.atrasados],
+                    backgroundColor: [colors.navy, colors.red],
+                    borderRadius: 3, barPercentage: 0.4, categoryPercentage: 0.6
+                }]
+            },
+            options: {
+                ...baseOptions,
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const tipo = elements[0].index === 0 ? 'no_prazo' : 'em_atraso';
+                        filtroAtrasoAtivo = (filtroAtrasoAtivo === tipo) ? null : tipo;
+                        atualizarChips();
+                        aplicarTodos();
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // TRANSPORTADORAS
+        charts.transp = new Chart(document.getElementById('chartTransportadora'), {
+            type: 'bar',
+            data: {
+                labels: prep.transpLabels,
+                datasets: [{
+                    data: prep.transpValues,
+                    backgroundColor: colors.navy,
+                    borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.7
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                maintainAspectRatio: false,
+                layout: { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } }, datalabels: { display: false } },
+                scales: { x: { ticks: { font: { size: 9, weight: 'bold' }, color: colors.navy }, grid: { display: false } }, y: { ticks: { font: { size: 9, weight: 'bold' }, color: colors.navy }, grid: { display: false } } },
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const transp = prep.transpLabels[elements[0].index];
+                        filtroTransportadoraAtiva = (filtroTransportadoraAtiva === transp) ? null : transp;
+                        atualizarChips();
+                        aplicarTodos();
+                    }
+                }
+            },
+            plugins: []
+        });
+
+        // CUSTO TOTAL (LINHA)
+        charts.custo = new Chart(document.getElementById('chartCusto'), {
+            type: 'line',
+            data: {
+                labels: prep.custoMensalLabels,
+                datasets: [{
+                    label: 'Custo (USD)',
+                    data: prep.custoMensalValues,
+                    borderColor: colors.red,
+                    backgroundColor: 'rgba(232, 77, 83, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: colors.red,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
+                    pointRadius: 4,
+                    tension: 0.2,
+                    fill: true
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: { padding: { top: 15, bottom: 8, left: 10, right: 20 } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { 
+                        callbacks: { 
+                            label: ctx => `Custo: US$ ${ctx.raw.toFixed(2)}` 
+                        } 
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        offset: 4,
+                        font: { weight: 'bold', size: 9 },
+                        formatter: v => `$${v.toFixed(0)}`,
+                        color: colors.navy,
+                        display: prep.custoMensalValues.length <= 12
+                    }
+                },
+                scales: {
+                    x: { 
+                        ticks: { font: { size: 9, weight: 'bold' }, color: colors.navy, maxRotation: 45 },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            font: { size: 9, weight: 'bold' }, 
+                            color: colors.navy,
+                            callback: v => `$${v}`
+                        },
+                        grid: { color: '#f0f0f0' },
+                        title: {
+                            display: true,
+                            text: 'USD',
+                            font: { size: 10, weight: 'bold' },
+                            color: colors.navy
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }
+
+    function formatarDataISO(iso) {
+        if (!iso) return 'N/A';
+        let date;
+        if (iso.includes('T')) {
+            date = new Date(iso);
+        } else {
+            date = new Date(iso + 'T00:00:00');
+        }
+        if (isNaN(date.getTime())) return 'N/A';
+        return date.toLocaleDateString('pt-BR');
+    }
+
+    function renderTabela(dados) {
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        if (dados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="14" class="sem-dados">Nenhum container encontrado.</td></tr>';
+            return;
+        }
+        for (const d of dados) {
+            const rule = getFreeTimeRuleCached(d.armador);
+            const diasTotal = rule ? rule.dias : '-';
+            const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+            const vencido = diasRest !== null && diasRest < 0;
+            const custoDiario = (vencido && rule) ? rule.custo.toFixed(2) : '-';
+            const custoTotal = (vencido && rule) ? (Math.abs(diasRest) * rule.custo).toFixed(2) : '-';
+            const statusText = (d.status || '').toUpperCase();
+            const statusColor = getStatusColor(d.status);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${d.container || 'N/A'}</td>
+                <td><span class="status-badge" style="background-color: ${statusColor};">${statusText}</span></td>
+                <td>${d.armador || 'N/A'}</td>
+                <td>${d.transportadora || 'N/A'}</td>
+                <td>${d.terminal || 'N/A'}</td>
+                <td>${d.cidade || 'N/A'}</td>
+                <td>${formatarDataISO(d.created_at)}</td>
+                <td>${formatarDataISO(d.data_retirada)}</td>
+                <td>${formatarDataISO(d.data_finalizado)}</td>
+                <td>${diasTotal}</td>
+                <td>${diasRest !== null ? diasRest : '-'}</td>
+                <td>${custoDiario}</td>
+                <td>${custoTotal}</td>
+                <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function aplicarTodos() {
+        const filtrados = obterDadosFiltrados();
+        renderGraficos(filtrados);
+        renderTabela(filtrados);
+    }
+
+    function aplicarFiltrosForm() { aplicarTodos(); }
+
+    function limparTudo() {
+        document.getElementById('filtroContainer').value = '';
+        document.getElementById('filtroArmador').value = '';
+        document.getElementById('filtroStatus').value = '';
+        document.getElementById('filtroDataRetirada').value = '';
+        document.getElementById('filtroDataFinalizado').value = '';
+        filtroStatusAtivo = null;
+        filtroFreeTimeAtivo = null;
+        filtroAtrasoAtivo = null;
+        filtroTransportadoraAtiva = null;
+        atualizarChips();
+        aplicarTodos();
+    }
+
+    function exportarExcel() {
+        try {
+            const dados = obterDadosFiltrados();
+            if (dados.length === 0) {
+                alert('Nenhum dado para exportar.');
+                return;
+            }
+            const exportData = dados.map(d => {
+                const rule = getFreeTimeRuleCached(d.armador);
+                const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+                const vencido = diasRest !== null && diasRest < 0;
+                return {
+                    Container: d.container,
+                    Status: (d.status || '').toUpperCase(),
+                    Armador: d.armador,
+                    Transportadora: d.transportadora,
+                    Terminal: d.terminal || '',
+                    Cidade: d.cidade || '',
+                    Registro: formatarDataISO(d.created_at),
+                    Retirada: formatarDataISO(d.data_retirada),
+                    Finalizado: formatarDataISO(d.data_finalizado),
+                    'FT Total': rule ? rule.dias : '',
+                    'Dias Rest': diasRest,
+                    'Custo Diário': vencido && rule ? rule.custo : '',
+                    'Custo Total': vencido && rule ? (Math.abs(diasRest)*rule.custo) : '',
+                    Vencido: vencido ? 'SIM' : 'NÃO'
+                };
+            });
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Containers');
+            XLSX.writeFile(wb, 'Painel_Gestao.xlsx');
+        } catch (error) {
+            console.error('Erro ao exportar Excel:', error);
+            alert('Ocorreu um erro ao gerar o arquivo Excel.');
+        }
+    }
+
+    async function carregarTodos() {
+        showLoading();
+        try {
+            const { data, error } = await clienteSupabase
+                .from('coletas')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(500);
+            if (error) throw error;
+            dadosCompletos = data || [];
+            aplicarTodos();
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao carregar dados.');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    window.onload = async () => {
+        if (await verificarAcesso()) {
+            await carregarTodos();
+        }
+    };
+</script>
+</body>
+</html>

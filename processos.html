@@ -286,6 +286,7 @@
                         <th>Cidade</th>
                         <th id="th-transportadora" style="display: none;">Transportadora</th>
                         <th>Status</th>
+                        <th>Finalizado</th>
                         <th>Ações</th>
                         <th>Confirmar</th>
                         <th>Localização</th>
@@ -411,6 +412,12 @@
 
                 const isFinalizado = item.finalizado || statusAtual === 'depositado';
 
+                // Data de finalização formatada
+                let dataFinalizado = 'Pendente';
+                if (item.data_finalizado) {
+                    dataFinalizado = new Date(item.data_finalizado).toLocaleDateString('pt-BR');
+                }
+
                 // Preparar a localização para o modal do Google Maps
                 let localizacaoHtml = '';
                 const loc = item.localizacao || "N/A";
@@ -438,6 +445,7 @@
                             <span id="${statusId}" class="status-text" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span>
                             <span id="${thumbsId}" class="thumbs-up">👍</span>
                         </td>
+                        <td>${dataFinalizado}</td>
                         <td style="text-align: center;">
                             <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
                             <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', 1)">▶</button>
@@ -475,10 +483,16 @@
             if (!novoStatus) return;
 
             const finalizado = (novoStatus === 'depositado');
+            const updateObj = { status: novoStatus, finalizado: finalizado };
+
+            // Se finalizado, grava a data/hora atual
+            if (finalizado) {
+                updateObj.data_finalizado = new Date().toISOString();
+            }
 
             const { error } = await clienteSupabase
                 .from('coletas')
-                .update({ status: novoStatus, finalizado: finalizado })
+                .update(updateObj)
                 .eq('id', id);
 
             if (error) {
