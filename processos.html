@@ -2,168 +2,279 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Processos Container | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
     <style>
         * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
         }
 
-        .filters-grid .form-group label {
-            text-align: center;
+        body {
+            background: var(--bg);
+            padding: 20px 10px;
+            color: var(--navy);
         }
 
-        .filters-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
+        /* Header */
+        .header-card {
+            background: var(--white);
+            border: 1px solid var(--gold);
+            border-radius: 25px;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
+        .logo-minerva {
+            font-size: 24px;
+            letter-spacing: -1px;
+            user-select: none;
+        }
+        .logo-minerva .m { color: var(--navy); font-weight: 800; }
+        .logo-minerva .f { color: var(--red); font-weight: 800; }
+        .header-title {
+            font-weight: 800;
+            font-size: 17px;
+            text-transform: uppercase;
+            color: var(--navy);
+        }
 
-        /* Bloco unificado de data */
+        /* Barra de filtros */
+        .filter-bar {
+            background: var(--white);
+            border: 1px solid var(--gold);
+            border-radius: 25px;
+            padding: 12px 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            min-width: 120px;
+        }
+        .filter-group label {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            text-align: center;
+        }
+        .filter-group input,
+        .filter-group select {
+            border: none;
+            border-bottom: 1px solid var(--gold);
+            padding: 5px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--navy);
+            background: transparent;
+            outline: none;
+            min-width: 100px;
+        }
+        .filter-group input::placeholder {
+            color: #aaa;
+        }
         .date-range {
             display: flex;
-            gap: 5px;
+            gap: 4px;
             align-items: center;
         }
         .date-range input {
             flex: 1;
-            min-width: 0;
+            min-width: 70px;
         }
-
-        /* Status centralizado com fundo mais destacado */
-        .status-text {
-            display: inline-block;
-            padding: 6px 10px;
-            font-size: 11px;
+        .date-range span {
+            font-size: 13px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            border: 1px solid #d0d0d0;
-            border-radius: 6px;
-            background-color: #eaeaea;
-            color: #333;
-            min-width: 140px;
-            text-align: center;
-        }
-
-        /* Joinha */
-        .thumbs-up {
-            display: inline-block;
-            margin-left: 5px;
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .thumbs-up.show {
-            opacity: 1;
-        }
-
-        /* Botões compactos padrão Minerva */
-        .btn-action {
-            padding: 8px 16px;
-            border-radius: 99px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            border: 1px solid var(--gold);
-            background: transparent;
             color: var(--navy);
-            transition: all 0.2s;
             white-space: nowrap;
         }
-        .btn-navy {
-            background: var(--navy);
-            color: white;
-            border: none;
-        }
-        .btn-grey {
-            background: var(--grey);
-            color: white;
-            border: none;
-        }
-        .btn-excel {
-            background: #107c41;
-            color: white;
-            border: none;
-        }
-        .btn-excel:hover {
-            background: #0d6b35;
-        }
 
-        /* Botões de navegação de status (menores) */
-        .btn-status { 
-            background: var(--navy); color: white; border: none; 
-            padding: 5px 10px; border-radius: 5px; cursor: pointer; 
-            font-size: 12px; margin: 0 2px; font-weight: 700;
-        }
-        .btn-status:disabled { background: #ccc; cursor: not-allowed; }
-
-        .btn-confirm {
-            border: none;
-            padding: 5px 10px;
-            margin: 0 2px;
-            border-radius: 5px;
-            font-size: 11px;
-            font-weight: bold;
+        /* Botões de ação com cores padrão do sistema */
+        .btn-filtrar, .btn-limpar, .btn-voltar, .btn-excel-small {
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-weight: 700;
             cursor: pointer;
             text-transform: uppercase;
+            font-size: 10px;
+            border: none;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            letter-spacing: 0.3px;
         }
-        .btn-sim { background: #28a745; color: white; }
-        .btn-nao { background: #dc3545; color: white; }
-        .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-filtrar { 
+            background: var(--navy);      /* navy padrão */
+            color: white; 
+        }
+        .btn-limpar { 
+            background: transparent; 
+            border: 1px solid var(--navy); 
+            color: var(--navy); 
+        }
+        .btn-voltar { 
+            background: #7a8a95;          /* cinza médio */
+            color: white; 
+        }
+        .btn-excel-small { 
+            background: #5a6c75;          /* cinza azulado escuro */
+            color: white; 
+        }
+        .btn-excel-small:hover { 
+            background: #4b5b64; 
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 8px;
+            flex-wrap: wrap;
+            width: 100%;
+            justify-content: flex-start;
+        }
 
         /* Tabela */
+        .table-container {
+            background: var(--white);
+            border: 1px solid var(--gold);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
         table {
+            width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            width: 100%;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            table-layout: auto;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
         }
         th {
             background: var(--navy);
             color: white;
             padding: 10px 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+        th:first-child { border-radius: 12px 0 0 0; }
+        th:last-child { border-radius: 0 12px 0 0; }
+        td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #f2f2f2;
+            color: var(--navy);
+            text-align: center;
+            background: var(--white);
+            white-space: normal;
+            word-break: break-word;
+            vertical-align: middle;
+        }
+        tr:nth-child(even) td { background-color: #f9f9f9; }
+
+        td.col-nowrap {
+            white-space: nowrap;
+            word-break: normal;
+        }
+
+        /* Status */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 14px;
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-        }
-        td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #eee;
-            font-size: 12px;
-            color: #333;
-            text-align: center;
+            white-space: nowrap;
+            color: #1e2f3a;
+            border: 1px solid rgba(0,0,0,0.1);
         }
 
-        /* Link de localização */
+        .btn-status {
+            background: var(--navy);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 0 2px;
+            font-weight: 700;
+        }
+        .btn-status:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Sim e Não suaves */
+        .btn-confirm {
+            border: none;
+            padding: 4px 8px;
+            margin: 0 2px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .btn-sim { background: #81c784; color: white; }
+        .btn-nao { background: #e57373; color: white; }
+        .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .thumbs-up {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .thumbs-up.show { opacity: 1; }
+
         .loc-link {
             color: var(--navy);
             cursor: pointer;
             text-decoration: underline;
             font-weight: 600;
+            white-space: nowrap;
+            font-size: 12px;
         }
-        .loc-link:hover {
-            color: var(--red);
-        }
+        .loc-link:hover { color: var(--red); }
 
-        /* Modal do Mapa */
-        #mapa-modal {
+        /* Modais */
+        #foto-modal, #mapa-modal, #modal-data-deposito {
             display: none;
             position: fixed;
             z-index: 3000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,0.7);
             justify-content: center;
             align-items: center;
@@ -184,93 +295,138 @@
             border: none;
             border-radius: 10px;
         }
-        .fechar-mapa {
+        .fechar-mapa, .fechar-foto {
             position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 30px;
+            top: 15px; right: 20px;
+            font-size: 32px;
             color: var(--navy);
             cursor: pointer;
             font-weight: bold;
             z-index: 10;
         }
+        #container-img {
+            width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s;
+        }
+        #foto-ampliada {
+            max-width: 90%; max-height: 90%;
+            user-select: none;
+        }
+
+        .modal-deposito-box {
+            background: white;
+            padding: 30px 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            border: 1px solid var(--gold);
+        }
+        .modal-deposito-box p {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--navy);
+            font-size: 18px;
+        }
+        .modal-deposito-box input[type="date"] {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--navy);
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
     </style>
 </head>
-<body style="padding: 40px; background: #f2f2f2;">
+<body>
 
-    <div class="card">
-        <h2 style="color: var(--navy); margin-bottom: 25px; font-weight: 800;">PROCESSOS - CONTAINER</h2>
-        
-        <!-- Filtros -->
-        <div class="filters-grid">
-            <div class="form-group">
-                <label>Data Registro</label>
-                <div class="date-range">
-                    <input type="date" id="filtroDataInicio" placeholder="Início">
-                    <span style="font-size: 12px; color: var(--navy); font-weight: 700;">até</span>
-                    <input type="date" id="filtroDataFim" placeholder="Fim">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Data Retirada</label>
-                <input type="date" id="filtroDataRetirada">
-            </div>
-            <div class="form-group">
-                <label>Armador</label>
-                <input type="text" id="filtroArmador" placeholder="Nome do armador">
-            </div>
-            <div class="form-group">
-                <label>Container</label>
-                <input type="text" id="filtroContainer" placeholder="Número">
-            </div>
-            <div class="form-group">
-                <label>Placa</label>
-                <input type="text" id="filtroPlaca" placeholder="Placa">
-            </div>
-            <div class="form-group">
-                <label>Carga / Pulmão</label>
-                <select id="filtroCargaPulmao">
-                    <option value="">Todos</option>
-                    <option value="Carga">Carga</option>
-                    <option value="Pulmão">Pulmão</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Terminal</label>
-                <input type="text" id="filtroTerminal" placeholder="Terminal">
-            </div>
-            <div class="form-group">
-                <label>Cidade</label>
-                <input type="text" id="filtroCidade" placeholder="Cidade">
-            </div>
-            <div class="form-group">
-                <label>Transportadora</label>
-                <input type="text" id="filtroTransportadora" placeholder="Transportadora">
-            </div>
-            <div class="form-group">
-                <label>Status</label>
-                <select id="filtroStatus">
-                    <option value="">Todos</option>
-                    <option value="ag. locação">AG. LOCAÇÃO</option>
-                    <option value="ag. carregamento">AG. CARREGAMENTO</option>
-                    <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
-                    <option value="faturado">FATURADO</option>
-                    <option value="ag. liberação">AG. LIBERAÇÃO</option>
-                    <option value="em viagem">EM VIAGEM</option>
-                    <option value="depositado">DEPOSITADO</option>
-                </select>
+    <header class="header-card">
+        <div class="logo-minerva">
+            <span class="m">minerva</span><span class="f">foods</span>
+        </div>
+        <div class="header-title">Processos – Container</div>
+        <div></div>
+    </header>
+
+    <!-- Barra de filtros -->
+    <section class="filter-bar">
+        <div class="filter-group">
+            <label>Data Registro</label>
+            <div class="date-range">
+                <input type="date" id="filtroDataInicio">
+                <span>até</span>
+                <input type="date" id="filtroDataFim">
             </div>
         </div>
-
-        <!-- Botões de ação compactos estilo Minerva -->
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;">
-            <button class="btn-action btn-navy" onclick="aplicarFiltros()">Filtrar</button>
-            <button class="btn-action" onclick="limparFiltros()">Limpar Filtros</button>
-            <button class="btn-action btn-excel" onclick="exportarExcel()">Exportar Excel</button>
-            <button class="btn-action btn-grey" onclick="window.location.href='index.html'">Voltar</button>
+        <div class="filter-group">
+            <label>Data Retirada</label>
+            <input type="date" id="filtroDataRetirada">
         </div>
+        <div class="filter-group">
+            <label>Armador</label>
+            <input type="text" id="filtroArmador" placeholder="Nome do armador">
+        </div>
+        <div class="filter-group">
+            <label>Container</label>
+            <input type="text" id="filtroContainer" placeholder="Número">
+        </div>
+        <div class="filter-group">
+            <label>Placa</label>
+            <input type="text" id="filtroPlaca" placeholder="Placa">
+        </div>
+        <div class="filter-group">
+            <label>Carga / Pulmão</label>
+            <select id="filtroCargaPulmao">
+                <option value="">Todos</option>
+                <option value="Carga">Carga</option>
+                <option value="Pulmão">Pulmão</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Terminal</label>
+            <input type="text" id="filtroTerminal" placeholder="Terminal">
+        </div>
+        <div class="filter-group">
+            <label>Cidade</label>
+            <input type="text" id="filtroCidade" placeholder="Cidade">
+        </div>
+        <div class="filter-group">
+            <label>Transportadora</label>
+            <input type="text" id="filtroTransportadora" placeholder="Transportadora">
+        </div>
+        <div class="filter-group">
+            <label>Status</label>
+            <select id="filtroStatus">
+                <option value="">Todos</option>
+                <option value="ag. locação">AG. LOCAÇÃO</option>
+                <option value="ag. carregamento">AG. CARREGAMENTO</option>
+                <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
+                <option value="faturado">FATURADO</option>
+                <option value="ag. liberação">AG. LIBERAÇÃO</option>
+                <option value="em viagem">EM VIAGEM</option>
+                <option value="depositado">DEPOSITADO</option>
+            </select>
+        </div>
+        <!-- Botões abaixo dos filtros -->
+        <div class="btn-group">
+            <button class="btn-filtrar" onclick="aplicarFiltros()">Filtrar</button>
+            <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
+            <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
+            <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
+        </div>
+    </section>
 
-        <div style="overflow-x: auto; margin-top: 20px;">
+    <div class="table-container">
+        <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
@@ -284,7 +440,7 @@
                         <th>C/P</th>
                         <th>Terminal</th>
                         <th>Cidade</th>
-                        <th id="th-transportadora" style="display: none;">Transportadora</th>
+                        <th id="th-transportadora" style="display: none;">Transport.</th>
                         <th>Status</th>
                         <th>Finalizado</th>
                         <th>Ações</th>
@@ -299,10 +455,10 @@
     </div>
 
     <!-- Modal Foto -->
-    <div id="foto-modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); overflow: hidden; cursor: grab;">
-        <span onclick="fecharFoto()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight:bold; z-index:2001;">&times;</span>
-        <div id="container-img" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; transition:transform 0.1s;">
-            <img id="foto-ampliada" style="max-width:90%; max-height:90%; user-select:none;">
+    <div id="foto-modal">
+        <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
+        <div id="container-img">
+            <img id="foto-ampliada">
         </div>
     </div>
 
@@ -314,13 +470,20 @@
         </div>
     </div>
 
+    <!-- Modal de data do depósito -->
+    <div id="modal-data-deposito">
+        <div class="modal-deposito-box">
+            <p>Selecione a data do depósito</p>
+            <input type="date" id="input-data-deposito">
+            <div class="modal-actions">
+                <button class="btn-limpar" onclick="fecharModalDeposito()" style="padding: 8px 20px;">Cancelar</button>
+                <button class="btn-filtrar" onclick="confirmarDataDeposito()" style="padding: 8px 20px;">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
-        let dadosExportacao = [];
-        let scale = 1, isDragging = false, startX, startY, transX = 0, transY = 0;
-        const containerImg = document.getElementById('container-img');
-        const img = document.getElementById('foto-ampliada');
-
         const statusFluxo = [
             'ag. locação',
             'ag. carregamento',
@@ -330,8 +493,22 @@
             'em viagem',
             'depositado'
         ];
-
         const statusOriginais = {};
+        let dadosExportacao = [];
+        let dadosModalDeposito = {};
+
+        function getStatusColor(status) {
+            const colors = {
+                'ag. locação': '#FEF3C7',
+                'ag. carregamento': '#FDE68A',
+                'pendencia logistica': '#FECACA',
+                'faturado': '#DBEAFE',
+                'ag. liberação': '#E9D5FF',
+                'em viagem': '#BAE6FD',
+                'depositado': '#D1FAE5'
+            };
+            return colors[status] || '#F3F4F6';
+        }
 
         async function carregarProcessos(filtros = {}) {
             if (typeof clienteSupabase === 'undefined') {
@@ -350,27 +527,21 @@
 
             const perfil = userData ? userData.perfil.trim().toLowerCase() : "";
             const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
-
-            if (ehAdmin) document.getElementById('th-transportadora').style.display = 'table-cell';
+            if (ehAdmin) document.getElementById('th-transportadora').style.display = '';
 
             let query = clienteSupabase.from('coletas').select('*');
-            
-            if (!ehAdmin && userData.transportadora) {
+            if (!ehAdmin && userData?.transportadora) {
                 query = query.eq('transportadora', userData.transportadora);
             }
 
-            // Filtros de data
             if (filtros.dataInicio || filtros.dataFim) {
                 const inicio = filtros.dataInicio ? new Date(filtros.dataInicio) : null;
                 const fim = filtros.dataFim ? new Date(filtros.dataFim) : null;
-
                 if (inicio && fim) {
                     if (inicio.getTime() === fim.getTime()) {
-                        const startOfDay = new Date(inicio);
-                        startOfDay.setHours(0,0,0,0);
-                        const endOfDay = new Date(inicio);
-                        endOfDay.setHours(23,59,59,999);
-                        query = query.gte('created_at', startOfDay.toISOString()).lte('created_at', endOfDay.toISOString());
+                        const start = new Date(inicio); start.setHours(0,0,0,0);
+                        const end = new Date(inicio); end.setHours(23,59,59,999);
+                        query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
                     } else {
                         query = query.gte('created_at', inicio.toISOString()).lte('created_at', fim.toISOString());
                     }
@@ -391,14 +562,13 @@
             if (filtros.status) query = query.eq('status', filtros.status);
 
             const { data, error } = await query.order('created_at', { ascending: false });
-            
             if (error) { alert("Erro ao carregar: " + error.message); return; }
 
             dadosExportacao = data;
             const tbody = document.getElementById('processos-body');
             tbody.innerHTML = '';
             for (let key in statusOriginais) delete statusOriginais[key];
-            
+
             data.forEach(item => {
                 const dataHora = new Date(item.created_at);
                 const fotoUrl = item.foto_url 
@@ -411,53 +581,46 @@
                 statusOriginais[statusId] = statusAtual;
 
                 const isFinalizado = item.finalizado || statusAtual === 'depositado';
-
-                // Data de finalização formatada
                 let dataFinalizado = 'Pendente';
                 if (item.data_finalizado) {
                     dataFinalizado = new Date(item.data_finalizado).toLocaleDateString('pt-BR');
                 }
 
-                // Preparar a localização para o modal do Google Maps
                 let localizacaoHtml = '';
                 const loc = item.localizacao || "N/A";
                 if (loc !== "N/A" && loc !== "GPS Bloqueado" && loc !== "Sem GPS") {
                     const queryMaps = encodeURIComponent(loc);
-                    localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${queryMaps}')" title="Ver no mapa">📍 Local</span>`;
+                    localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${queryMaps}')">📍 Local</span>`;
                 } else {
                     localizacaoHtml = loc;
                 }
 
+                const color = getStatusColor(statusAtual);
                 tbody.innerHTML += `
                     <tr>
-                        <td>${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                        <td>${item.data_retirada || "N/A"}</td>
-                        <td>${item.armador || "N/A"}</td>
-                        <td>${item.container || "N/A"}</td>
-                        <td>${item.placa || "N/A"}</td>
-                        <td>${item.tara || "N/A"}</td>
-                        <td>${item.max_gross || "N/A"}</td>
-                        <td>${item.carga_pulmao || "N/A"}</td>
-                        <td>${item.terminal_coleta || "N/A"}</td>
-                        <td>${item.cidade || "N/A"}</td>
-                        ${ehAdmin ? `<td>${item.transportadora || "N/A"}</td>` : ""}
-                        <td style="text-align: center;">
-                            <span id="${statusId}" class="status-text" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span>
-                            <span id="${thumbsId}" class="thumbs-up">👍</span>
-                        </td>
-                        <td>${dataFinalizado}</td>
-                        <td style="text-align: center;">
+                        <td class="col-nowrap">${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+                        <td class="col-nowrap">${item.data_retirada || 'N/A'}</td>
+                        <td>${item.armador || 'N/A'}</td>
+                        <td>${item.container || 'N/A'}</td>
+                        <td class="col-nowrap">${item.placa || 'N/A'}</td>
+                        <td>${item.tara || 'N/A'}</td>
+                        <td>${item.max_gross || 'N/A'}</td>
+                        <td>${item.carga_pulmao || 'N/A'}</td>
+                        <td>${item.terminal_coleta || 'N/A'}</td>
+                        <td>${item.cidade || 'N/A'}</td>
+                        ${ehAdmin ? `<td>${item.transportadora || 'N/A'}</td>` : ''}
+                        <td class="col-nowrap"><span id="${statusId}" class="status-badge" style="background-color: ${color};" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span><span id="${thumbsId}" class="thumbs-up">👍</span></td>
+                        <td class="col-nowrap">${dataFinalizado}</td>
+                        <td class="col-nowrap">
                             <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
                             <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', 1)">▶</button>
                         </td>
-                        <td style="text-align: center;">
+                        <td class="col-nowrap">
                             <button class="btn-confirm btn-sim" ${isFinalizado ? 'disabled' : ''} onclick="confirmarStatus('${item.id}', '${statusId}', '${thumbsId}')">Sim</button>
                             <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
                         </td>
-                        <td>${localizacaoHtml}</td>
-                        <td style="text-align: center;">
-                            ${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : "Sem foto"}
-                        </td>
+                        <td class="col-nowrap">${localizacaoHtml}</td>
+                        <td class="col-nowrap">${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : 'Sem foto'}</td>
                     </tr>
                 `;
             });
@@ -466,14 +629,15 @@
         function navegarStatus(statusId, direcao) {
             const span = document.getElementById(statusId);
             if (!span) return;
-            const currentStatus = span.getAttribute('data-current') || span.getAttribute('data-original');
-            const idx = statusFluxo.indexOf(currentStatus);
+            const current = span.getAttribute('data-current') || span.getAttribute('data-original');
+            const idx = statusFluxo.indexOf(current);
             if (idx === -1) return;
             let novoIdx = idx + direcao;
             if (novoIdx < 0 || novoIdx >= statusFluxo.length) return;
-            const newStatus = statusFluxo[novoIdx];
-            span.textContent = newStatus.toUpperCase();
-            span.setAttribute('data-current', newStatus);
+            const novoStatus = statusFluxo[novoIdx];
+            span.textContent = novoStatus.toUpperCase();
+            span.style.backgroundColor = getStatusColor(novoStatus);
+            span.setAttribute('data-current', novoStatus);
         }
 
         async function confirmarStatus(id, statusId, thumbsId) {
@@ -482,13 +646,49 @@
             let novoStatus = span.getAttribute('data-current') || span.getAttribute('data-original');
             if (!novoStatus) return;
 
-            const finalizado = (novoStatus === 'depositado');
-            const updateObj = { status: novoStatus, finalizado: finalizado };
-
-            // Se finalizado, grava a data/hora atual
-            if (finalizado) {
-                updateObj.data_finalizado = new Date().toISOString();
+            if (novoStatus === 'depositado') {
+                abrirModalDeposito(id, statusId, thumbsId, novoStatus);
+                return;
             }
+
+            const { error } = await clienteSupabase
+                .from('coletas')
+                .update({ status: novoStatus, finalizado: false })
+                .eq('id', id);
+
+            if (error) {
+                alert("Erro ao salvar: " + error.message);
+                return;
+            }
+
+            finalizarConfirmacao(statusId, thumbsId, novoStatus);
+        }
+
+        function abrirModalDeposito(id, statusId, thumbsId, novoStatus) {
+            dadosModalDeposito = { id, statusId, thumbsId, novoStatus };
+            const hoje = new Date().toISOString().split('T')[0];
+            const input = document.getElementById('input-data-deposito');
+            input.setAttribute('max', hoje);
+            input.value = hoje;
+            document.getElementById('modal-data-deposito').style.display = 'flex';
+        }
+
+        function fecharModalDeposito() {
+            document.getElementById('modal-data-deposito').style.display = 'none';
+        }
+
+        async function confirmarDataDeposito() {
+            const dataEscolhida = document.getElementById('input-data-deposito').value;
+            if (!dataEscolhida) {
+                alert('Selecione uma data para o depósito.');
+                return;
+            }
+            const { id, statusId, thumbsId, novoStatus } = dadosModalDeposito;
+            const updateObj = {
+                status: novoStatus,
+                finalizado: true,
+                data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString()
+            };
 
             const { error } = await clienteSupabase
                 .from('coletas')
@@ -496,24 +696,28 @@
                 .eq('id', id);
 
             if (error) {
-                console.error("Erro ao atualizar status:", error);
-                alert("Erro ao salvar: " + error.message + "\nVerifique as permissões no banco de dados (RLS).");
+                alert("Erro ao salvar: " + error.message);
                 return;
             }
 
+            finalizarConfirmacao(statusId, thumbsId, novoStatus);
+            fecharModalDeposito();
+            carregarProcessos(obterFiltrosAtuais());
+        }
+
+        function finalizarConfirmacao(statusId, thumbsId, novoStatus) {
+            const span = document.getElementById(statusId);
             span.setAttribute('data-original', novoStatus);
             span.setAttribute('data-current', '');
+            span.textContent = novoStatus.toUpperCase();
+            span.style.backgroundColor = getStatusColor(novoStatus);
             statusOriginais[statusId] = novoStatus;
 
             const thumbs = document.getElementById(thumbsId);
             if (thumbs) {
                 thumbs.classList.add('show');
-                setTimeout(() => {
-                    thumbs.classList.remove('show');
-                }, 2000);
+                setTimeout(() => thumbs.classList.remove('show'), 2000);
             }
-
-            carregarProcessos(obterFiltrosAtuais());
         }
 
         function resetarStatus(statusId) {
@@ -522,6 +726,7 @@
             const original = span.getAttribute('data-original');
             if (original) {
                 span.textContent = original.toUpperCase();
+                span.style.backgroundColor = getStatusColor(original);
                 span.setAttribute('data-current', '');
             }
         }
@@ -547,76 +752,74 @@
         }
 
         function limparFiltros() {
-            document.getElementById('filtroDataInicio').value = '';
-            document.getElementById('filtroDataFim').value = '';
-            document.getElementById('filtroDataRetirada').value = '';
-            document.getElementById('filtroArmador').value = '';
-            document.getElementById('filtroContainer').value = '';
-            document.getElementById('filtroPlaca').value = '';
-            document.getElementById('filtroCargaPulmao').value = '';
-            document.getElementById('filtroTerminal').value = '';
-            document.getElementById('filtroCidade').value = '';
-            document.getElementById('filtroTransportadora').value = '';
-            document.getElementById('filtroStatus').value = '';
+            document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
+                if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                else el.value = '';
+            });
             carregarProcessos({});
         }
 
-        // Filtro automático APENAS para selects específicos
         document.getElementById('filtroCargaPulmao').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
 
-        // Funções de foto
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('foto-modal')) fecharFoto();
+            if (event.target == document.getElementById('mapa-modal')) fecharMapa();
+            if (event.target == document.getElementById('modal-data-deposito')) fecharModalDeposito();
+        });
+
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharFoto();
+                fecharMapa();
+                fecharModalDeposito();
+            }
+        });
+
+        let scale = 1, transX = 0, transY = 0;
+        const containerImg = document.getElementById('container-img');
+        const img = document.getElementById('foto-ampliada');
+        let isDragging = false, startX, startY;
+
         function abrirFoto(url) {
             img.src = url;
             scale = 1; transX = 0; transY = 0;
-            updateTransform();
+            containerImg.style.transform = `translate(0px, 0px) scale(1)`;
             document.getElementById('foto-modal').style.display = 'flex';
         }
-
         function fecharFoto() {
             document.getElementById('foto-modal').style.display = 'none';
         }
 
-        function updateTransform() {
-            containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
-        }
-
-        document.getElementById('foto-modal').addEventListener('wheel', (e) => {
+        containerImg.addEventListener('wheel', (e) => {
             e.preventDefault();
             scale += e.deltaY * -0.001;
             scale = Math.min(Math.max(0.5, scale), 5);
-            updateTransform();
+            containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
 
-        containerImg.addEventListener('mousedown', (e) => { 
-            isDragging = true; 
-            startX = e.clientX - transX; 
-            startY = e.clientY - transY; 
+        containerImg.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - transX;
+            startY = e.clientY - transY;
+            e.preventDefault();
         });
         window.addEventListener('mouseup', () => isDragging = false);
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             transX = e.clientX - startX;
             transY = e.clientY - startY;
-            updateTransform();
+            containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
 
-        // Funções do modal de mapa
         function abrirMapa(query) {
-            const iframe = document.getElementById('mapa-iframe');
-            iframe.src = `https://www.google.com/maps?q=${query}&output=embed`;
+            document.getElementById('mapa-iframe').src = `https://www.google.com/maps?q=${query}&output=embed`;
             document.getElementById('mapa-modal').style.display = 'flex';
         }
-
         function fecharMapa() {
             document.getElementById('mapa-modal').style.display = 'none';
             document.getElementById('mapa-iframe').src = '';
         }
-
-        // Fechar modal do mapa clicando fora da caixa
-        document.getElementById('mapa-modal').addEventListener('click', function(e) {
-            if (e.target === this) fecharMapa();
-        });
 
         function exportarExcel() {
             if(dadosExportacao.length === 0) return alert("Sem dados para exportar");

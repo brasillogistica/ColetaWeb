@@ -6,33 +6,116 @@
     <link rel="stylesheet" href="style.css">
     <title>Registro | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Botões de opção */
+        .option-buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .btn-option {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--navy);
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .btn-option.active {
+            background: var(--navy);
+            color: white;
+            border-color: var(--navy);
+        }
+        .btn-option:hover {
+            background: #f0f0f0;
+        }
+        .btn-option.active:hover {
+            background: var(--navy);
+        }
+
+        /* Centralizar labels */
+        .form-group label {
+            text-align: center;
+            display: block;
+        }
+
+        /* Botão Salvar desabilitado */
+        .btn-salvar-loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body style="display: flex; justify-content: center; padding: 40px;">
 
     <div class="card" style="width: 550px;">
-        <h2 style="color: var(--navy); margin-bottom: 20px;">NOVO REGISTRO</h2>
+        <h2 style="color: var(--navy); margin-bottom: 20px; text-align: center;">NOVO REGISTRO</h2>
         
-        <!-- Campos Manuais -->
+        <!-- Botões de Tipo de Carga -->
+        <div class="form-group">
+            <label>TIPO DE CARGA</label>
+            <div class="option-buttons-container">
+                <button id="btnResfriado" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
+                <button id="btnCongelado" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
+            </div>
+        </div>
+
+        <!-- Botões de Carga / Pulmão -->
+        <div class="form-group">
+            <label>CARGA OU PULMÃO</label>
+            <div class="option-buttons-container">
+                <button id="btnCarga" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
+                <button id="btnPulmao" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
+            </div>
+        </div>
+
+        <!-- Campos Manuais (nova ordem) -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
             <div class="form-group">
                 <label>DATA DA RETIRADA</label>
                 <input type="date" id="dataRetirada">
             </div>
             <div class="form-group">
-                <label>CARGA OU PULMÃO</label>
-                <select id="cargaPulmao">
-                    <option value="">SELECIONE...</option>
-                    <option value="Carga">Carga</option>
-                    <option value="Pulmão">Pulmão</option>
-                </select>
-            </div>
-            <div class="form-group">
                 <label>ARMADOR</label>
-                <input type="text" id="armador" placeholder="Digite o nome do armador">
+                <select id="armador">
+                    <option value="">SELECIONE...</option>
+                    <option value="PIL">PIL</option>
+                    <option value="HAPAG LLOYD">HAPAG LLOYD</option>
+                    <option value="ONE">ONE</option>
+                    <option value="ALPHA SHIPPING">ALPHA SHIPPING</option>
+                    <option value="CMA CGM">CMA CGM</option>
+                    <option value="YANG MING">YANG MING</option>
+                    <option value="HMM">HMM</option>
+                    <option value="MAERSK">MAERSK</option>
+                    <option value="MSC">MSC</option>
+                    <option value="COSCO">COSCO</option>
+                    <option value="EVERGREEN">EVERGREEN</option>
+                    <option value="ZIM">ZIM</option>
+                    <option value="INTERTRANS">INTERTRANS</option>
+                    <option value="BR-X CARGO">BR-X CARGO</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>PLACA</label>
                 <input type="text" id="placa" placeholder="Digite a placa">
+            </div>
+            <div class="form-group">
+                <label>CIDADE</label>
+                <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro...">
+            </div>
+            <div class="form-group">
+                <label>TERMINAL DE COLETA</label>
+                <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG...">
+            </div>
+            <div class="form-group">
+                <label>CONTAINER</label>
+                <input type="text" id="containerInput" placeholder="Digite o número do container">
             </div>
             <div class="form-group">
                 <label>TARA</label>
@@ -42,32 +125,29 @@
                 <label>MAX GROSS</label>
                 <input type="text" id="maxGross" placeholder="Ex: 35000">
             </div>
-            <div class="form-group">
-                <label>TERMINAL DE COLETA</label>
-                <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG...">
-            </div>
-            <div class="form-group">
-                <label>CIDADE</label>
-                <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro...">
-            </div>
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label>CONTAINER (Preenchimento manual)</label>
-                <input type="text" id="containerInput" placeholder="Digite o número do container">
-            </div>
         </div>
 
-        <!-- Campo de Câmera/Foto -->
+        <!-- Seção de Fotos -->
         <div class="form-group" style="border-top: 1px solid #eee; padding-top: 20px;">
-            <label>FOTO DO RECIBO</label>
+            <label>FOTO DO RECIBO (obrigatório)</label>
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
-            
             <button type="button" class="btn-main" onclick="document.getElementById('cameraInput').click()" 
                     style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
-                <span style="font-size: 20px;">📷</span> TIRAR FOTO
+                <span style="font-size: 20px;">📷</span> TIRAR FOTO (RIC)
             </button>
-            
             <div id="status" style="font-size: 12px; color: var(--red); font-weight: bold; margin-top:5px;"></div>
             <img id="preview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
+
+            <!-- Campo extra para foto do genset (apenas Resfriado) -->
+            <div id="genset-section" style="display: none; margin-top: 15px;">
+                <label>FOTO DO GENSET (obrigatório para Resfriado)</label>
+                <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display: none;">
+                <button type="button" class="btn-main" onclick="document.getElementById('gensetInput').click()" 
+                        style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
+                    <span style="font-size: 20px;">📷</span> TIRAR FOTO (GENSET)
+                </button>
+                <img id="gensetPreview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
+            </div>
         </div>
         
         <div style="margin-top: 20px; display: flex; gap: 10px;">
@@ -76,7 +156,7 @@
         </div>
     </div>
 
-    <!-- Modal personalizado (substitui o alert) -->
+    <!-- Modal personalizado -->
     <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:white; padding:30px 40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; max-width:350px; width:90%;">
             <p style="font-size:1.2rem; font-weight:bold; color:#2d4b5e; margin-bottom:20px;" id="custom-alert-msg">Registro salvo com sucesso!</p>
@@ -87,7 +167,37 @@
     <script src="script.js"></script>
     
     <script>
-        // Lógica de captura da foto (apenas exibe preview)
+        // Variáveis para guardar seleções dos botões
+        let tipoCargaSelecionado = '';
+        let cargaPulmaoSelecionado = '';
+        let salvando = false;  // controle de duplo clique
+
+        // Seleção de Tipo de Carga
+        function selecionarTipoCarga(tipo, btn) {
+            document.getElementById('btnResfriado').classList.remove('active');
+            document.getElementById('btnCongelado').classList.remove('active');
+            btn.classList.add('active');
+            tipoCargaSelecionado = tipo;
+
+            const gensetSection = document.getElementById('genset-section');
+            if (tipo === 'Resfriado') {
+                gensetSection.style.display = 'block';
+            } else {
+                gensetSection.style.display = 'none';
+                document.getElementById('gensetInput').value = '';
+                document.getElementById('gensetPreview').style.display = 'none';
+            }
+        }
+
+        // Seleção de Carga / Pulmão
+        function selecionarCargaPulmao(valor, btn) {
+            document.getElementById('btnCarga').classList.remove('active');
+            document.getElementById('btnPulmao').classList.remove('active');
+            btn.classList.add('active');
+            cargaPulmaoSelecionado = valor;
+        }
+
+        // Pré-visualização da foto do recibo (RIC)
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -100,7 +210,19 @@
             }
         });
 
-        // Funções do modal personalizado
+        // Pré-visualização da foto do genset
+        document.getElementById('gensetInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('gensetPreview').src = event.target.result;
+                    document.getElementById('gensetPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         function mostrarAlerta(mensagem, callback) {
             document.getElementById('custom-alert-msg').textContent = mensagem;
             document.getElementById('custom-alert').style.display = 'flex';
@@ -114,33 +236,52 @@
             }
         }
 
+        function setSalvando(ativar) {
+            const btn = document.getElementById('btnSalvar');
+            if (ativar) {
+                btn.innerText = 'SALVANDO...';
+                btn.classList.add('btn-salvar-loading');
+                btn.disabled = true;
+                salvando = true;
+                document.getElementById('status').innerText = 'Salvando foto...';
+            } else {
+                btn.innerText = 'SALVAR';
+                btn.classList.remove('btn-salvar-loading');
+                btn.disabled = false;
+                salvando = false;
+                document.getElementById('status').innerText = '';
+            }
+        }
+
         async function salvarColeta() {
+            if (salvando) return; // evita duplo clique
+
             if (typeof clienteSupabase === 'undefined') {
                 mostrarAlerta("Erro: O sistema ainda está carregando.");
                 return;
             }
 
+            if (!tipoCargaSelecionado) return mostrarAlerta("Selecione o tipo de carga (Resfriado ou Congelado).");
+            if (!cargaPulmaoSelecionado) return mostrarAlerta("Selecione se é Carga ou Pulmão.");
+
             const dataRetirada = document.getElementById('dataRetirada').value;
             if(!dataRetirada) return mostrarAlerta("Por favor, preencha a Data da Retirada.");
             
-            const cargaPulmao = document.getElementById('cargaPulmao').value;
-            if(!cargaPulmao) return mostrarAlerta("Por favor, selecione entre Carga ou Pulmão.");
-            
             const fileInput = document.getElementById('cameraInput');
-            if (!fileInput.files[0]) { mostrarAlerta("Tire uma foto do recibo primeiro!"); return; }
+            if (!fileInput.files[0]) return mostrarAlerta("Tire a foto do recibo (RIC)!");
 
-            const statusElement = document.getElementById('status');
-            const { data: { user } } = await clienteSupabase.auth.getUser();
-            
-            if (!user) {
-                mostrarAlerta("Usuário não autenticado!");
-                return;
+            const gensetInput = document.getElementById('gensetInput');
+            if (tipoCargaSelecionado === 'Resfriado' && !gensetInput.files[0]) {
+                return mostrarAlerta("Para carga Resfriada, é obrigatória a foto do genset com a temperatura programada.");
             }
+
+            const { data: { user } } = await clienteSupabase.auth.getUser();
+            if (!user) return mostrarAlerta("Usuário não autenticado!");
             
-            statusElement.innerText = "Obtendo endereço e enviando...";
+            setSalvando(true);
 
             try {
-                // 1. Obter Localização
+                // Localização
                 let localizacao = "Sem GPS";
                 try {
                     const pos = await new Promise((resolve, reject) => {
@@ -167,24 +308,29 @@
                     localizacao = "GPS Bloqueado";
                 }
 
-                // 2. Busca transportadora do usuário
                 const { data: userData } = await clienteSupabase
                     .from('usuarios')
                     .select('transportadora')
                     .eq('email', user.email)
                     .single();
 
-                statusElement.innerText = "Enviando foto...";
-
-                // 3. Upload da foto
-                const fileName = `${Date.now()}_${user.email}.jpg`;
-                const { error: uploadError } = await clienteSupabase.storage
+                // Upload RIC
+                const fileNameRIC = `${Date.now()}_${user.email}_ric.jpg`;
+                const { error: uploadErrorRIC } = await clienteSupabase.storage
                     .from('coletas-fotos')
-                    .upload(fileName, fileInput.files[0]);
-                
-                if (uploadError) throw uploadError;
+                    .upload(fileNameRIC, fileInput.files[0]);
+                if (uploadErrorRIC) throw uploadErrorRIC;
 
-                // 4. Coletando valores manuais
+                // Upload genset (se Resfriado)
+                let fileNameGenset = null;
+                if (tipoCargaSelecionado === 'Resfriado') {
+                    fileNameGenset = `${Date.now()}_${user.email}_genset.jpg`;
+                    const { error: uploadErrorGenset } = await clienteSupabase.storage
+                        .from('coletas-fotos')
+                        .upload(fileNameGenset, gensetInput.files[0]);
+                    if (uploadErrorGenset) throw uploadErrorGenset;
+                }
+
                 const armador = document.getElementById('armador').value;
                 const placa = document.getElementById('placa').value;
                 const tara = document.getElementById('tara').value;
@@ -193,11 +339,9 @@
                 const cidade = document.getElementById('cidade').value;
                 const containerFinal = document.getElementById('containerInput').value.trim() || "N/A";
 
-                // Define status inicial baseado na seleção
-                const statusInicial = (cargaPulmao === 'Pulmão') ? 'ag. locação' : 'ag. carregamento';
+                const statusInicial = (cargaPulmaoSelecionado === 'Pulmão') ? 'ag. locação' : 'ag. carregamento';
 
-                // 5. Salvar no banco (incluindo os novos campos status e finalizado)
-                const { error: dbError } = await clienteSupabase.from('coletas').insert([{
+                const insertObj = {
                     email_usuario: user.email,
                     data_retirada: dataRetirada,
                     armador: armador,
@@ -205,27 +349,32 @@
                     placa: placa,
                     tara: tara,
                     max_gross: maxGross,
-                    carga_pulmao: cargaPulmao,
+                    carga_pulmao: cargaPulmaoSelecionado,
                     terminal_coleta: terminalColeta,
                     cidade: cidade,
-                    foto_url: fileName,
+                    foto_url: fileNameRIC,
                     localizacao: localizacao,
                     transportadora: userData ? userData.transportadora : "N/A",
-                    status: statusInicial,      // NOVO
-                    finalizado: false,          // NOVO
+                    status: statusInicial,
+                    finalizado: false,
+                    tipo_carga: tipoCargaSelecionado,
                     created_at: new Date().toISOString()
-                }]);
+                };
 
+                if (fileNameGenset) insertObj.foto_genset_url = fileNameGenset;
+
+                const { error: dbError } = await clienteSupabase.from('coletas').insert([insertObj]);
                 if (dbError) throw dbError;
 
-                // Substituição do alert nativo pelo modal personalizado
+                setSalvando(false);
                 mostrarAlerta("Registro salvo com sucesso!", function() {
                     window.location.href = 'index.html';
                 });
             } catch (err) {
                 console.error(err);
+                setSalvando(false);
                 mostrarAlerta("Erro ao salvar: " + err.message);
-                statusElement.innerText = "Erro ao salvar.";
+                document.getElementById('status').innerText = 'Erro ao salvar.';
             }
         }
     </script>

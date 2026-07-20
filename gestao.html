@@ -3,869 +3,581 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Gestão | ColetaWeb</title>
+    <title>Registro | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        :root {
-            --navy: #2d4b5e;
-            --gold: #c5b68d;
-            --red: #E84D53;
-            --bg: #f2f2f2;
-            --white: #ffffff;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); padding: 15px; color: var(--navy); max-width: 1600px; margin: 0 auto; }
-
-        .header-card {
-            background: var(--white); border: 1px solid var(--gold); border-radius: 25px;
-            padding: 10px 25px; display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 10px;
-        }
-        .logo-minerva { font-size: 22px; letter-spacing: -1px; user-select: none; }
-        .logo-minerva .m { color: var(--navy); font-weight: 800; }
-        .logo-minerva .f { color: var(--red); font-weight: 800; }
-        .header-title { font-weight: 800; font-size: 13px; text-transform: uppercase; }
-
-        .filter-bar {
-            background: var(--white); border: 1px solid var(--gold); border-radius: 25px;
-            padding: 8px 20px; display: flex; align-items: center; gap: 10px;
-            margin-bottom: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex-wrap: wrap;
-        }
-        .filter-group { flex: 1; display: flex; flex-direction: column; min-width: 120px; }
-        .filter-group label { font-size: 8px; font-weight: 800; color: var(--gold); text-transform: uppercase; margin-bottom: 2px; }
-        .filter-group input, .filter-group select {
-            border: none; border-bottom: 1px solid var(--gold); padding: 5px 0;
-            font-size: 10px; font-weight: 700; color: var(--navy); background: transparent;
-        }
-        .btn-filtrar, .btn-limpar, .btn-voltar {
-            padding: 5px 12px; border-radius: 99px; font-weight: 700;
-            cursor: pointer; text-transform: uppercase; font-size: 8px; border: none;
-            white-space: nowrap; align-self: flex-end; margin-bottom: 2px;
-        }
-        .btn-filtrar { background: var(--navy); color: white; }
-        .btn-limpar { background: transparent; border: 1px solid var(--navy); color: var(--navy); }
-        .btn-voltar { background: #6c757d; color: white; }
-
-        .chips-container { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; min-height: 20px; }
-        .chip {
-            background: var(--red); color: white; padding: 2px 10px; border-radius: 99px;
-            font-size: 8px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer;
-        }
-        .chip span { font-size: 11px; line-height: 1; }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-            max-height: calc(100vh - 320px);
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
-        .card {
-            background: var(--white); border: 1px solid var(--gold); border-radius: 20px;
-            padding: 10px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column;
-            overflow: hidden;
-        }
-
-        .card-left {
-            height: 100%;
-            max-height: 170px;
-        }
-
-        .card-right {
-            grid-column: 2;
-            grid-row: 1 / 4;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .chart-title { font-size: 9px; font-weight: 800; color: var(--navy); text-transform: uppercase; margin-bottom: 2px; }
-
-        .card-left canvas { height: 135px !important; max-height: 135px; }
-        .card-right canvas { height: 100% !important; max-height: 100%; }
-
-        .cost-card {
-            margin-bottom: 10px;
-            max-height: 190px;
+        body {
+            background: var(--bg);
+            padding: 20px 10px;
+            color: var(--navy);
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
-        .cost-card canvas { height: 100% !important; }
 
-        .table-card { grid-column: span 2; }
-        .table-wrapper { 
-            max-height: 450px;
-            overflow-y: auto; 
-            border-radius: 12px; 
-            margin-top: 8px; 
-        }
-        
-        table {
+        /* Header */
+        .header-card {
+            background: var(--white);
+            border: 1px solid var(--gold);
+            border-radius: 25px;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 8.5px;
-            table-layout: fixed;
-            font-family: 'Courier New', monospace;
+            max-width: 600px;
+        }
+        .logo-minerva {
+            font-size: 24px;
+            letter-spacing: -1px;
+            user-select: none;
+        }
+        .logo-minerva .m { color: var(--navy); font-weight: 800; }
+        .logo-minerva .f { color: var(--red); font-weight: 800; }
+        .header-title {
+            font-weight: 800;
+            font-size: 17px;
+            text-transform: uppercase;
+            color: var(--navy);
         }
 
-        thead {
-            border-radius: 12px 12px 0 0;
-            overflow: hidden;
+        /* Card principal */
+        .form-card {
+            background: var(--white);
+            border: 1px solid var(--gold);
+            border-radius: 20px;
+            padding: 20px 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 600px;
+        }
+        .form-card h2 {
+            color: var(--navy);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 800;
+            font-size: 18px;
+            text-transform: uppercase;
         }
 
-        th {
-            position: sticky;
-            top: 0;
+        /* Grupos de filtro (mesmo estilo do processos.html) */
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+        .filter-group label {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        .filter-group input,
+        .filter-group select {
+            border: none;
+            border-bottom: 1px solid var(--gold);
+            padding: 6px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--navy);
+            background: transparent;
+            outline: none;
+        }
+        .filter-group input::placeholder {
+            color: #aaa;
+        }
+
+        /* Grid para campos lado a lado */
+        .fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* Botões de opção (Resfriado/Congelado, Carga/Pulmão) */
+        .option-buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .btn-option {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--navy);
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .btn-option.active {
             background: var(--navy);
             color: white;
-            padding: 12px 24px;          /* ajustado de 28px para 24px */
-            text-align: center;
+            border-color: var(--navy);
+        }
+        .btn-option:hover {
+            background: #f0f0f0;
+        }
+        .btn-option.active:hover {
+            background: var(--navy);
+        }
+
+        /* Botões do sistema (mesmo do processos.html) */
+        .btn-filtrar, .btn-voltar {
+            padding: 6px 14px;
+            border-radius: 99px;
             font-weight: 700;
+            cursor: pointer;
             text-transform: uppercase;
-            z-index: 10;
+            font-size: 10px;
+            border: none;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            border-bottom: 2px solid var(--navy);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.3px;
+        }
+        .btn-filtrar {
+            background: var(--navy);
+            color: white;
+        }
+        .btn-voltar {
+            background: #7a8a95;
+            color: white;
+        }
+        .btn-filtrar:disabled, .btn-voltar:disabled {
+            opacity: 0.6;
+            pointer-events: none;
         }
 
-        th:first-child {
-            border-radius: 12px 0 0 0;
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+            justify-content: flex-start;
         }
 
-        th:last-child {
-            border-radius: 0 12px 0 0;
-        }
-
-        td {
-            padding: 12px 24px;          /* mesmo ajuste */
-            border-bottom: 1px solid #f2f2f2;
-            color: var(--navy);
+        /* Status */
+        #status {
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 5px;
             text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            background: var(--white);
         }
 
-        tr:nth-child(even) td {
-            background-color: #f9f9f9;
+        /* Seção de fotos */
+        .photo-section {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 10px;
         }
-
-        .font-bold { font-weight: 800; }
-
-        .vencido-sim {
-            color: var(--red) !important;
-        }
-
-        .btn-excel-small {
-            background: var(--navy); color: white; border: none; padding: 4px 10px;
-            border-radius: 99px; font-size: 7px; font-weight: 700; cursor: pointer; text-transform: uppercase;
-        }
-        .sem-dados { text-align: center; padding: 15px; color: #888; }
-
-        .status-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 14px;
-            font-size: 9px;
-            font-weight: 600;
+        .photo-btn {
+            background: var(--gold);
+            padding: 10px 20px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-radius: 99px;
+            margin-bottom: 8px;
+            border: none;
+            font-weight: 700;
+            font-size: 11px;
             text-transform: uppercase;
-            white-space: nowrap;
-            color: #1e2f3a;
+            cursor: pointer;
+            color: white;
+            transition: all 0.2s;
+        }
+        .photo-btn:hover {
+            opacity: 0.9;
         }
 
-        #loading-overlay {
+        /* Modal alerta personalizado */
+        #custom-alert {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
             z-index: 9999;
             justify-content: center;
             align-items: center;
         }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--gold);
-            border-top-color: var(--navy);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        .alert-box {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .alert-box p {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2d4b5e;
+            margin-bottom: 20px;
+        }
+        .alert-box button {
+            background: #2d4b5e;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 99px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay"><div class="spinner"></div></div>
+    <header class="header-card">
+        <div class="logo-minerva">
+            <span class="m">minerva</span><span class="f">foods</span>
+        </div>
+        <div class="header-title">Registro de Coleta</div>
+        <div></div>
+    </header>
 
-<header class="header-card">
-    <div class="logo-minerva"><span class="m">minerva</span><span class="f">foods</span></div>
-    <div class="header-title">Painel de Gestão – Progresso dos Containers</div>
-</header>
+    <div class="form-card">
+        <h2>NOVO REGISTRO</h2>
+        
+        <!-- Botões de Tipo de Carga -->
+        <div class="filter-group">
+            <label>Tipo de Carga</label>
+            <div class="option-buttons-container">
+                <button id="btnResfriado" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
+                <button id="btnCongelado" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
+            </div>
+        </div>
 
-<section class="filter-bar">
-    <div class="filter-group">
-        <label>Container</label>
-        <input type="text" id="filtroContainer" placeholder="Número do container">
-    </div>
-    <div class="filter-group">
-        <label>Armador</label>
-        <input type="text" id="filtroArmador" placeholder="Nome do armador">
-    </div>
-    <div class="filter-group">
-        <label>Status</label>
-        <select id="filtroStatus">
-            <option value="">Todos</option>
-            <option value="ag. locação">AG. LOCAÇÃO</option>
-            <option value="ag. carregamento">AG. CARREGAMENTO</option>
-            <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
-            <option value="faturado">FATURADO</option>
-            <option value="ag. liberação">AG. LIBERAÇÃO</option>
-            <option value="em viagem">EM VIAGEM</option>
-            <option value="depositado">DEPOSITADO</option>
-        </select>
-    </div>
-    <div class="filter-group">
-        <label>Data Retirada</label>
-        <input type="date" id="filtroDataRetirada">
-    </div>
-    <div class="filter-group">
-        <label>Data Finalizado</label>
-        <input type="date" id="filtroDataFinalizado">
-    </div>
-    <button class="btn-filtrar" onclick="aplicarFiltrosForm()">Filtrar</button>
-    <button class="btn-limpar" onclick="limparTudo()">Limpar</button>
-    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
-</section>
+        <!-- Botões de Carga / Pulmão -->
+        <div class="filter-group">
+            <label>Carga ou Pulmão</label>
+            <div class="option-buttons-container">
+                <button id="btnCarga" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
+                <button id="btnPulmao" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
+            </div>
+        </div>
 
-<div class="chips-container" id="chips-area"></div>
+        <!-- Campos Manuais -->
+        <div class="fields-grid">
+            <div class="filter-group">
+                <label>Data da Retirada</label>
+                <input type="date" id="dataRetirada">
+            </div>
+            <div class="filter-group">
+                <label>Armador</label>
+                <select id="armador">
+                    <option value="">Selecione...</option>
+                    <option value="PIL">PIL</option>
+                    <option value="HAPAG LLOYD">HAPAG LLOYD</option>
+                    <option value="ONE">ONE</option>
+                    <option value="ALPHA SHIPPING">ALPHA SHIPPING</option>
+                    <option value="CMA CGM">CMA CGM</option>
+                    <option value="YANG MING">YANG MING</option>
+                    <option value="HMM">HMM</option>
+                    <option value="MAERSK">MAERSK</option>
+                    <option value="MSC">MSC</option>
+                    <option value="COSCO">COSCO</option>
+                    <option value="EVERGREEN">EVERGREEN</option>
+                    <option value="ZIM">ZIM</option>
+                    <option value="INTERTRANS">INTERTRANS</option>
+                    <option value="BR-X CARGO">BR-X CARGO</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Placa</label>
+                <input type="text" id="placa" placeholder="Digite a placa">
+            </div>
+            <div class="filter-group">
+                <label>Cidade</label>
+                <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro...">
+            </div>
+            <div class="filter-group">
+                <label>Terminal de Coleta</label>
+                <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG...">
+            </div>
+            <div class="filter-group">
+                <label>Container</label>
+                <input type="text" id="containerInput" placeholder="Digite o número do container">
+            </div>
+            <div class="filter-group">
+                <label>Tara</label>
+                <input type="text" id="tara" placeholder="Ex: 4730">
+            </div>
+            <div class="filter-group">
+                <label>Max Gross</label>
+                <input type="text" id="maxGross" placeholder="Ex: 35000">
+            </div>
+        </div>
 
-<div class="dashboard-grid">
-    <div class="card card-left" style="grid-column: 1; grid-row: 1;">
-        <div class="chart-title">Containers por Status</div>
-        <canvas id="chartStatus"></canvas>
-    </div>
-    <div class="card card-left" style="grid-column: 1; grid-row: 2;">
-        <div class="chart-title">Free Time Consumido (%)</div>
-        <canvas id="chartFreeTime"></canvas>
-    </div>
-    <div class="card card-left" style="grid-column: 1; grid-row: 3;">
-        <div class="chart-title">Depositados em Atraso</div>
-        <canvas id="chartAtraso"></canvas>
-    </div>
+        <!-- Seção de Fotos -->
+        <div class="photo-section">
+            <div class="filter-group">
+                <label>Foto do Recibo (obrigatório)</label>
+                <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+                <button type="button" class="photo-btn" onclick="document.getElementById('cameraInput').click()">
+                    <span style="font-size: 18px;">📷</span> TIRAR FOTO (RIC)
+                </button>
+                <img id="preview" style="max-width: 100%; margin-top: 8px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
+            </div>
 
-    <div class="card card-right">
-        <div class="chart-title">Containers por Transportadora</div>
-        <div style="flex: 1; position: relative; min-height: 0; overflow: hidden;">
-            <canvas id="chartTransportadora"></canvas>
+            <!-- Campo extra para foto do genset (apenas Resfriado) -->
+            <div id="genset-section" style="display: none;">
+                <div class="filter-group">
+                    <label>Foto do Genset (obrigatório para Resfriado)</label>
+                    <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display: none;">
+                    <button type="button" class="photo-btn" onclick="document.getElementById('gensetInput').click()">
+                        <span style="font-size: 18px;">📷</span> TIRAR FOTO (GENSET)
+                    </button>
+                    <img id="gensetPreview" style="max-width: 100%; margin-top: 8px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
+                </div>
+            </div>
+        </div>
+
+        <div id="status"></div>
+        
+        <div class="btn-group">
+            <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
+            <button class="btn-filtrar" id="btnSalvar" onclick="salvarColeta()">Salvar</button>
         </div>
     </div>
-</div>
 
-<div class="card cost-card">
-    <div class="chart-title">Custo Total em Atraso (USD)</div>
-    <div style="flex:1; position:relative;">
-        <canvas id="chartCusto"></canvas>
+    <!-- Modal personalizado -->
+    <div id="custom-alert">
+        <div class="alert-box">
+            <p id="custom-alert-msg">Registro salvo com sucesso!</p>
+            <button onclick="fecharAlerta()">OK</button>
+        </div>
     </div>
-</div>
 
-<div class="card table-card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <div class="chart-title" style="margin:0;">Registros de Containers</div>
-        <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
-    </div>
-    <div class="table-wrapper">
-        <table id="main-table">
-            <thead>
-                <tr>
-                    <th>Container</th>
-                    <th>Status</th>
-                    <th>Armador</th>
-                    <th>Transport.</th>
-                    <th>Terminal</th>
-                    <th>Cidade</th>
-                    <th>Registro</th>
-                    <th>Retirada</th>
-                    <th>Finalizado</th>
-                    <th>FT Total</th>
-                    <th>Dias Rest.</th>
-                    <th>Custo Diário</th>
-                    <th>Custo Total</th>
-                    <th>Vencido?</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
-</div>
+    <script src="script.js"></script>
+    
+    <script>
+        let tipoCargaSelecionado = '';
+        let cargaPulmaoSelecionado = '';
+        let salvando = false;
 
-<script src="script.js"></script>
-<script>
-    // -------------------------------------------------------------
-    // FREE TIME RULES & CACHE
-    // -------------------------------------------------------------
-    const FREE_TIME_RULES = {
-        "PIL": { dias: 30, custo: 100 }, "HAPAG LLOYD": { dias: 30, custo: 297 }, "HAPAG": { dias: 30, custo: 297 },
-        "ONE": { dias: 30, custo: 100 }, "ALPHA SHIPPING": { dias: 30, custo: 100 }, "ALPHA": { dias: 30, custo: 100 },
-        "CMA CGM": { dias: 25, custo: 175 }, "CMA": { dias: 25, custo: 175 },
-        "YANG MING": { dias: 35, custo: 100 }, "HMM": { dias: 42, custo: 100 }, "MAERSK": { dias: 24, custo: 160 },
-        "MSC": { dias: 30, custo: 130 }, "COSCO": { dias: 35, custo: 100 }, "EVERGREEN": { dias: 35, custo: 80 },
-        "ZIM": { dias: 30, custo: 141 }, "INTERTRANS - COSCO": { dias: 21, custo: 250 },
-        "INTERTRANS - CMA CGM": { dias: 21, custo: 335 }, "INTERTRANS - HMM": { dias: 21, custo: 360 },
-        "INTERTRANS - YANG MING": { dias: 21, custo: 300 }, "BR-X CARGO": { dias: 14, custo: 353 }
-    };
+        function selecionarTipoCarga(tipo, btn) {
+            document.getElementById('btnResfriado').classList.remove('active');
+            document.getElementById('btnCongelado').classList.remove('active');
+            btn.classList.add('active');
+            tipoCargaSelecionado = tipo;
 
-    const freeTimeCache = new Map();
-    function getFreeTimeRuleCached(armador) {
-        if (!armador) return null;
-        const nome = armador.trim().toUpperCase();
-        if (freeTimeCache.has(nome)) return freeTimeCache.get(nome);
-        for (const [key, value] of Object.entries(FREE_TIME_RULES)) {
-            if (nome === key.toUpperCase() || nome.includes(key.toUpperCase()) || key.toUpperCase().includes(nome)) {
-                freeTimeCache.set(nome, value);
-                return value;
-            }
-        }
-        freeTimeCache.set(nome, null);
-        return null;
-    }
-
-    // Cores suaves para os status
-    function getStatusColor(status) {
-        const colors = {
-            'ag. locação': '#FEF3C7',
-            'ag. carregamento': '#FDE68A',
-            'pendencia logistica': '#FECACA',
-            'faturado': '#DBEAFE',
-            'ag. liberação': '#E9D5FF',
-            'em viagem': '#BAE6FD',
-            'depositado': '#D1FAE5'
-        };
-        return colors[status] || '#F3F4F6';
-    }
-
-    // -------------------------------------------------------------
-    // CONSTANTS & STATE
-    // -------------------------------------------------------------
-    const STATUS_FLUXO = ['ag. locação','ag. carregamento','pendencia logistica','faturado','ag. liberação','em viagem','depositado'];
-    let dadosCompletos = [], charts = {};
-    let filtroStatusAtivo = null;
-    let filtroFreeTimeAtivo = null;
-    let filtroAtrasoAtivo = null;
-    let filtroTransportadoraAtiva = null;
-
-    function showLoading() { document.getElementById('loading-overlay').style.display = 'flex'; }
-    function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
-
-    async function verificarAcesso() {
-        if (typeof clienteSupabase === 'undefined') { setTimeout(verificarAcesso, 500); return false; }
-        const { data: { user } } = await clienteSupabase.auth.getUser();
-        if (!user) { window.location.href = 'login.html'; return false; }
-        const { data: userData } = await clienteSupabase.from('usuarios').select('perfil').eq('email', user.email).single();
-        if (!userData || (userData.perfil !== 'master' && userData.perfil !== 'administrador')) {
-            alert('Acesso negado.'); window.location.href = 'index.html'; return false;
-        }
-        return true;
-    }
-
-    function calcularDiasRestantes(dataRetirada, diasFreeTime) {
-        if (!dataRetirada || !diasFreeTime) return null;
-        const retirada = new Date(dataRetirada + 'T00:00:00');
-        const agora = new Date();
-        const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
-        return Math.ceil(diff / 86400000);
-    }
-
-    function obterDadosFiltrados() {
-        const fContainer = document.getElementById('filtroContainer').value.trim().toLowerCase();
-        const fArmador = document.getElementById('filtroArmador').value.trim().toLowerCase();
-        const fStatusForm = document.getElementById('filtroStatus').value;
-        const fData = document.getElementById('filtroDataRetirada').value;
-        const fDataFin = document.getElementById('filtroDataFinalizado').value;
-
-        return dadosCompletos.filter(d => {
-            if (fContainer && !(d.container || '').toLowerCase().includes(fContainer)) return false;
-            if (fArmador && !(d.armador || '').toLowerCase().includes(fArmador)) return false;
-            if (fData && d.data_retirada !== fData) return false;
-
-            if (fDataFin) {
-                if (!d.data_finalizado) return false;
-                const dataObj = new Date(d.data_finalizado);
-                const dataFormatada = dataObj.getFullYear() + '-' + 
-                    String(dataObj.getMonth() + 1).padStart(2, '0') + '-' + 
-                    String(dataObj.getDate()).padStart(2, '0');
-                if (dataFormatada !== fDataFin) return false;
-            }
-
-            if (filtroStatusAtivo && d.status !== filtroStatusAtivo) return false;
-            if (fStatusForm && d.status !== fStatusForm) return false;
-
-            if (filtroFreeTimeAtivo) {
-                const rule = getFreeTimeRuleCached(d.armador);
-                if (!rule || !d.data_retirada) return false;
-                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-                if (rest === null) return false;
-                const pct = ((rule.dias - rest) / rule.dias) * 100;
-                const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
-                if (faixa !== filtroFreeTimeAtivo) return false;
-            }
-
-            if (filtroAtrasoAtivo) {
-                const isDepositado = d.status === 'depositado' || d.finalizado;
-                if (!isDepositado) return false;
-                const rule = getFreeTimeRuleCached(d.armador);
-                if (!rule || !d.data_retirada) return false;
-                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-                const emAtraso = rest !== null && rest < 0;
-                if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
-                if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
-            }
-
-            if (filtroTransportadoraAtiva && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
-
-            return true;
-        });
-    }
-
-    function atualizarChips() {
-        const chipArea = document.getElementById('chips-area');
-        chipArea.innerHTML = '';
-        const chips = [];
-        if (filtroStatusAtivo) chips.push({ label: filtroStatusAtivo.toUpperCase(), key: 'status' });
-        if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
-        if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
-        if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
-
-        chips.forEach(c => {
-            const chip = document.createElement('div');
-            chip.className = 'chip';
-            chip.innerHTML = `${c.label} <span>&times;</span>`;
-            chip.onclick = () => {
-                if (c.key === 'status') filtroStatusAtivo = null;
-                else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
-                else if (c.key === 'atraso') filtroAtrasoAtivo = null;
-                else if (c.key === 'transp') filtroTransportadoraAtiva = null;
-                atualizarChips();
-                aplicarTodos();
-            };
-            chipArea.appendChild(chip);
-        });
-    }
-
-    function prepararGraficos(dados) {
-        const transpMap = new Map();
-        const statusCount = new Map(STATUS_FLUXO.map(s => [s, 0]));
-        const faixas = { '0-25%':0, '26-50%':0, '51-75%':0, '76-99%':0, '≥100%':0 };
-        let depositadosNoPrazo = 0;
-        let depositadosAtrasados = 0;
-        let custoTotalAtraso = 0;
-
-        const custoMensalMap = new Map();
-
-        for (const d of dados) {
-            const t = d.transportadora || 'N/A';
-            transpMap.set(t, (transpMap.get(t) || 0) + 1);
-
-            if (statusCount.has(d.status)) {
-                statusCount.set(d.status, statusCount.get(d.status) + 1);
-            }
-
-            const rule = getFreeTimeRuleCached(d.armador);
-            if (rule && d.data_retirada) {
-                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-                if (rest !== null) {
-                    const pct = ((rule.dias - rest) / rule.dias) * 100;
-                    let faixa;
-                    if (pct >= 100) faixa = '≥100%';
-                    else if (pct >= 76) faixa = '76-99%';
-                    else if (pct >= 51) faixa = '51-75%';
-                    else if (pct >= 26) faixa = '26-50%';
-                    else faixa = '0-25%';
-                    faixas[faixa]++;
-
-                    const isDepositado = d.status === 'depositado' || d.finalizado;
-                    if (isDepositado) {
-                        if (rest < 0) {
-                            depositadosAtrasados++;
-                            const custo = Math.abs(rest) * rule.custo;
-                            custoTotalAtraso += custo;
-
-                            const retDate = new Date(d.data_retirada + 'T00:00:00');
-                            const mesAno = `${retDate.getFullYear()}-${String(retDate.getMonth() + 1).padStart(2, '0')}`;
-                            custoMensalMap.set(mesAno, (custoMensalMap.get(mesAno) || 0) + custo);
-                        } else {
-                            depositadosNoPrazo++;
-                        }
-                    }
-                }
+            const gensetSection = document.getElementById('genset-section');
+            if (tipo === 'Resfriado') {
+                gensetSection.style.display = 'block';
+            } else {
+                gensetSection.style.display = 'none';
+                document.getElementById('gensetInput').value = '';
+                document.getElementById('gensetPreview').style.display = 'none';
             }
         }
 
-        const sortedMonths = Array.from(custoMensalMap.keys()).sort();
-        const custoMensalLabels = sortedMonths.map(m => {
-            const [ano, mes] = m.split('-');
-            const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            return `${meses[parseInt(mes)-1]}/${ano.slice(2)}`;
-        });
-        const custoMensalValues = sortedMonths.map(m => custoMensalMap.get(m));
+        function selecionarCargaPulmao(valor, btn) {
+            document.getElementById('btnCarga').classList.remove('active');
+            document.getElementById('btnPulmao').classList.remove('active');
+            btn.classList.add('active');
+            cargaPulmaoSelecionado = valor;
+        }
 
-        const transpLabels = Array.from(transpMap.keys()).sort((a,b) => transpMap.get(b) - transpMap.get(a));
-        const transpValues = transpLabels.map(k => transpMap.get(k));
-
-        const statusLabels = STATUS_FLUXO.map(s => s.substring(0,3).toUpperCase());
-        const statusValues = STATUS_FLUXO.map(s => statusCount.get(s));
-
-        return { 
-            transpLabels, transpValues, statusLabels, statusValues, faixas, 
-            atrasados: depositadosAtrasados, noPrazo: depositadosNoPrazo, 
-            custoTotalAtraso,
-            custoMensalLabels, custoMensalValues 
-        };
-    }
-
-    function renderGraficos(dadosFiltrados) {
-        const prep = prepararGraficos(dadosFiltrados);
-        const colors = { navy: '#2d4b5e', gold: '#c5b68d', red: '#E84D53' };
-        Object.values(charts).forEach(c => c.destroy());
-        charts = {};
-
-        const baseOptions = {
-            maintainAspectRatio: false,
-            layout: { padding: { top: 20, bottom: 5, left: 5, right: 5 } },
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
-                datalabels: { 
-                    anchor: 'end', 
-                    align: 'top', 
-                    font: { weight: 'bold', size: 8 }, 
-                    formatter: v => v || '', 
-                    offset: 5,
-                    clip: false
-                }
-            },
-            scales: {
-                x: { 
-                    ticks: { font: { size: 9, weight: 'bold' }, color: colors.navy, maxRotation: 0 },
-                    grid: { display: false }
-                },
-                y: { 
-                    ticks: { stepSize: 1, font: { size: 9, weight: 'bold' }, color: colors.navy },
-                    grid: { display: false }
-                }
+        document.getElementById('cameraInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('preview').src = event.target.result;
+                    document.getElementById('preview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
             }
-        };
-
-        // STATUS
-        charts.status = new Chart(document.getElementById('chartStatus'), {
-            type: 'bar',
-            data: {
-                labels: prep.statusLabels,
-                datasets: [{
-                    data: prep.statusValues,
-                    backgroundColor: prep.statusValues.map((_, i) => i === STATUS_FLUXO.length-1 ? colors.red : colors.navy),
-                    borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.7
-                }]
-            },
-            options: {
-                ...baseOptions,
-                onClick: (e, elements) => {
-                    if (elements.length > 0) {
-                        const idx = elements[0].index;
-                        const status = STATUS_FLUXO[idx];
-                        filtroStatusAtivo = (filtroStatusAtivo === status) ? null : status;
-                        atualizarChips();
-                        aplicarTodos();
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
         });
 
-        // FREE TIME
-        charts.freeTime = new Chart(document.getElementById('chartFreeTime'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(prep.faixas),
-                datasets: [{
-                    data: Object.values(prep.faixas),
-                    backgroundColor: [colors.navy, colors.navy, colors.gold, colors.gold, colors.red],
-                    borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.7
-                }]
-            },
-            options: {
-                ...baseOptions,
-                onClick: (e, elements) => {
-                    if (elements.length > 0) {
-                        const faixa = Object.keys(prep.faixas)[elements[0].index];
-                        filtroFreeTimeAtivo = (filtroFreeTimeAtivo === faixa) ? null : faixa;
-                        atualizarChips();
-                        aplicarTodos();
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
+        document.getElementById('gensetInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('gensetPreview').src = event.target.result;
+                    document.getElementById('gensetPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
-        // DEPOSITADOS EM ATRASO
-        charts.atraso = new Chart(document.getElementById('chartAtraso'), {
-            type: 'bar',
-            data: {
-                labels: ['No Prazo', 'Em Atraso'],
-                datasets: [{
-                    data: [prep.noPrazo, prep.atrasados],
-                    backgroundColor: [colors.navy, colors.red],
-                    borderRadius: 3, barPercentage: 0.4, categoryPercentage: 0.6
-                }]
-            },
-            options: {
-                ...baseOptions,
-                onClick: (e, elements) => {
-                    if (elements.length > 0) {
-                        const tipo = elements[0].index === 0 ? 'no_prazo' : 'em_atraso';
-                        filtroAtrasoAtivo = (filtroAtrasoAtivo === tipo) ? null : tipo;
-                        atualizarChips();
-                        aplicarTodos();
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
-
-        // TRANSPORTADORAS
-        charts.transp = new Chart(document.getElementById('chartTransportadora'), {
-            type: 'bar',
-            data: {
-                labels: prep.transpLabels,
-                datasets: [{
-                    data: prep.transpValues,
-                    backgroundColor: colors.navy,
-                    borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.7
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                maintainAspectRatio: false,
-                layout: { padding: { top: 5, bottom: 5, left: 5, right: 5 } },
-                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } }, datalabels: { display: false } },
-                scales: { x: { ticks: { font: { size: 9, weight: 'bold' }, color: colors.navy }, grid: { display: false } }, y: { ticks: { font: { size: 9, weight: 'bold' }, color: colors.navy }, grid: { display: false } } },
-                onClick: (e, elements) => {
-                    if (elements.length > 0) {
-                        const transp = prep.transpLabels[elements[0].index];
-                        filtroTransportadoraAtiva = (filtroTransportadoraAtiva === transp) ? null : transp;
-                        atualizarChips();
-                        aplicarTodos();
-                    }
-                }
-            },
-            plugins: []
-        });
-
-        // CUSTO TOTAL (LINHA)
-        charts.custo = new Chart(document.getElementById('chartCusto'), {
-            type: 'line',
-            data: {
-                labels: prep.custoMensalLabels,
-                datasets: [{
-                    label: 'Custo (USD)',
-                    data: prep.custoMensalValues,
-                    borderColor: colors.red,
-                    backgroundColor: 'rgba(232, 77, 83, 0.1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: colors.red,
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 1,
-                    pointRadius: 4,
-                    tension: 0.2,
-                    fill: true
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                layout: { padding: { top: 15, bottom: 8, left: 10, right: 20 } },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { 
-                        callbacks: { 
-                            label: ctx => `Custo: US$ ${ctx.raw.toFixed(2)}` 
-                        } 
-                    },
-                    datalabels: {
-                        anchor: 'end',
-                        align: 'top',
-                        offset: 4,
-                        font: { weight: 'bold', size: 9 },
-                        formatter: v => `$${v.toFixed(0)}`,
-                        color: colors.navy,
-                        display: prep.custoMensalValues.length <= 12
-                    }
-                },
-                scales: {
-                    x: { 
-                        ticks: { font: { size: 9, weight: 'bold' }, color: colors.navy, maxRotation: 45 },
-                        grid: { display: false }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        ticks: { 
-                            font: { size: 9, weight: 'bold' }, 
-                            color: colors.navy,
-                            callback: v => `$${v}`
-                        },
-                        grid: { color: '#f0f0f0' },
-                        title: {
-                            display: true,
-                            text: 'USD',
-                            font: { size: 10, weight: 'bold' },
-                            color: colors.navy
-                        }
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
-    }
-
-    function formatarDataISO(iso) {
-        if (!iso) return 'N/A';
-        let date;
-        if (iso.includes('T')) {
-            date = new Date(iso);
-        } else {
-            date = new Date(iso + 'T00:00:00');
+        function mostrarAlerta(mensagem, callback) {
+            document.getElementById('custom-alert-msg').textContent = mensagem;
+            document.getElementById('custom-alert').style.display = 'flex';
+            window._callbackAlerta = callback;
         }
-        if (isNaN(date.getTime())) return 'N/A';
-        return date.toLocaleDateString('pt-BR');
-    }
 
-    function renderTabela(dados) {
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
-        if (dados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="14" class="sem-dados">Nenhum container encontrado.</td></tr>';
-            return;
+        function fecharAlerta() {
+            document.getElementById('custom-alert').style.display = 'none';
+            if (typeof window._callbackAlerta === 'function') {
+                window._callbackAlerta();
+            }
         }
-        for (const d of dados) {
-            const rule = getFreeTimeRuleCached(d.armador);
-            const diasTotal = rule ? rule.dias : '-';
-            const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
-            const vencido = diasRest !== null && diasRest < 0;
-            const custoDiario = (vencido && rule) ? rule.custo.toFixed(2) : '-';
-            const custoTotal = (vencido && rule) ? (Math.abs(diasRest) * rule.custo).toFixed(2) : '-';
-            const statusText = (d.status || '').toUpperCase();
-            const statusColor = getStatusColor(d.status);
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${d.container || 'N/A'}</td>
-                <td><span class="status-badge" style="background-color: ${statusColor};">${statusText}</span></td>
-                <td>${d.armador || 'N/A'}</td>
-                <td>${d.transportadora || 'N/A'}</td>
-                <td>${d.terminal || 'N/A'}</td>
-                <td>${d.cidade || 'N/A'}</td>
-                <td>${formatarDataISO(d.created_at)}</td>
-                <td>${formatarDataISO(d.data_retirada)}</td>
-                <td>${formatarDataISO(d.data_finalizado)}</td>
-                <td>${diasTotal}</td>
-                <td>${diasRest !== null ? diasRest : '-'}</td>
-                <td>${custoDiario}</td>
-                <td>${custoTotal}</td>
-                <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
-            `;
-            tbody.appendChild(tr);
+
+        function setSalvando(ativar) {
+            const btn = document.getElementById('btnSalvar');
+            const statusEl = document.getElementById('status');
+            if (ativar) {
+                btn.innerText = 'Salvando...';
+                btn.disabled = true;
+                salvando = true;
+                statusEl.innerText = 'Salvando foto...';
+                statusEl.style.color = 'var(--navy)';
+            } else {
+                btn.innerText = 'Salvar';
+                btn.disabled = false;
+                salvando = false;
+                statusEl.innerText = '';
+            }
         }
-    }
 
-    function aplicarTodos() {
-        const filtrados = obterDadosFiltrados();
-        renderGraficos(filtrados);
-        renderTabela(filtrados);
-    }
+        async function salvarColeta() {
+            if (salvando) return;
 
-    function aplicarFiltrosForm() { aplicarTodos(); }
-
-    function limparTudo() {
-        document.getElementById('filtroContainer').value = '';
-        document.getElementById('filtroArmador').value = '';
-        document.getElementById('filtroStatus').value = '';
-        document.getElementById('filtroDataRetirada').value = '';
-        document.getElementById('filtroDataFinalizado').value = '';
-        filtroStatusAtivo = null;
-        filtroFreeTimeAtivo = null;
-        filtroAtrasoAtivo = null;
-        filtroTransportadoraAtiva = null;
-        atualizarChips();
-        aplicarTodos();
-    }
-
-    function exportarExcel() {
-        try {
-            const dados = obterDadosFiltrados();
-            if (dados.length === 0) {
-                alert('Nenhum dado para exportar.');
+            if (typeof clienteSupabase === 'undefined') {
+                mostrarAlerta("Erro: O sistema ainda está carregando.");
                 return;
             }
-            const exportData = dados.map(d => {
-                const rule = getFreeTimeRuleCached(d.armador);
-                const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
-                const vencido = diasRest !== null && diasRest < 0;
-                return {
-                    Container: d.container,
-                    Status: (d.status || '').toUpperCase(),
-                    Armador: d.armador,
-                    Transportadora: d.transportadora,
-                    Terminal: d.terminal || '',
-                    Cidade: d.cidade || '',
-                    Registro: formatarDataISO(d.created_at),
-                    Retirada: formatarDataISO(d.data_retirada),
-                    Finalizado: formatarDataISO(d.data_finalizado),
-                    'FT Total': rule ? rule.dias : '',
-                    'Dias Rest': diasRest,
-                    'Custo Diário': vencido && rule ? rule.custo : '',
-                    'Custo Total': vencido && rule ? (Math.abs(diasRest)*rule.custo) : '',
-                    Vencido: vencido ? 'SIM' : 'NÃO'
+
+            if (!tipoCargaSelecionado) return mostrarAlerta("Selecione o tipo de carga (Resfriado ou Congelado).");
+            if (!cargaPulmaoSelecionado) return mostrarAlerta("Selecione se é Carga ou Pulmão.");
+
+            const dataRetirada = document.getElementById('dataRetirada').value;
+            if(!dataRetirada) return mostrarAlerta("Por favor, preencha a Data da Retirada.");
+            
+            const fileInput = document.getElementById('cameraInput');
+            if (!fileInput.files[0]) return mostrarAlerta("Tire a foto do recibo (RIC)!");
+
+            const gensetInput = document.getElementById('gensetInput');
+            if (tipoCargaSelecionado === 'Resfriado' && !gensetInput.files[0]) {
+                return mostrarAlerta("Para carga Resfriada, é obrigatória a foto do genset com a temperatura programada.");
+            }
+
+            const { data: { user } } = await clienteSupabase.auth.getUser();
+            if (!user) return mostrarAlerta("Usuário não autenticado!");
+            
+            setSalvando(true);
+
+            try {
+                let localizacao = "Sem GPS";
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
+                    });
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+                    const data = await response.json();
+                    
+                    if (data && data.address) {
+                        const addr = data.address;
+                        const rua = addr.road || '';
+                        const num = addr.house_number || '';
+                        const bairro = addr.suburb || addr.neighbourhood || '';
+                        const cidade = addr.city || addr.town || '';
+                        const estado = addr.state || addr.state_district || '';
+                        localizacao = [rua, num, bairro, cidade, estado].filter(Boolean).join(' - ');
+                    } else {
+                        localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+                    }
+                } catch (e) {
+                    console.warn("GPS bloqueado ou falhou:", e);
+                    localizacao = "GPS Bloqueado";
+                }
+
+                const { data: userData } = await clienteSupabase
+                    .from('usuarios')
+                    .select('transportadora')
+                    .eq('email', user.email)
+                    .single();
+
+                const fileNameRIC = `${Date.now()}_${user.email}_ric.jpg`;
+                const { error: uploadErrorRIC } = await clienteSupabase.storage
+                    .from('coletas-fotos')
+                    .upload(fileNameRIC, fileInput.files[0]);
+                if (uploadErrorRIC) throw uploadErrorRIC;
+
+                let fileNameGenset = null;
+                if (tipoCargaSelecionado === 'Resfriado') {
+                    fileNameGenset = `${Date.now()}_${user.email}_genset.jpg`;
+                    const { error: uploadErrorGenset } = await clienteSupabase.storage
+                        .from('coletas-fotos')
+                        .upload(fileNameGenset, gensetInput.files[0]);
+                    if (uploadErrorGenset) throw uploadErrorGenset;
+                }
+
+                const armador = document.getElementById('armador').value;
+                const placa = document.getElementById('placa').value;
+                const tara = document.getElementById('tara').value;
+                const maxGross = document.getElementById('maxGross').value;
+                const terminalColeta = document.getElementById('terminalColeta').value;
+                const cidade = document.getElementById('cidade').value;
+                const containerFinal = document.getElementById('containerInput').value.trim() || "N/A";
+
+                const statusInicial = (cargaPulmaoSelecionado === 'Pulmão') ? 'ag. locação' : 'ag. carregamento';
+
+                const insertObj = {
+                    email_usuario: user.email,
+                    data_retirada: dataRetirada,
+                    armador: armador,
+                    container: containerFinal,
+                    placa: placa,
+                    tara: tara,
+                    max_gross: maxGross,
+                    carga_pulmao: cargaPulmaoSelecionado,
+                    terminal_coleta: terminalColeta,
+                    cidade: cidade,
+                    foto_url: fileNameRIC,
+                    localizacao: localizacao,
+                    transportadora: userData ? userData.transportadora : "N/A",
+                    status: statusInicial,
+                    finalizado: false,
+                    tipo_carga: tipoCargaSelecionado,
+                    created_at: new Date().toISOString()
                 };
-            });
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Containers');
-            XLSX.writeFile(wb, 'Painel_Gestao.xlsx');
-        } catch (error) {
-            console.error('Erro ao exportar Excel:', error);
-            alert('Ocorreu um erro ao gerar o arquivo Excel.');
-        }
-    }
 
-    async function carregarTodos() {
-        showLoading();
-        try {
-            const { data, error } = await clienteSupabase
-                .from('coletas')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(500);
-            if (error) throw error;
-            dadosCompletos = data || [];
-            aplicarTodos();
-        } catch (err) {
-            console.error(err);
-            alert('Erro ao carregar dados.');
-        } finally {
-            hideLoading();
-        }
-    }
+                if (fileNameGenset) insertObj.foto_genset_url = fileNameGenset;
 
-    window.onload = async () => {
-        if (await verificarAcesso()) {
-            await carregarTodos();
+                const { error: dbError } = await clienteSupabase.from('coletas').insert([insertObj]);
+                if (dbError) throw dbError;
+
+                setSalvando(false);
+                mostrarAlerta("Registro salvo com sucesso!", function() {
+                    window.location.href = 'index.html';
+                });
+            } catch (err) {
+                console.error(err);
+                setSalvando(false);
+                mostrarAlerta("Erro ao salvar: " + err.message);
+            }
         }
-    };
-</script>
+    </script>
 </body>
 </html>
