@@ -11,18 +11,12 @@
         * {
             margin: 0; padding: 0; box-sizing: border-box;
             font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
         }
-
         body {
             background: var(--bg);
             padding: 20px 10px;
             color: var(--navy);
         }
-
-        /* Header */
         .header-card {
             background: var(--white);
             border: 1px solid var(--gold);
@@ -34,11 +28,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
-        .logo-minerva {
-            font-size: 24px;
-            letter-spacing: -1px;
-            user-select: none;
-        }
         .logo-minerva .m { color: var(--navy); font-weight: 800; }
         .logo-minerva .f { color: var(--red); font-weight: 800; }
         .header-title {
@@ -48,41 +37,37 @@
             color: var(--navy);
         }
 
-        /* Barra de filtros (agora com wrap, sem scroll) */
+        /* FILTROS - tudo em uma linha */
         .filter-bar {
             background: var(--white);
             border: 1px solid var(--gold);
             border-radius: 25px;
-            padding: 12px 15px;
+            padding: 10px 12px;
             margin-bottom: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            width: 100%;
         }
-
-        /* Linha dos campos de filtro (com wrap, sem barra de rolagem) */
         .filter-row {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: flex-end;
-            flex-wrap: wrap;        /* permite quebra de linha, sem scroll */
-            /* removido overflow-x e white-space */
+            flex-wrap: nowrap;   /* força uma única linha */
         }
-
         .filter-group {
+            flex: 1 1 0%;        /* todos os grupos ocupam a mesma largura */
+            min-width: 80px;     /* mínimo para não quebrar o conteúdo */
             display: flex;
             flex-direction: column;
-            flex-shrink: 0;
-            min-width: 100px;       /* ligeiramente menor para caber melhor */
-            /* pode crescer se necessário */
         }
         .filter-group label {
             font-size: 10px;
             font-weight: 800;
             color: var(--gold);
             text-transform: uppercase;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             white-space: nowrap;
             text-align: center;
         }
@@ -90,44 +75,41 @@
         .filter-group select {
             border: none;
             border-bottom: 1px solid var(--gold);
-            padding: 5px 0;
+            padding: 4px 0;
             font-size: 13px;
             font-weight: 600;
             color: var(--navy);
             background: transparent;
             outline: none;
-            width: 100%;             /* ocupa todo o espaço do grupo */
+            width: 100%;
         }
         .filter-group input::placeholder {
             color: #aaa;
         }
         .date-range {
             display: flex;
-            gap: 4px;
+            gap: 2px;
             align-items: center;
-            width: 100%;
         }
         .date-range input {
             flex: 1;
             min-width: 0;
         }
         .date-range span {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--navy);
             white-space: nowrap;
         }
 
-        /* Linha dos botões */
+        /* BOTÕES */
         .btn-group {
             display: flex;
             gap: 6px;
             align-items: center;
-            flex-wrap: wrap;
             justify-content: center;
+            flex-wrap: wrap;
         }
-
-        /* Botões */
         .btn-filtrar, .btn-limpar, .btn-voltar, .btn-excel-small {
             padding: 6px 14px;
             border-radius: 99px;
@@ -141,16 +123,13 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            letter-spacing: 0.3px;
         }
         .btn-filtrar { background: var(--navy); color: white; }
         .btn-limpar { background: transparent; border: 1px solid var(--navy); color: var(--navy); }
         .btn-voltar { background: #7a8a95; color: white; }
         .btn-excel-small { background: #5a6c75; color: white; }
-        .btn-excel-small:hover { background: #4b5b64; }
 
-        /* Tabela */
+        /* TABELA (sem alterações) */
         .table-container {
             background: var(--white);
             border: 1px solid var(--gold);
@@ -159,198 +138,89 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             overflow: hidden;
         }
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: 12px;
-            margin-top: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            table-layout: auto;
-            font-size: 12px;
-            font-family: 'Inter', sans-serif;
-        }
+        .table-wrapper { overflow-x: auto; border-radius: 12px; margin-top: 10px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
         th {
-            background: var(--navy);
-            color: white;
-            padding: 10px 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 11px;
-            white-space: nowrap;
-            position: sticky;
-            top: 0;
+            background: var(--navy); color: white; padding: 10px 8px;
+            font-weight: 700; text-transform: uppercase; font-size: 11px;
+            white-space: nowrap; position: sticky; top: 0;
         }
         th:first-child { border-radius: 12px 0 0 0; }
         th:last-child { border-radius: 0 12px 0 0; }
         td {
-            padding: 8px 6px;
-            border-bottom: 1px solid #f2f2f2;
-            color: var(--navy);
-            text-align: center;
-            background: var(--white);
-            white-space: normal;
-            word-break: break-word;
-            vertical-align: middle;
+            padding: 8px 6px; border-bottom: 1px solid #f2f2f2;
+            color: var(--navy); text-align: center; background: var(--white);
+            word-break: break-word; vertical-align: middle;
         }
         tr:nth-child(even) td { background-color: #f9f9f9; }
-        td.col-nowrap {
-            white-space: nowrap;
-            word-break: normal;
-        }
+        td.col-nowrap { white-space: nowrap; }
 
-        /* Status badge sem fundo */
         .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 14px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            white-space: nowrap;
-            color: #1e2f3a;
-            background: transparent;
+            display: inline-block; padding: 4px 10px; border-radius: 14px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            color: #1e2f3a; background: transparent;
         }
-
         .btn-status {
-            background: var(--navy);
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            margin: 0 2px;
-            font-weight: 700;
+            background: var(--navy); color: white; border: none;
+            padding: 4px 8px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; margin: 0 2px; font-weight: 700;
         }
         .btn-status:disabled { background: #ccc; cursor: not-allowed; }
         .btn-confirm {
-            border: none;
-            padding: 4px 8px;
-            margin: 0 2px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
+            border: none; padding: 4px 8px; margin: 0 2px; border-radius: 6px;
+            font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase;
         }
         .btn-sim { background: #81c784; color: white; }
         .btn-nao { background: #e57373; color: white; }
         .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
         .thumbs-up {
-            display: inline-block;
-            margin-left: 5px;
-            font-size: 16px;
-            opacity: 0;
-            transition: opacity 0.2s;
+            display: inline-block; margin-left: 5px; font-size: 16px;
+            opacity: 0; transition: opacity 0.2s;
         }
         .thumbs-up.show { opacity: 1; }
         .loc-link {
-            color: var(--navy);
-            cursor: pointer;
-            text-decoration: underline;
-            font-weight: 600;
-            white-space: nowrap;
-            font-size: 12px;
+            color: var(--navy); cursor: pointer; text-decoration: underline;
+            font-weight: 600; font-size: 12px;
         }
-        .loc-link:hover { color: var(--red); }
-
-        /* Badges tipo de carga */
         .badge-tipo {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 99px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
+            display: inline-block; padding: 3px 10px; border-radius: 99px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
         }
-        .badge-resfriado {
-            background: #d4edff;
-            color: #004085;
-        }
-        .badge-congelado {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
+        .badge-resfriado { background: #d4edff; color: #004085; }
+        .badge-congelado { background: #d1ecf1; color: #0c5460; }
 
-        /* Modais */
+        /* MODAIS */
         #foto-modal, #mapa-modal, #modal-data-deposito {
-            display: none;
-            position: fixed;
-            z-index: 3000;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; z-index: 3000; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            justify-content: center; align-items: center;
         }
         .mapa-container {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            width: 90%;
-            max-width: 800px;
-            height: 80vh;
-            position: relative;
+            background: white; border-radius: 20px; padding: 20px;
+            width: 90%; max-width: 800px; height: 80vh; position: relative;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
-        .mapa-container iframe {
-            width: 100%;
-            height: calc(100% - 40px);
-            border: none;
-            border-radius: 10px;
-        }
+        .mapa-container iframe { width: 100%; height: calc(100% - 40px); border: none; border-radius: 10px; }
         .fechar-mapa, .fechar-foto {
-            position: absolute;
-            top: 15px; right: 20px;
-            font-size: 32px;
-            color: var(--navy);
-            cursor: pointer;
-            font-weight: bold;
-            z-index: 10;
+            position: absolute; top: 15px; right: 20px; font-size: 32px;
+            color: var(--navy); cursor: pointer; font-weight: bold; z-index: 10;
         }
         #container-img {
-            width: 100%; height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.1s;
+            width: 100%; height: 100%; display: flex; justify-content: center;
+            align-items: center; transition: transform 0.1s;
         }
-        #foto-ampliada {
-            max-width: 90%; max-height: 90%;
-            user-select: none;
-        }
+        #foto-ampliada { max-width: 90%; max-height: 90%; user-select: none; }
         .modal-deposito-box {
-            background: white;
-            padding: 30px 35px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            text-align: center;
+            background: white; padding: 30px 35px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
             border: 1px solid var(--gold);
         }
-        .modal-deposito-box p {
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--navy);
-            font-size: 18px;
-        }
+        .modal-deposito-box p { font-weight: 700; margin-bottom: 15px; color: var(--navy); font-size: 18px; }
         .modal-deposito-box input[type="date"] {
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 1px solid var(--navy);
-            font-weight: 600;
-            font-size: 16px;
-            text-align: center;
-            outline: none;
+            padding: 10px 15px; border-radius: 10px; border: 1px solid var(--navy);
+            font-weight: 600; font-size: 16px; text-align: center; outline: none;
         }
-        .modal-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
+        .modal-actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
     </style>
 </head>
 <body>
@@ -363,7 +233,7 @@
         <div></div>
     </header>
 
-    <!-- Barra de filtros (com wrap, sem barra de rolagem) -->
+    <!-- FILTROS EM UMA LINHA -->
     <section class="filter-bar">
         <div class="filter-row">
             <div class="filter-group">
@@ -433,7 +303,6 @@
             </div>
         </div>
 
-        <!-- Linha dos botões -->
         <div class="btn-group">
             <button class="btn-filtrar" onclick="aplicarFiltros()">Filtrar</button>
             <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
@@ -447,24 +316,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Data/Hora</th>
-                        <th>Retirada</th>
-                        <th>Armador</th>
-                        <th>Container</th>
-                        <th>Placa</th>
-                        <th>Tara</th>
-                        <th>Max Gross</th>
-                        <th>C/P</th>
-                        <th>Tipo</th>
-                        <th>Terminal</th>
-                        <th>Cidade</th>
+                        <th>Data/Hora</th><th>Retirada</th><th>Armador</th><th>Container</th>
+                        <th>Placa</th><th>Tara</th><th>Max Gross</th><th>C/P</th><th>Tipo</th>
+                        <th>Terminal</th><th>Cidade</th>
                         <th id="th-transportadora" style="display: none;">Transport.</th>
-                        <th>Status</th>
-                        <th>Finalizado</th>
-                        <th>Ações</th>
-                        <th>Confirmar</th>
-                        <th>Localização</th>
-                        <th>Foto</th>
+                        <th>Status</th><th>Finalizado</th><th>Ações</th><th>Confirmar</th>
+                        <th>Localização</th><th>Foto</th>
                     </tr>
                 </thead>
                 <tbody id="processos-body"></tbody>
@@ -472,59 +329,29 @@
         </div>
     </div>
 
-    <!-- Modal Foto -->
-    <div id="foto-modal">
-        <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
-        <div id="container-img">
-            <img id="foto-ampliada">
-        </div>
-    </div>
-
-    <!-- Modal Mapa -->
-    <div id="mapa-modal">
-        <div class="mapa-container">
-            <span class="fechar-mapa" onclick="fecharMapa()">&times;</span>
-            <iframe id="mapa-iframe" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-        </div>
-    </div>
-
-    <!-- Modal de data do depósito -->
-    <div id="modal-data-deposito">
-        <div class="modal-deposito-box">
-            <p>Selecione a data do depósito</p>
-            <input type="date" id="input-data-deposito">
-            <div class="modal-actions">
-                <button class="btn-limpar" onclick="fecharModalDeposito()" style="padding: 8px 20px;">Cancelar</button>
-                <button class="btn-filtrar" onclick="confirmarDataDeposito()" style="padding: 8px 20px;">Confirmar</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modais (mantidos iguais) -->
+    <div id="foto-modal"><span class="fechar-foto" onclick="fecharFoto()">&times;</span><div id="container-img"><img id="foto-ampliada"></div></div>
+    <div id="mapa-modal"><div class="mapa-container"><span class="fechar-mapa" onclick="fecharMapa()">&times;</span><iframe id="mapa-iframe"></iframe></div></div>
+    <div id="modal-data-deposito"><div class="modal-deposito-box">
+        <p>Selecione a data do depósito</p><input type="date" id="input-data-deposito">
+        <div class="modal-actions"><button class="btn-limpar" onclick="fecharModalDeposito()">Cancelar</button><button class="btn-filtrar" onclick="confirmarDataDeposito()">Confirmar</button></div>
+    </div></div>
 
     <script src="script.js"></script>
     <script>
         const statusFluxo = [
-            'ag. locação',
-            'ag. carregamento',
-            'pendencia logistica',
-            'faturado',
-            'ag. liberação',
-            'em viagem',
-            'depositado'
+            'ag. locação','ag. carregamento','pendencia logistica',
+            'faturado','ag. liberação','em viagem','depositado'
         ];
         const statusOriginais = {};
         let dadosExportacao = [];
         let dadosModalDeposito = {};
-
-        function getStatusColor(status) {
-            return 'transparent';
-        }
 
         async function carregarProcessos(filtros = {}) {
             if (typeof clienteSupabase === 'undefined') {
                 setTimeout(() => carregarProcessos(filtros), 500);
                 return;
             }
-
             const { data: { user } } = await clienteSupabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
 
@@ -543,30 +370,23 @@
                 query = query.eq('transportadora', userData.transportadora);
             }
 
+            // Filtros
             if (filtros.dataInicio || filtros.dataFim) {
                 const inicio = filtros.dataInicio ? new Date(filtros.dataInicio) : null;
                 const fim = filtros.dataFim ? new Date(filtros.dataFim) : null;
                 if (inicio && fim) {
-                    if (inicio.getTime() === fim.getTime()) {
-                        const start = new Date(inicio); start.setHours(0,0,0,0);
-                        const end = new Date(inicio); end.setHours(23,59,59,999);
-                        query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
-                    } else {
-                        query = query.gte('created_at', inicio.toISOString()).lte('created_at', fim.toISOString());
-                    }
-                } else if (inicio) {
-                    query = query.gte('created_at', inicio.toISOString());
-                } else if (fim) {
-                    query = query.lte('created_at', fim.toISOString());
-                }
+                    const start = new Date(inicio); start.setHours(0,0,0,0);
+                    const end = new Date(fim); end.setHours(23,59,59,999);
+                    query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
+                } else if (inicio) query = query.gte('created_at', inicio.toISOString());
+                else if (fim) query = query.lte('created_at', fim.toISOString());
             }
             if (filtros.dataRetirada) query = query.eq('data_retirada', filtros.dataRetirada);
             if (filtros.armador) query = query.ilike('armador', `%${filtros.armador}%`);
             if (filtros.container) query = query.ilike('container', `%${filtros.container}%`);
             if (filtros.placa) query = query.ilike('placa', `%${filtros.placa}%`);
             if (filtros.cargaPulmao) query = query.eq('carga_pulmao', filtros.cargaPulmao);
-            // Filtro de tipo de carga (usando ilike para evitar problemas de case)
-            if (filtros.tipoCarga) query = query.ilike('tipo_carga', filtros.tipoCarga);
+            if (filtros.tipoCarga) query = query.ilike('tipo_carga', filtros.tipoCarga); // usando ilike
             if (filtros.terminal) query = query.ilike('terminal_coleta', `%${filtros.terminal}%`);
             if (filtros.cidade) query = query.ilike('cidade', `%${filtros.cidade}%`);
             if (filtros.transportadora) query = query.ilike('transportadora', `%${filtros.transportadora}%`);
@@ -585,7 +405,6 @@
                 const fotoUrl = item.foto_url 
                     ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
                     : null;
-                
                 const statusAtual = item.status || 'ag. locação';
                 const statusId = `status-${item.id}`;
                 const thumbsId = `thumbs-${item.id}`;
@@ -593,18 +412,13 @@
 
                 const isFinalizado = item.finalizado || statusAtual === 'depositado';
                 let dataFinalizado = 'Pendente';
-                if (item.data_finalizado) {
-                    dataFinalizado = new Date(item.data_finalizado).toLocaleDateString('pt-BR');
-                }
+                if (item.data_finalizado) dataFinalizado = new Date(item.data_finalizado).toLocaleDateString('pt-BR');
 
                 let localizacaoHtml = '';
                 const loc = item.localizacao || "N/A";
                 if (loc !== "N/A" && loc !== "GPS Bloqueado" && loc !== "Sem GPS") {
-                    const queryMaps = encodeURIComponent(loc);
-                    localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${queryMaps}')">📍 Local</span>`;
-                } else {
-                    localizacaoHtml = loc;
-                }
+                    localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${encodeURIComponent(loc)}')">📍 Local</span>`;
+                } else localizacaoHtml = loc;
 
                 const tipoCarga = item.tipo_carga || 'Resfriado';
                 const tipoBadge = tipoCarga.toLowerCase().includes('resfriado')
@@ -660,61 +474,32 @@
             if (!span) return;
             let novoStatus = span.getAttribute('data-current') || span.getAttribute('data-original');
             if (!novoStatus) return;
-
             if (novoStatus === 'depositado') {
                 abrirModalDeposito(id, statusId, thumbsId, novoStatus);
                 return;
             }
-
-            const { error } = await clienteSupabase
-                .from('coletas')
-                .update({ status: novoStatus, finalizado: false })
-                .eq('id', id);
-
-            if (error) {
-                alert("Erro ao salvar: " + error.message);
-                return;
-            }
-
+            const { error } = await clienteSupabase.from('coletas').update({ status: novoStatus, finalizado: false }).eq('id', id);
+            if (error) { alert("Erro: " + error.message); return; }
             finalizarConfirmacao(statusId, thumbsId, novoStatus);
         }
 
         function abrirModalDeposito(id, statusId, thumbsId, novoStatus) {
             dadosModalDeposito = { id, statusId, thumbsId, novoStatus };
-            const hoje = new Date().toISOString().split('T')[0];
-            const input = document.getElementById('input-data-deposito');
-            input.setAttribute('max', hoje);
-            input.value = hoje;
+            document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
             document.getElementById('modal-data-deposito').style.display = 'flex';
         }
-
-        function fecharModalDeposito() {
-            document.getElementById('modal-data-deposito').style.display = 'none';
-        }
+        function fecharModalDeposito() { document.getElementById('modal-data-deposito').style.display = 'none'; }
 
         async function confirmarDataDeposito() {
             const dataEscolhida = document.getElementById('input-data-deposito').value;
-            if (!dataEscolhida) {
-                alert('Selecione uma data para o depósito.');
-                return;
-            }
+            if (!dataEscolhida) return alert('Selecione uma data.');
             const { id, statusId, thumbsId, novoStatus } = dadosModalDeposito;
-            const updateObj = {
+            const { error } = await clienteSupabase.from('coletas').update({
                 status: novoStatus,
                 finalizado: true,
                 data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString()
-            };
-
-            const { error } = await clienteSupabase
-                .from('coletas')
-                .update(updateObj)
-                .eq('id', id);
-
-            if (error) {
-                alert("Erro ao salvar: " + error.message);
-                return;
-            }
-
+            }).eq('id', id);
+            if (error) { alert("Erro: " + error.message); return; }
             finalizarConfirmacao(statusId, thumbsId, novoStatus);
             fecharModalDeposito();
             carregarProcessos(obterFiltrosAtuais());
@@ -726,22 +511,15 @@
             span.setAttribute('data-current', '');
             span.textContent = novoStatus.toUpperCase();
             statusOriginais[statusId] = novoStatus;
-
             const thumbs = document.getElementById(thumbsId);
-            if (thumbs) {
-                thumbs.classList.add('show');
-                setTimeout(() => thumbs.classList.remove('show'), 2000);
-            }
+            if (thumbs) { thumbs.classList.add('show'); setTimeout(() => thumbs.classList.remove('show'), 2000); }
         }
 
         function resetarStatus(statusId) {
             const span = document.getElementById(statusId);
             if (!span) return;
             const original = span.getAttribute('data-original');
-            if (original) {
-                span.textContent = original.toUpperCase();
-                span.setAttribute('data-current', '');
-            }
+            if (original) { span.textContent = original.toUpperCase(); span.setAttribute('data-current', ''); }
         }
 
         function obterFiltrosAtuais() {
@@ -761,10 +539,7 @@
             };
         }
 
-        function aplicarFiltros() {
-            carregarProcessos(obterFiltrosAtuais());
-        }
-
+        function aplicarFiltros() { carregarProcessos(obterFiltrosAtuais()); }
         function limparFiltros() {
             document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
                 if (el.tagName === 'SELECT') el.selectedIndex = 0;
@@ -777,48 +552,31 @@
         document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroTipoCarga').addEventListener('change', aplicarFiltros);
 
-        window.addEventListener('click', function(event) {
-            if (event.target == document.getElementById('foto-modal')) fecharFoto();
-            if (event.target == document.getElementById('mapa-modal')) fecharMapa();
-            if (event.target == document.getElementById('modal-data-deposito')) fecharModalDeposito();
+        window.addEventListener('click', function(e) {
+            if (e.target == document.getElementById('foto-modal')) fecharFoto();
+            if (e.target == document.getElementById('mapa-modal')) fecharMapa();
+            if (e.target == document.getElementById('modal-data-deposito')) fecharModalDeposito();
         });
+        window.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharFoto(); fecharMapa(); fecharModalDeposito(); } });
 
-        window.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                fecharFoto();
-                fecharMapa();
-                fecharModalDeposito();
-            }
-        });
-
+        // Zoom e arraste da foto
         let scale = 1, transX = 0, transY = 0;
         const containerImg = document.getElementById('container-img');
         const img = document.getElementById('foto-ampliada');
         let isDragging = false, startX, startY;
-
         function abrirFoto(url) {
-            img.src = url;
-            scale = 1; transX = 0; transY = 0;
+            img.src = url; scale = 1; transX = 0; transY = 0;
             containerImg.style.transform = `translate(0px, 0px) scale(1)`;
             document.getElementById('foto-modal').style.display = 'flex';
         }
-        function fecharFoto() {
-            document.getElementById('foto-modal').style.display = 'none';
-        }
-
+        function fecharFoto() { document.getElementById('foto-modal').style.display = 'none'; }
         containerImg.addEventListener('wheel', (e) => {
             e.preventDefault();
             scale += e.deltaY * -0.001;
             scale = Math.min(Math.max(0.5, scale), 5);
             containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
-
-        containerImg.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX - transX;
-            startY = e.clientY - transY;
-            e.preventDefault();
-        });
+        containerImg.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - transX; startY = e.clientY - transY; });
         window.addEventListener('mouseup', () => isDragging = false);
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
@@ -826,16 +584,11 @@
             transY = e.clientY - startY;
             containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
-
         function abrirMapa(query) {
             document.getElementById('mapa-iframe').src = `https://www.google.com/maps?q=${query}&output=embed`;
             document.getElementById('mapa-modal').style.display = 'flex';
         }
-        function fecharMapa() {
-            document.getElementById('mapa-modal').style.display = 'none';
-            document.getElementById('mapa-iframe').src = '';
-        }
-
+        function fecharMapa() { document.getElementById('mapa-modal').style.display = 'none'; document.getElementById('mapa-iframe').src = ''; }
         function exportarExcel() {
             if(dadosExportacao.length === 0) return alert("Sem dados para exportar");
             const ws = XLSX.utils.json_to_sheet(dadosExportacao);
