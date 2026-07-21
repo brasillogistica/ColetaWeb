@@ -1,4 +1,3 @@
-<!-- Substitua o arquivo processos.html por este conteúdo -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -16,11 +15,14 @@
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
         }
+
         body {
             background: var(--bg);
             padding: 20px 10px;
             color: var(--navy);
         }
+
+        /* Header */
         .header-card {
             background: var(--white);
             border: 1px solid var(--gold);
@@ -32,11 +34,21 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
-        .logo-minerva { font-size: 24px; letter-spacing: -1px; user-select: none; }
+        .logo-minerva {
+            font-size: 24px;
+            letter-spacing: -1px;
+            user-select: none;
+        }
         .logo-minerva .m { color: var(--navy); font-weight: 800; }
         .logo-minerva .f { color: var(--red); font-weight: 800; }
-        .header-title { font-weight: 800; font-size: 17px; text-transform: uppercase; color: var(--navy); }
+        .header-title {
+            font-weight: 800;
+            font-size: 17px;
+            text-transform: uppercase;
+            color: var(--navy);
+        }
 
+        /* Barra de filtros (agora com wrap, sem scroll) */
         .filter-bar {
             background: var(--white);
             border: 1px solid var(--gold);
@@ -48,20 +60,22 @@
             flex-direction: column;
             gap: 10px;
         }
+
+        /* Linha dos campos de filtro (com wrap, sem barra de rolagem) */
         .filter-row {
             display: flex;
             gap: 10px;
             align-items: flex-end;
-            overflow-x: auto;
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 4px;
+            flex-wrap: wrap;        /* permite quebra de linha, sem scroll */
+            /* removido overflow-x e white-space */
         }
+
         .filter-group {
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            min-width: 120px;
+            min-width: 100px;       /* ligeiramente menor para caber melhor */
+            /* pode crescer se necessário */
         }
         .filter-group label {
             font-size: 10px;
@@ -82,12 +96,29 @@
             color: var(--navy);
             background: transparent;
             outline: none;
-            min-width: 100px;
+            width: 100%;             /* ocupa todo o espaço do grupo */
         }
-        .date-range { display: flex; gap: 4px; align-items: center; }
-        .date-range input { flex: 1; min-width: 70px; }
-        .date-range span { font-size: 13px; font-weight: 700; color: var(--navy); }
+        .filter-group input::placeholder {
+            color: #aaa;
+        }
+        .date-range {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            width: 100%;
+        }
+        .date-range input {
+            flex: 1;
+            min-width: 0;
+        }
+        .date-range span {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy);
+            white-space: nowrap;
+        }
 
+        /* Linha dos botões */
         .btn-group {
             display: flex;
             gap: 6px;
@@ -95,6 +126,8 @@
             flex-wrap: wrap;
             justify-content: center;
         }
+
+        /* Botões */
         .btn-filtrar, .btn-limpar, .btn-voltar, .btn-excel-small {
             padding: 6px 14px;
             border-radius: 99px;
@@ -115,7 +148,9 @@
         .btn-limpar { background: transparent; border: 1px solid var(--navy); color: var(--navy); }
         .btn-voltar { background: #7a8a95; color: white; }
         .btn-excel-small { background: #5a6c75; color: white; }
+        .btn-excel-small:hover { background: #4b5b64; }
 
+        /* Tabela */
         .table-container {
             background: var(--white);
             border: 1px solid var(--gold);
@@ -124,8 +159,19 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             overflow: hidden;
         }
-        .table-wrapper { overflow-x: auto; border-radius: 12px; margin-top: 10px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: auto;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+        }
         th {
             background: var(--navy);
             color: white;
@@ -145,12 +191,17 @@
             color: var(--navy);
             text-align: center;
             background: var(--white);
+            white-space: normal;
             word-break: break-word;
             vertical-align: middle;
         }
         tr:nth-child(even) td { background-color: #f9f9f9; }
-        td.col-nowrap { white-space: nowrap; }
+        td.col-nowrap {
+            white-space: nowrap;
+            word-break: normal;
+        }
 
+        /* Status badge sem fundo */
         .status-badge {
             display: inline-block;
             padding: 4px 10px;
@@ -158,9 +209,11 @@
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
+            white-space: nowrap;
             color: #1e2f3a;
             background: transparent;
         }
+
         .btn-status {
             background: var(--navy);
             color: white;
@@ -186,13 +239,43 @@
         .btn-sim { background: #81c784; color: white; }
         .btn-nao { background: #e57373; color: white; }
         .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
-        .thumbs-up { display: inline-block; margin-left: 5px; font-size: 16px; opacity: 0; transition: opacity 0.2s; }
+        .thumbs-up {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
         .thumbs-up.show { opacity: 1; }
-        .loc-link { color: var(--navy); cursor: pointer; text-decoration: underline; font-weight: 600; }
-        .badge-tipo { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .badge-resfriado { background: #d4edff; color: #004085; }
-        .badge-congelado { background: #d1ecf1; color: #0c5460; }
+        .loc-link {
+            color: var(--navy);
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+            white-space: nowrap;
+            font-size: 12px;
+        }
+        .loc-link:hover { color: var(--red); }
 
+        /* Badges tipo de carga */
+        .badge-tipo {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-resfriado {
+            background: #d4edff;
+            color: #004085;
+        }
+        .badge-congelado {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Modais */
         #foto-modal, #mapa-modal, #modal-data-deposito {
             display: none;
             position: fixed;
@@ -213,14 +296,32 @@
             position: relative;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
-        .mapa-container iframe { width: 100%; height: calc(100% - 40px); border: none; border-radius: 10px; }
+        .mapa-container iframe {
+            width: 100%;
+            height: calc(100% - 40px);
+            border: none;
+            border-radius: 10px;
+        }
         .fechar-mapa, .fechar-foto {
             position: absolute;
             top: 15px; right: 20px;
-            font-size: 32px; color: var(--navy); cursor: pointer; font-weight: bold; z-index: 10;
+            font-size: 32px;
+            color: var(--navy);
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10;
         }
-        #container-img { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        #foto-ampliada { max-width: 90%; max-height: 90%; user-select: none; }
+        #container-img {
+            width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s;
+        }
+        #foto-ampliada {
+            max-width: 90%; max-height: 90%;
+            user-select: none;
+        }
         .modal-deposito-box {
             background: white;
             padding: 30px 35px;
@@ -229,7 +330,12 @@
             text-align: center;
             border: 1px solid var(--gold);
         }
-        .modal-deposito-box p { font-weight: 700; margin-bottom: 15px; color: var(--navy); font-size: 18px; }
+        .modal-deposito-box p {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--navy);
+            font-size: 18px;
+        }
         .modal-deposito-box input[type="date"] {
             padding: 10px 15px;
             border-radius: 10px;
@@ -239,7 +345,12 @@
             text-align: center;
             outline: none;
         }
-        .modal-actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -252,6 +363,7 @@
         <div></div>
     </header>
 
+    <!-- Barra de filtros (com wrap, sem barra de rolagem) -->
     <section class="filter-bar">
         <div class="filter-row">
             <div class="filter-group">
@@ -262,30 +374,66 @@
                     <input type="date" id="filtroDataFim">
                 </div>
             </div>
-            <div class="filter-group"><label>Data Retirada</label><input type="date" id="filtroDataRetirada"></div>
-            <div class="filter-group"><label>Armador</label><input type="text" id="filtroArmador" placeholder="Nome do armador"></div>
-            <div class="filter-group"><label>Container</label><input type="text" id="filtroContainer" placeholder="Número"></div>
-            <div class="filter-group"><label>Placa</label><input type="text" id="filtroPlaca" placeholder="Placa"></div>
-            <div class="filter-group"><label>Carga / Pulmão</label><select id="filtroCargaPulmao">
-                <option value="">Todos</option><option value="Carga">Carga</option><option value="Pulmão">Pulmão</option></select>
+            <div class="filter-group">
+                <label>Data Retirada</label>
+                <input type="date" id="filtroDataRetirada">
             </div>
-            <div class="filter-group"><label>Tipo de Carga</label><select id="filtroTipoCarga">
-                <option value="">Todos</option><option value="Resfriado">Resfriado</option><option value="Congelado">Congelado</option></select>
+            <div class="filter-group">
+                <label>Armador</label>
+                <input type="text" id="filtroArmador" placeholder="Nome do armador">
             </div>
-            <div class="filter-group"><label>Terminal</label><input type="text" id="filtroTerminal" placeholder="Terminal"></div>
-            <div class="filter-group"><label>Cidade</label><input type="text" id="filtroCidade" placeholder="Cidade"></div>
-            <div class="filter-group"><label>Transportadora</label><input type="text" id="filtroTransportadora" placeholder="Transportadora"></div>
-            <div class="filter-group"><label>Status</label><select id="filtroStatus">
-                <option value="">Todos</option>
-                <option value="ag. locação">AG. LOCAÇÃO</option>
-                <option value="ag. carregamento">AG. CARREGAMENTO</option>
-                <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
-                <option value="faturado">FATURADO</option>
-                <option value="ag. liberação">AG. LIBERAÇÃO</option>
-                <option value="em viagem">EM VIAGEM</option>
-                <option value="depositado">DEPOSITADO</option>
-            </select></div>
+            <div class="filter-group">
+                <label>Container</label>
+                <input type="text" id="filtroContainer" placeholder="Número">
+            </div>
+            <div class="filter-group">
+                <label>Placa</label>
+                <input type="text" id="filtroPlaca" placeholder="Placa">
+            </div>
+            <div class="filter-group">
+                <label>Carga / Pulmão</label>
+                <select id="filtroCargaPulmao">
+                    <option value="">Todos</option>
+                    <option value="Carga">Carga</option>
+                    <option value="Pulmão">Pulmão</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Tipo de Carga</label>
+                <select id="filtroTipoCarga">
+                    <option value="">Todos</option>
+                    <option value="Resfriado">Resfriado</option>
+                    <option value="Congelado">Congelado</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Terminal</label>
+                <input type="text" id="filtroTerminal" placeholder="Terminal">
+            </div>
+            <div class="filter-group">
+                <label>Cidade</label>
+                <input type="text" id="filtroCidade" placeholder="Cidade">
+            </div>
+            <div class="filter-group">
+                <label>Transportadora</label>
+                <input type="text" id="filtroTransportadora" placeholder="Transportadora">
+            </div>
+            <div class="filter-group">
+                <label>Status</label>
+                <select id="filtroStatus">
+                    <option value="">Todos</option>
+                    <option value="ag. locação">AG. LOCAÇÃO</option>
+                    <option value="ag. carregamento">AG. CARREGAMENTO</option>
+                    <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
+                    <option value="faturado">FATURADO</option>
+                    <option value="ag. liberação">AG. LIBERAÇÃO</option>
+                    <option value="em viagem">EM VIAGEM</option>
+                    <option value="depositado">DEPOSITADO</option>
+                </select>
+            </div>
         </div>
+
+        <!-- Linha dos botões -->
         <div class="btn-group">
             <button class="btn-filtrar" onclick="aplicarFiltros()">Filtrar</button>
             <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
@@ -299,12 +447,24 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Data/Hora</th><th>Retirada</th><th>Armador</th><th>Container</th>
-                        <th>Placa</th><th>Tara</th><th>Max Gross</th><th>C/P</th><th>Tipo</th>
-                        <th>Terminal</th><th>Cidade</th>
+                        <th>Data/Hora</th>
+                        <th>Retirada</th>
+                        <th>Armador</th>
+                        <th>Container</th>
+                        <th>Placa</th>
+                        <th>Tara</th>
+                        <th>Max Gross</th>
+                        <th>C/P</th>
+                        <th>Tipo</th>
+                        <th>Terminal</th>
+                        <th>Cidade</th>
                         <th id="th-transportadora" style="display: none;">Transport.</th>
-                        <th>Status</th><th>Finalizado</th><th>Ações</th><th>Confirmar</th>
-                        <th>Localização</th><th>Foto</th>
+                        <th>Status</th>
+                        <th>Finalizado</th>
+                        <th>Ações</th>
+                        <th>Confirmar</th>
+                        <th>Localização</th>
+                        <th>Foto</th>
                     </tr>
                 </thead>
                 <tbody id="processos-body"></tbody>
@@ -312,25 +472,59 @@
         </div>
     </div>
 
-    <div id="foto-modal"><span class="fechar-foto" onclick="fecharFoto()">&times;</span><div id="container-img"><img id="foto-ampliada"></div></div>
-    <div id="mapa-modal"><div class="mapa-container"><span class="fechar-mapa" onclick="fecharMapa()">&times;</span><iframe id="mapa-iframe"></iframe></div></div>
-    <div id="modal-data-deposito"><div class="modal-deposito-box">
-        <p>Selecione a data do depósito</p><input type="date" id="input-data-deposito">
-        <div class="modal-actions"><button class="btn-limpar" onclick="fecharModalDeposito()">Cancelar</button><button class="btn-filtrar" onclick="confirmarDataDeposito()">Confirmar</button></div>
-    </div></div>
+    <!-- Modal Foto -->
+    <div id="foto-modal">
+        <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
+        <div id="container-img">
+            <img id="foto-ampliada">
+        </div>
+    </div>
+
+    <!-- Modal Mapa -->
+    <div id="mapa-modal">
+        <div class="mapa-container">
+            <span class="fechar-mapa" onclick="fecharMapa()">&times;</span>
+            <iframe id="mapa-iframe" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+
+    <!-- Modal de data do depósito -->
+    <div id="modal-data-deposito">
+        <div class="modal-deposito-box">
+            <p>Selecione a data do depósito</p>
+            <input type="date" id="input-data-deposito">
+            <div class="modal-actions">
+                <button class="btn-limpar" onclick="fecharModalDeposito()" style="padding: 8px 20px;">Cancelar</button>
+                <button class="btn-filtrar" onclick="confirmarDataDeposito()" style="padding: 8px 20px;">Confirmar</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
     <script>
-        const statusFluxo = ['ag. locação','ag. carregamento','pendencia logistica','faturado','ag. liberação','em viagem','depositado'];
+        const statusFluxo = [
+            'ag. locação',
+            'ag. carregamento',
+            'pendencia logistica',
+            'faturado',
+            'ag. liberação',
+            'em viagem',
+            'depositado'
+        ];
         const statusOriginais = {};
         let dadosExportacao = [];
         let dadosModalDeposito = {};
+
+        function getStatusColor(status) {
+            return 'transparent';
+        }
 
         async function carregarProcessos(filtros = {}) {
             if (typeof clienteSupabase === 'undefined') {
                 setTimeout(() => carregarProcessos(filtros), 500);
                 return;
             }
+
             const { data: { user } } = await clienteSupabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
 
@@ -349,36 +543,38 @@
                 query = query.eq('transportadora', userData.transportadora);
             }
 
-            // Filtro de data de registro
             if (filtros.dataInicio || filtros.dataFim) {
                 const inicio = filtros.dataInicio ? new Date(filtros.dataInicio) : null;
                 const fim = filtros.dataFim ? new Date(filtros.dataFim) : null;
                 if (inicio && fim) {
-                    const start = new Date(inicio); start.setHours(0,0,0,0);
-                    const end = new Date(fim); end.setHours(23,59,59,999);
-                    query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
-                } else if (inicio) query = query.gte('created_at', inicio.toISOString());
-                else if (fim) query = query.lte('created_at', fim.toISOString());
+                    if (inicio.getTime() === fim.getTime()) {
+                        const start = new Date(inicio); start.setHours(0,0,0,0);
+                        const end = new Date(inicio); end.setHours(23,59,59,999);
+                        query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
+                    } else {
+                        query = query.gte('created_at', inicio.toISOString()).lte('created_at', fim.toISOString());
+                    }
+                } else if (inicio) {
+                    query = query.gte('created_at', inicio.toISOString());
+                } else if (fim) {
+                    query = query.lte('created_at', fim.toISOString());
+                }
             }
             if (filtros.dataRetirada) query = query.eq('data_retirada', filtros.dataRetirada);
             if (filtros.armador) query = query.ilike('armador', `%${filtros.armador}%`);
             if (filtros.container) query = query.ilike('container', `%${filtros.container}%`);
             if (filtros.placa) query = query.ilike('placa', `%${filtros.placa}%`);
             if (filtros.cargaPulmao) query = query.eq('carga_pulmao', filtros.cargaPulmao);
-            
-            // CORREÇÃO: usar ilike para ignorar maiúsculas/minúsculas e acentos
+            // Filtro de tipo de carga (usando ilike para evitar problemas de case)
             if (filtros.tipoCarga) query = query.ilike('tipo_carga', filtros.tipoCarga);
-
             if (filtros.terminal) query = query.ilike('terminal_coleta', `%${filtros.terminal}%`);
             if (filtros.cidade) query = query.ilike('cidade', `%${filtros.cidade}%`);
             if (filtros.transportadora) query = query.ilike('transportadora', `%${filtros.transportadora}%`);
             if (filtros.status) query = query.eq('status', filtros.status);
 
-            console.log('Aplicando filtros:', filtros); // log para depuração
             const { data, error } = await query.order('created_at', { ascending: false });
             if (error) { alert("Erro ao carregar: " + error.message); return; }
 
-            console.log(`Resultados encontrados: ${data.length}`); // log
             dadosExportacao = data;
             const tbody = document.getElementById('processos-body');
             tbody.innerHTML = '';
@@ -389,50 +585,60 @@
                 const fotoUrl = item.foto_url 
                     ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
                     : null;
+                
                 const statusAtual = item.status || 'ag. locação';
                 const statusId = `status-${item.id}`;
                 const thumbsId = `thumbs-${item.id}`;
                 statusOriginais[statusId] = statusAtual;
+
                 const isFinalizado = item.finalizado || statusAtual === 'depositado';
                 let dataFinalizado = 'Pendente';
-                if (item.data_finalizado) dataFinalizado = new Date(item.data_finalizado).toLocaleDateString('pt-BR');
+                if (item.data_finalizado) {
+                    dataFinalizado = new Date(item.data_finalizado).toLocaleDateString('pt-BR');
+                }
+
                 let localizacaoHtml = '';
                 const loc = item.localizacao || "N/A";
                 if (loc !== "N/A" && loc !== "GPS Bloqueado" && loc !== "Sem GPS") {
-                    localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${encodeURIComponent(loc)}')">📍 Local</span>`;
-                } else localizacaoHtml = loc;
+                    const queryMaps = encodeURIComponent(loc);
+                    localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${queryMaps}')">📍 Local</span>`;
+                } else {
+                    localizacaoHtml = loc;
+                }
 
                 const tipoCarga = item.tipo_carga || 'Resfriado';
                 const tipoBadge = tipoCarga.toLowerCase().includes('resfriado')
                     ? '<span class="badge-tipo badge-resfriado">Resfriado</span>'
                     : '<span class="badge-tipo badge-congelado">Congelado</span>';
 
-                tbody.innerHTML += `<tr>
-                    <td class="col-nowrap">${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-                    <td class="col-nowrap">${item.data_retirada || 'N/A'}</td>
-                    <td>${item.armador || 'N/A'}</td>
-                    <td>${item.container || 'N/A'}</td>
-                    <td class="col-nowrap">${item.placa || 'N/A'}</td>
-                    <td>${item.tara || 'N/A'}</td>
-                    <td>${item.max_gross || 'N/A'}</td>
-                    <td>${item.carga_pulmao || 'N/A'}</td>
-                    <td>${tipoBadge}</td>
-                    ${ehAdmin ? `<td>${item.transportadora || 'N/A'}</td>` : ''}
-                    <td>${item.terminal_coleta || 'N/A'}</td>
-                    <td>${item.cidade || 'N/A'}</td>
-                    <td class="col-nowrap"><span id="${statusId}" class="status-badge" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span><span id="${thumbsId}" class="thumbs-up">👍</span></td>
-                    <td class="col-nowrap">${dataFinalizado}</td>
-                    <td class="col-nowrap">
-                        <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
-                        <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', 1)">▶</button>
-                    </td>
-                    <td class="col-nowrap">
-                        <button class="btn-confirm btn-sim" ${isFinalizado ? 'disabled' : ''} onclick="confirmarStatus('${item.id}', '${statusId}', '${thumbsId}')">Sim</button>
-                        <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
-                    </td>
-                    <td class="col-nowrap">${localizacaoHtml}</td>
-                    <td class="col-nowrap">${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : 'Sem foto'}</td>
-                </tr>`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="col-nowrap">${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+                        <td class="col-nowrap">${item.data_retirada || 'N/A'}</td>
+                        <td>${item.armador || 'N/A'}</td>
+                        <td>${item.container || 'N/A'}</td>
+                        <td class="col-nowrap">${item.placa || 'N/A'}</td>
+                        <td>${item.tara || 'N/A'}</td>
+                        <td>${item.max_gross || 'N/A'}</td>
+                        <td>${item.carga_pulmao || 'N/A'}</td>
+                        <td>${tipoBadge}</td>
+                        ${ehAdmin ? `<td>${item.transportadora || 'N/A'}</td>` : ''}
+                        <td>${item.terminal_coleta || 'N/A'}</td>
+                        <td>${item.cidade || 'N/A'}</td>
+                        <td class="col-nowrap"><span id="${statusId}" class="status-badge" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span><span id="${thumbsId}" class="thumbs-up">👍</span></td>
+                        <td class="col-nowrap">${dataFinalizado}</td>
+                        <td class="col-nowrap">
+                            <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
+                            <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', 1)">▶</button>
+                        </td>
+                        <td class="col-nowrap">
+                            <button class="btn-confirm btn-sim" ${isFinalizado ? 'disabled' : ''} onclick="confirmarStatus('${item.id}', '${statusId}', '${thumbsId}')">Sim</button>
+                            <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
+                        </td>
+                        <td class="col-nowrap">${localizacaoHtml}</td>
+                        <td class="col-nowrap">${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : 'Sem foto'}</td>
+                    </tr>
+                `;
             });
         }
 
@@ -454,32 +660,61 @@
             if (!span) return;
             let novoStatus = span.getAttribute('data-current') || span.getAttribute('data-original');
             if (!novoStatus) return;
+
             if (novoStatus === 'depositado') {
                 abrirModalDeposito(id, statusId, thumbsId, novoStatus);
                 return;
             }
-            const { error } = await clienteSupabase.from('coletas').update({ status: novoStatus, finalizado: false }).eq('id', id);
-            if (error) { alert("Erro: " + error.message); return; }
+
+            const { error } = await clienteSupabase
+                .from('coletas')
+                .update({ status: novoStatus, finalizado: false })
+                .eq('id', id);
+
+            if (error) {
+                alert("Erro ao salvar: " + error.message);
+                return;
+            }
+
             finalizarConfirmacao(statusId, thumbsId, novoStatus);
         }
 
         function abrirModalDeposito(id, statusId, thumbsId, novoStatus) {
             dadosModalDeposito = { id, statusId, thumbsId, novoStatus };
-            document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
+            const hoje = new Date().toISOString().split('T')[0];
+            const input = document.getElementById('input-data-deposito');
+            input.setAttribute('max', hoje);
+            input.value = hoje;
             document.getElementById('modal-data-deposito').style.display = 'flex';
         }
-        function fecharModalDeposito() { document.getElementById('modal-data-deposito').style.display = 'none'; }
+
+        function fecharModalDeposito() {
+            document.getElementById('modal-data-deposito').style.display = 'none';
+        }
 
         async function confirmarDataDeposito() {
             const dataEscolhida = document.getElementById('input-data-deposito').value;
-            if (!dataEscolhida) return alert('Selecione uma data.');
+            if (!dataEscolhida) {
+                alert('Selecione uma data para o depósito.');
+                return;
+            }
             const { id, statusId, thumbsId, novoStatus } = dadosModalDeposito;
-            const { error } = await clienteSupabase.from('coletas').update({
+            const updateObj = {
                 status: novoStatus,
                 finalizado: true,
                 data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString()
-            }).eq('id', id);
-            if (error) { alert("Erro: " + error.message); return; }
+            };
+
+            const { error } = await clienteSupabase
+                .from('coletas')
+                .update(updateObj)
+                .eq('id', id);
+
+            if (error) {
+                alert("Erro ao salvar: " + error.message);
+                return;
+            }
+
             finalizarConfirmacao(statusId, thumbsId, novoStatus);
             fecharModalDeposito();
             carregarProcessos(obterFiltrosAtuais());
@@ -491,15 +726,22 @@
             span.setAttribute('data-current', '');
             span.textContent = novoStatus.toUpperCase();
             statusOriginais[statusId] = novoStatus;
+
             const thumbs = document.getElementById(thumbsId);
-            if (thumbs) { thumbs.classList.add('show'); setTimeout(() => thumbs.classList.remove('show'), 2000); }
+            if (thumbs) {
+                thumbs.classList.add('show');
+                setTimeout(() => thumbs.classList.remove('show'), 2000);
+            }
         }
 
         function resetarStatus(statusId) {
             const span = document.getElementById(statusId);
             if (!span) return;
             const original = span.getAttribute('data-original');
-            if (original) { span.textContent = original.toUpperCase(); span.setAttribute('data-current', ''); }
+            if (original) {
+                span.textContent = original.toUpperCase();
+                span.setAttribute('data-current', '');
+            }
         }
 
         function obterFiltrosAtuais() {
@@ -519,7 +761,10 @@
             };
         }
 
-        function aplicarFiltros() { carregarProcessos(obterFiltrosAtuais()); }
+        function aplicarFiltros() {
+            carregarProcessos(obterFiltrosAtuais());
+        }
+
         function limparFiltros() {
             document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
                 if (el.tagName === 'SELECT') el.selectedIndex = 0;
@@ -532,14 +777,20 @@
         document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroTipoCarga').addEventListener('change', aplicarFiltros);
 
-        window.addEventListener('click', function(e) {
-            if (e.target == document.getElementById('foto-modal')) fecharFoto();
-            if (e.target == document.getElementById('mapa-modal')) fecharMapa();
-            if (e.target == document.getElementById('modal-data-deposito')) fecharModalDeposito();
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('foto-modal')) fecharFoto();
+            if (event.target == document.getElementById('mapa-modal')) fecharMapa();
+            if (event.target == document.getElementById('modal-data-deposito')) fecharModalDeposito();
         });
-        window.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharFoto(); fecharMapa(); fecharModalDeposito(); } });
 
-        // Funções de foto e mapa (mantidas como antes)
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharFoto();
+                fecharMapa();
+                fecharModalDeposito();
+            }
+        });
+
         let scale = 1, transX = 0, transY = 0;
         const containerImg = document.getElementById('container-img');
         const img = document.getElementById('foto-ampliada');
@@ -551,14 +802,23 @@
             containerImg.style.transform = `translate(0px, 0px) scale(1)`;
             document.getElementById('foto-modal').style.display = 'flex';
         }
-        function fecharFoto() { document.getElementById('foto-modal').style.display = 'none'; }
+        function fecharFoto() {
+            document.getElementById('foto-modal').style.display = 'none';
+        }
+
         containerImg.addEventListener('wheel', (e) => {
             e.preventDefault();
             scale += e.deltaY * -0.001;
             scale = Math.min(Math.max(0.5, scale), 5);
             containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
-        containerImg.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - transX; startY = e.clientY - transY; });
+
+        containerImg.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - transX;
+            startY = e.clientY - transY;
+            e.preventDefault();
+        });
         window.addEventListener('mouseup', () => isDragging = false);
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
@@ -571,7 +831,10 @@
             document.getElementById('mapa-iframe').src = `https://www.google.com/maps?q=${query}&output=embed`;
             document.getElementById('mapa-modal').style.display = 'flex';
         }
-        function fecharMapa() { document.getElementById('mapa-modal').style.display = 'none'; document.getElementById('mapa-iframe').src = ''; }
+        function fecharMapa() {
+            document.getElementById('mapa-modal').style.display = 'none';
+            document.getElementById('mapa-iframe').src = '';
+        }
 
         function exportarExcel() {
             if(dadosExportacao.length === 0) return alert("Sem dados para exportar");
