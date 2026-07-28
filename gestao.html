@@ -136,13 +136,8 @@
             border-bottom: 2px solid var(--navy);
         }
 
-        th:first-child {
-            border-radius: 12px 0 0 0;
-        }
-
-        th:last-child {
-            border-radius: 0 12px 0 0;
-        }
+        th:first-child { border-radius: 12px 0 0 0; }
+        th:last-child { border-radius: 0 12px 0 0; }
 
         td {
             padding: 12px 24px;
@@ -201,12 +196,8 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* AJUSTE MOBILE / APP WEB */
         @media (max-width: 768px) {
-            body {
-                padding: 10px !important;
-                max-width: 100% !important;
-            }
+            body { padding: 10px !important; max-width: 100% !important; }
 
             .header-card {
                 flex-direction: column !important;
@@ -217,9 +208,7 @@
                 border-radius: 18px !important;
             }
 
-            .header-title {
-                font-size: 12px !important;
-            }
+            .header-title { font-size: 12px !important; }
 
             .filter-bar {
                 flex-direction: column !important;
@@ -242,10 +231,6 @@
                 font-size: 11px !important;
             }
 
-            .chips-container {
-                margin-bottom: 10px !important;
-            }
-
             .dashboard-grid {
                 display: flex !important;
                 flex-direction: column !important;
@@ -264,17 +249,10 @@
             }
 
             .card-left canvas,
-            .card-right canvas {
-                height: 220px !important;
-                max-height: 220px !important;
-            }
-
-            .cost-card {
-                max-height: none !important;
-            }
-
+            .card-right canvas,
             .cost-card canvas {
                 height: 220px !important;
+                max-height: 220px !important;
             }
 
             .table-container {
@@ -304,30 +282,17 @@
         }
 
         @media (max-width: 480px) {
-            body {
-                padding: 8px !important;
-            }
+            body { padding: 8px !important; }
 
-            .header-card {
-                padding: 12px !important;
-            }
+            .header-card { padding: 12px !important; }
 
-            .header-title {
-                font-size: 11px !important;
-            }
+            .header-title { font-size: 11px !important; }
 
-            .filter-bar {
-                padding: 10px !important;
-            }
+            .filter-bar { padding: 10px !important; }
 
-            .card {
-                padding: 10px !important;
-                border-radius: 16px !important;
-            }
+            .card { padding: 10px !important; border-radius: 16px !important; }
 
-            .chart-title {
-                font-size: 8px !important;
-            }
+            .chart-title { font-size: 8px !important; }
 
             .card-left canvas,
             .card-right canvas,
@@ -364,12 +329,8 @@
         <label>Status</label>
         <select id="filtroStatus">
             <option value="">Todos</option>
-            <option value="ag. locação">AG. LOCAÇÃO</option>
             <option value="ag. carregamento">AG. CARREGAMENTO</option>
-            <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
-            <option value="faturado">FATURADO</option>
-            <option value="ag. liberação">AG. LIBERAÇÃO</option>
-            <option value="em viagem">EM VIAGEM</option>
+            <option value="liberado">LIBERADO</option>
             <option value="depositado">DEPOSITADO</option>
         </select>
     </div>
@@ -475,20 +436,24 @@
         return null;
     }
 
-    function getStatusColor(status) {
-        const colors = {
-            'ag. locação': '#FEF3C7',
-            'ag. carregamento': '#FDE68A',
-            'pendencia logistica': '#FECACA',
-            'faturado': '#DBEAFE',
-            'ag. liberação': '#E9D5FF',
-            'em viagem': '#BAE6FD',
-            'depositado': '#D1FAE5'
-        };
-        return colors[status] || '#F3F4F6';
+    function normalizarStatus(status) {
+        const s = (status || '').toString().trim().toLowerCase();
+        if (s === 'ag. locação' || s === 'ag. locacao' || s === 'ag. carregamento') return 'ag. carregamento';
+        if (s === 'liberada') return 'liberado';
+        if (s === 'depositado') return 'depositado';
+        return s;
     }
 
-    const STATUS_FLUXO = ['ag. locação','ag. carregamento','pendencia logistica','faturado','ag. liberação','em viagem','depositado'];
+    function getStatusColor(status) {
+        const colors = {
+            'ag. carregamento': '#FDE68A',
+            'liberado': '#DBEAFE',
+            'depositado': '#D1FAE5'
+        };
+        return colors[normalizarStatus(status)] || '#F3F4F6';
+    }
+
+    const STATUS_FLUXO = ['ag. carregamento','liberado','depositado'];
     let dadosCompletos = [], charts = {};
     let filtroStatusAtivo = null;
     let filtroFreeTimeAtivo = null;
@@ -538,8 +503,8 @@
                 if (dataFormatada !== fDataFin) return false;
             }
 
-            if (filtroStatusAtivo && d.status !== filtroStatusAtivo) return false;
-            if (fStatusForm && d.status !== fStatusForm) return false;
+            if (filtroStatusAtivo && normalizarStatus(d.status) !== filtroStatusAtivo) return false;
+            if (fStatusForm && normalizarStatus(d.status) !== fStatusForm) return false;
 
             if (filtroFreeTimeAtivo) {
                 const rule = getFreeTimeRuleCached(d.armador);
@@ -552,7 +517,7 @@
             }
 
             if (filtroAtrasoAtivo) {
-                const isDepositado = d.status === 'depositado' || d.finalizado;
+                const isDepositado = normalizarStatus(d.status) === 'depositado' || d.finalizado;
                 if (!isDepositado) return false;
                 const rule = getFreeTimeRuleCached(d.armador);
                 if (!rule || !d.data_retirada) return false;
@@ -607,8 +572,9 @@
             const t = d.transportadora || 'N/A';
             transpMap.set(t, (transpMap.get(t) || 0) + 1);
 
-            if (statusCount.has(d.status)) {
-                statusCount.set(d.status, statusCount.get(d.status) + 1);
+            const st = normalizarStatus(d.status);
+            if (statusCount.has(st)) {
+                statusCount.set(st, statusCount.get(st) + 1);
             }
 
             const rule = getFreeTimeRuleCached(d.armador);
@@ -624,7 +590,7 @@
                     else faixa = '0-25%';
                     faixas[faixa]++;
 
-                    const isDepositado = d.status === 'depositado' || d.finalizado;
+                    const isDepositado = st === 'depositado' || d.finalizado;
                     if (isDepositado) {
                         if (rest < 0) {
                             depositadosAtrasados++;
@@ -703,7 +669,7 @@
                 labels: prep.statusLabels,
                 datasets: [{
                     data: prep.statusValues,
-                    backgroundColor: prep.statusValues.map((_, i) => i === STATUS_FLUXO.length-1 ? colors.red : colors.navy),
+                    backgroundColor: [colors.gold, colors.navy, colors.red],
                     borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.7
                 }]
             },
@@ -888,7 +854,7 @@
             const vencido = diasRest !== null && diasRest < 0;
             const custoDiario = (vencido && rule) ? rule.custo.toFixed(2) : '-';
             const custoTotal = (vencido && rule) ? (Math.abs(diasRest) * rule.custo).toFixed(2) : '-';
-            const statusText = (d.status || '').toUpperCase();
+            const statusText = normalizarStatus(d.status).toUpperCase();
             const statusColor = getStatusColor(d.status);
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -946,7 +912,7 @@
                 const vencido = diasRest !== null && diasRest < 0;
                 return {
                     Container: d.container,
-                    Status: (d.status || '').toUpperCase(),
+                    Status: normalizarStatus(d.status).toUpperCase(),
                     Armador: d.armador,
                     Transportadora: d.transportadora,
                     Terminal: d.terminal || '',

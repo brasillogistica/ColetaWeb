@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="style.css">
     <style>
         * {
-            margin: 0; padding: 0; box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Inter', sans-serif;
         }
         body {
@@ -135,143 +137,227 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             overflow: hidden;
         }
-        .table-wrapper { overflow-x: auto; border-radius: 12px; margin-top: 10px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 12px;
+        }
         th {
-            background: var(--navy); color: white; padding: 10px 8px;
-            font-weight: 700; text-transform: uppercase; font-size: 11px;
-            white-space: nowrap; position: sticky; top: 0;
+            background: var(--navy);
+            color: white;
+            padding: 10px 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
         }
         th:first-child { border-radius: 12px 0 0 0; }
         th:last-child { border-radius: 0 12px 0 0; }
+
         td {
-            padding: 8px 6px; border-bottom: 1px solid #f2f2f2;
-            color: var(--navy); text-align: center; background: var(--white);
-            word-break: break-word; vertical-align: middle;
+            padding: 8px 6px;
+            border-bottom: 1px solid #f2f2f2;
+            color: var(--navy);
+            text-align: center;
+            background: var(--white);
+            word-break: break-word;
+            vertical-align: middle;
         }
         tr:nth-child(even) td { background-color: #f9f9f9; }
         td.col-nowrap { white-space: nowrap; }
 
         .status-badge {
-            display: inline-block; padding: 4px 10px; border-radius: 14px;
-            font-size: 11px; font-weight: 700; text-transform: uppercase;
-            color: #1e2f3a; background: transparent;
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #1e2f3a;
+            background: transparent;
         }
         .btn-status {
-            background: var(--navy); color: white; border: none;
-            padding: 4px 8px; border-radius: 6px; cursor: pointer;
-            font-size: 12px; margin: 0 2px; font-weight: 700;
+            background: var(--navy);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 0 2px;
+            font-weight: 700;
         }
         .btn-status:disabled { background: #ccc; cursor: not-allowed; }
         .btn-confirm {
-            border: none; padding: 4px 8px; margin: 0 2px; border-radius: 6px;
-            font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+            border: none;
+            padding: 4px 8px;
+            margin: 0 2px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
         }
         .btn-sim { background: #81c784; color: white; }
         .btn-nao { background: #e57373; color: white; }
         .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
         .thumbs-up {
-            display: inline-block; margin-left: 5px; font-size: 16px;
-            opacity: 0; transition: opacity 0.2s;
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
         .thumbs-up.show { opacity: 1; }
+
         .loc-link {
-            color: var(--navy); cursor: pointer; text-decoration: underline;
-            font-weight: 600; font-size: 12px;
+            color: var(--navy);
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+            font-size: 12px;
         }
+
         .badge-tipo {
-            display: inline-block; padding: 3px 10px; border-radius: 99px;
-            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
         .badge-resfriado { background: #d4edff; color: #004085; }
         .badge-congelado { background: #d1ecf1; color: #0c5460; }
 
-        #foto-modal, #mapa-modal, #modal-data-deposito, #modal-foto-status {
-            display: none; position: fixed; z-index: 3000; left: 0; top: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.7);
-            justify-content: center; align-items: center;
+        #foto-modal, #mapa-modal, #modal-data-deposito {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
         }
         .mapa-container {
-            background: white; border-radius: 20px; padding: 20px;
-            width: 90%; max-width: 800px; height: 80vh; position: relative;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            position: relative;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
-        .mapa-container iframe { width: 100%; height: calc(100% - 40px); border: none; border-radius: 10px; }
-        .fechar-mapa, .fechar-foto, .fechar-foto-status {
-            position: absolute; top: 15px; right: 20px; font-size: 32px;
-            color: var(--navy); cursor: pointer; font-weight: bold; z-index: 10;
+        .mapa-container iframe {
+            width: 100%;
+            height: calc(100% - 40px);
+            border: none;
+            border-radius: 10px;
+        }
+        .fechar-mapa, .fechar-foto {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 32px;
+            color: var(--navy);
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10;
         }
         #container-img {
-            width: 100%; height: 100%; display: flex; justify-content: center;
-            align-items: center; transition: transform 0.1s;
-        }
-        #foto-ampliada { max-width: 90%; max-height: 90%; user-select: none; }
-        .modal-deposito-box {
-            background: white; padding: 30px 35px; border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
-            border: 1px solid var(--gold);
-        }
-        .modal-deposito-box p { font-weight: 700; margin-bottom: 15px; color: var(--navy); font-size: 18px; }
-        .modal-deposito-box input[type="date"] {
-            padding: 10px 15px; border-radius: 10px; border: 1px solid var(--navy);
-            font-weight: 600; font-size: 16px; text-align: center; outline: none;
-        }
-        .modal-actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-
-        .foto-status-box {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            border: 1px solid var(--gold);
-            width: 90%;
-            max-width: 460px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            text-align: center;
-        }
-        .foto-status-box h3 {
-            color: var(--navy);
-            margin-bottom: 15px;
-            font-size: 18px;
-            text-transform: uppercase;
-        }
-        .foto-status-box p {
-            color: var(--navy);
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-        .foto-status-box .btn-main {
             width: 100%;
-            margin-top: 10px;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s;
         }
-        #preview-foto-status {
-            max-width: 100%;
-            margin-top: 10px;
-            display: none;
-            border-radius: 10px;
+        #foto-ampliada {
+            max-width: 90%;
+            max-height: 90%;
+            user-select: none;
+        }
+        .modal-deposito-box {
+            background: white;
+            padding: 30px 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
             border: 1px solid var(--gold);
         }
+        .modal-deposito-box p {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--navy);
+            font-size: 18px;
+        }
+        .modal-deposito-box input[type="date"] {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--navy);
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
 
-        /* AJUSTE MOBILE / APP WEB */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gold);
+            border-top-color: var(--navy);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         @media (max-width: 768px) {
-            body {
-                padding: 10px !important;
-            }
+            body { padding: 10px !important; }
 
             .header-card {
                 flex-direction: column !important;
-                gap: 12px !important;
+                gap: 10px !important;
                 align-items: center !important;
                 text-align: center !important;
                 padding: 15px !important;
                 border-radius: 18px !important;
             }
 
-            .header-title {
-                font-size: 14px !important;
-            }
+            .header-title { font-size: 12px !important; }
 
             .filter-bar {
+                flex-direction: column !important;
+                align-items: stretch !important;
                 padding: 12px !important;
                 border-radius: 18px !important;
             }
@@ -282,21 +368,18 @@
             }
 
             .filter-group {
+                min-width: 100% !important;
                 width: 100% !important;
             }
 
-            .btn-group {
-                width: 100%;
-                flex-direction: column;
-            }
-
-            .btn-group .btn-filtrar,
-            .btn-group .btn-limpar,
-            .btn-group .btn-voltar,
-            .btn-group .btn-excel-small {
-                width: 100%;
-                min-height: 46px;
-                font-size: 12px;
+            .btn-filtrar,
+            .btn-limpar,
+            .btn-voltar,
+            .btn-excel-small {
+                width: 100% !important;
+                align-self: stretch !important;
+                min-height: 44px !important;
+                font-size: 11px !important;
             }
 
             .table-container {
@@ -305,227 +388,423 @@
             }
 
             .table-wrapper {
-                overflow-x: auto;
+                max-height: 60vh !important;
+                overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch;
             }
 
             table {
-                min-width: 1200px;
+                min-width: 1200px !important;
             }
 
             th, td {
-                white-space: nowrap;
-            }
-
-            .status-badge,
-            .badge-tipo {
-                font-size: 9px;
+                padding: 10px 14px !important;
             }
 
             .mapa-container,
-            .modal-deposito-box,
-            .foto-status-box {
+            .modal-deposito-box {
                 width: 95% !important;
                 max-width: 95% !important;
                 padding: 20px !important;
-            }
-
-            #foto-ampliada {
-                max-width: 95%;
-                max-height: 80vh;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 8px !important;
-            }
-
-            .header-card {
-                padding: 12px !important;
-            }
-
-            .filter-bar,
-            .table-container {
-                padding: 10px !important;
-            }
-
-            .btn-group .btn-filtrar,
-            .btn-group .btn-limpar,
-            .btn-group .btn-voltar,
-            .btn-group .btn-excel-small {
-                min-height: 44px;
-                font-size: 11px;
-            }
-
-            .header-title {
-                font-size: 13px !important;
             }
         }
     </style>
 </head>
 <body>
 
-    <header class="header-card">
-        <div class="logo-minerva">
-            <span class="m">minerva</span><span class="f">foods</span>
-        </div>
-        <div class="header-title">Processos – Container</div>
-        <div></div>
-    </header>
+<div id="loading-overlay">
+    <div class="spinner"></div>
+</div>
 
-    <section class="filter-bar">
-        <div class="filter-row">
-            <div class="filter-group">
-                <label>Data Registro</label>
-                <div class="date-range">
-                    <input type="date" id="filtroDataInicio">
-                    <span>até</span>
-                    <input type="date" id="filtroDataFim">
-                </div>
-            </div>
-            <div class="filter-group">
-                <label>Data Retirada</label>
-                <input type="date" id="filtroDataRetirada">
-            </div>
-            <div class="filter-group">
-                <label>Armador</label>
-                <input type="text" id="filtroArmador" placeholder="Nome do armador">
-            </div>
-            <div class="filter-group">
-                <label>Container</label>
-                <input type="text" id="filtroContainer" placeholder="Número">
-            </div>
-            <div class="filter-group">
-                <label>Placa</label>
-                <input type="text" id="filtroPlaca" placeholder="Placa">
-            </div>
-            <div class="filter-group">
-                <label>Carga / Pulmão</label>
-                <select id="filtroCargaPulmao">
-                    <option value="">Todos</option>
-                    <option value="Carga">Carga</option>
-                    <option value="Pulmão">Pulmão</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Tipo de Carga</label>
-                <select id="filtroTipoCarga">
-                    <option value="">Todos</option>
-                    <option value="Resfriado">Resfriado</option>
-                    <option value="Congelado">Congelado</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Terminal</label>
-                <input type="text" id="filtroTerminal" placeholder="Terminal">
-            </div>
-            <div class="filter-group">
-                <label>Cidade</label>
-                <input type="text" id="filtroCidade" placeholder="Cidade">
-            </div>
-            <div class="filter-group">
-                <label>Transportadora</label>
-                <input type="text" id="filtroTransportadora" placeholder="Transportadora">
-            </div>
-            <div class="filter-group">
-                <label>Status</label>
-                <select id="filtroStatus">
-                    <option value="">Todos</option>
-                    <option value="ag. coleta">AG. COLETA</option>
-                    <option value="liberado">LIBERADO</option>
-                    <option value="depositado">DEPOSITADO</option>
-                </select>
+<header class="header-card">
+    <div class="logo-minerva">
+        <span class="m">minerva</span><span class="f">foods</span>
+    </div>
+    <div class="header-title">Processos – Container</div>
+    <div></div>
+</header>
+
+<section class="filter-bar">
+    <div class="filter-row">
+        <div class="filter-group">
+            <label>Data Registro</label>
+            <div class="date-range">
+                <input type="date" id="filtroDataInicio">
+                <span>até</span>
+                <input type="date" id="filtroDataFim">
             </div>
         </div>
-
-        <div class="btn-group">
-            <button class="btn-filtrar" onclick="aplicarFiltros()">Filtrar</button>
-            <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
-            <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
-            <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
+        <div class="filter-group">
+            <label>Data Retirada</label>
+            <input type="date" id="filtroDataRetirada">
         </div>
-    </section>
-
-    <div class="table-container">
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data/Hora</th><th>Retirada</th><th>Armador</th><th>Container</th>
-                        <th>Placa</th><th>Tara</th><th>Max Gross</th><th>C/P</th><th>Tipo</th>
-                        <th>Terminal</th><th>Cidade</th>
-                        <th id="th-transportadora" style="display: none;">Transport.</th>
-                        <th>Status</th><th>Finalizado</th><th>Ações</th><th>Confirmar</th>
-                        <th>Localização</th><th>Foto</th><th>Genset</th><th>Liberado</th><th>Depositado</th>
-                    </tr>
-                </thead>
-                <tbody id="processos-body"></tbody>
-            </table>
+        <div class="filter-group">
+            <label>Armador</label>
+            <input type="text" id="filtroArmador" placeholder="Nome do armador">
+        </div>
+        <div class="filter-group">
+            <label>Container</label>
+            <input type="text" id="filtroContainer" placeholder="Número">
+        </div>
+        <div class="filter-group">
+            <label>Placa</label>
+            <input type="text" id="filtroPlaca" placeholder="Placa">
+        </div>
+        <div class="filter-group">
+            <label>Carga / Pulmão</label>
+            <select id="filtroCargaPulmao">
+                <option value="">Todos</option>
+                <option value="Carga">Carga</option>
+                <option value="Pulmão">Pulmão</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Tipo de Carga</label>
+            <select id="filtroTipoCarga">
+                <option value="">Todos</option>
+                <option value="Resfriado">Resfriado</option>
+                <option value="Congelado">Congelado</option>
+                <option value="Congelado com GenSet">Congelado com GenSet</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Terminal</label>
+            <input type="text" id="filtroTerminal" placeholder="Terminal">
+        </div>
+        <div class="filter-group">
+            <label>Cidade</label>
+            <input type="text" id="filtroCidade" placeholder="Cidade">
+        </div>
+        <div class="filter-group">
+            <label>Transportadora</label>
+            <input type="text" id="filtroTransportadora" placeholder="Transportadora">
+        </div>
+        <div class="filter-group">
+            <label>Status</label>
+            <select id="filtroStatus">
+                <option value="">Todos</option>
+                <option value="ag. carregamento">AG. CARREGAMENTO</option>
+                <option value="liberado">LIBERADO</option>
+                <option value="depositado">DEPOSITADO</option>
+            </select>
         </div>
     </div>
 
-    <div id="foto-modal"><span class="fechar-foto" onclick="fecharFoto()">&times;</span><div id="container-img"><img id="foto-ampliada"></div></div>
-    <div id="mapa-modal"><div class="mapa-container"><span class="fechar-mapa" onclick="fecharMapa()">&times;</span><iframe id="mapa-iframe"></iframe></div></div>
-    <div id="modal-data-deposito"><div class="modal-deposito-box">
-        <p>Selecione a data do depósito</p><input type="date" id="input-data-deposito">
-        <div class="modal-actions"><button class="btn-limpar" onclick="fecharModalDeposito()">Cancelar</button><button class="btn-filtrar" onclick="confirmarDataDeposito()">Confirmar</button></div>
-    </div></div>
+    <div class="btn-group">
+        <button class="btn-filtrar" onclick="aplicarFiltros()">Filtrar</button>
+        <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
+        <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
+        <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+</section>
 
-    <div id="modal-foto-status">
-        <div class="foto-status-box">
-            <span class="fechar-foto-status" onclick="fecharModalFotoStatus()">&times;</span>
-            <h3 id="titulo-foto-status">Foto</h3>
-            <p id="texto-foto-status">Tire a foto para continuar</p>
-            <input type="file" id="input-foto-status" accept="image/*" capture="environment" style="display:none;">
-            <button class="btn-main" style="background: var(--gold);" onclick="document.getElementById('input-foto-status').click()">
-                TIRAR FOTO
-            </button>
-            <img id="preview-foto-status" alt="Prévia da foto">
-            <button class="btn-main" style="background: var(--red);" onclick="confirmarFotoStatus()">
-                SALVAR FOTO
-            </button>
+<div class="table-container">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Retirada</th>
+                    <th>Container</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                    <th>Confirmar</th>
+                    <th>Armador</th>
+                    <th>Transport.</th>
+                    <th>Terminal</th>
+                    <th>Cidade</th>
+                    <th>Finalizado</th>
+                    <th>FT Total</th>
+                    <th>Dias Rest.</th>
+                    <th>Vencido?</th>
+                    <th>Localização</th>
+                    <th>RIC</th>
+                    <th>GENSET</th>
+                    <th>LIBERADO</th>
+                    <th>DEPOSITADO</th>
+                </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="foto-modal">
+    <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
+    <div id="container-img">
+        <img id="foto-ampliada">
+    </div>
+</div>
+
+<div id="mapa-modal">
+    <div class="mapa-container">
+        <span class="fechar-mapa" onclick="fecharMapa()">&times;</span>
+        <iframe id="mapa-iframe"></iframe>
+    </div>
+</div>
+
+<div id="modal-data-deposito">
+    <div class="modal-deposito-box">
+        <p>Selecione a data do depósito</p>
+        <input type="date" id="input-data-deposito">
+        <div class="modal-actions">
+            <button class="btn-limpar" onclick="fecharModalDeposito()">Cancelar</button>
+            <button class="btn-filtrar" onclick="confirmarDataDeposito()">Confirmar</button>
         </div>
     </div>
+</div>
 
-    <script src="script.js"></script>
-    <script>
-        const statusFluxo = ['ag. coleta', 'liberado', 'depositado'];
-        const statusOriginais = {};
-        let dadosExportacao = [];
-        let dadosModalDeposito = {};
-        let dadosModalFotoStatus = {};
+<script src="script.js"></script>
+<script>
+    const FREE_TIME_RULES = {
+        "PIL": { dias: 30, custo: 100 },
+        "HAPAG LLOYD": { dias: 30, custo: 297 },
+        "HAPAG": { dias: 30, custo: 297 },
+        "ONE": { dias: 30, custo: 100 },
+        "ALPHA SHIPPING": { dias: 30, custo: 100 },
+        "ALPHA": { dias: 30, custo: 100 },
+        "CMA CGM": { dias: 25, custo: 175 },
+        "CMA": { dias: 25, custo: 175 },
+        "YANG MING": { dias: 35, custo: 100 },
+        "HMM": { dias: 42, custo: 100 },
+        "MAERSK": { dias: 24, custo: 160 },
+        "MSC": { dias: 30, custo: 130 },
+        "COSCO": { dias: 35, custo: 100 },
+        "EVERGREEN": { dias: 35, custo: 80 },
+        "ZIM": { dias: 30, custo: 141 },
+        "INTERTRANS - COSCO": { dias: 21, custo: 250 },
+        "INTERTRANS - CMA CGM": { dias: 21, custo: 335 },
+        "INTERTRANS - HMM": { dias: 21, custo: 360 },
+        "INTERTRANS - YANG MING": { dias: 21, custo: 300 },
+        "BR-X CARGO": { dias: 14, custo: 353 }
+    };
 
-        function normalizarStatus(status) {
-            const s = (status || '').toString().trim().toLowerCase();
-            if (s === 'ag. carregamento' || s === 'ag. locação' || s === 'ag. locacao') return 'ag. coleta';
-            if (s === 'liberada') return 'liberado';
-            return s;
+    const STATUS_FLUXO = ['ag. carregamento', 'liberado', 'depositado'];
+
+    const freeTimeCache = new Map();
+    function getFreeTimeRuleCached(armador) {
+        if (!armador) return null;
+        const nome = armador.trim().toUpperCase();
+        if (freeTimeCache.has(nome)) return freeTimeCache.get(nome);
+        for (const [key, value] of Object.entries(FREE_TIME_RULES)) {
+            if (nome === key.toUpperCase() || nome.includes(key.toUpperCase()) || key.toUpperCase().includes(nome)) {
+                freeTimeCache.set(nome, value);
+                return value;
+            }
         }
+        freeTimeCache.set(nome, null);
+        return null;
+    }
 
-        function getStatusColor(status) {
-            const s = normalizarStatus(status);
-            const colors = {
-                'ag. coleta': '#FDE68A',
-                'liberado': '#DBEAFE',
-                'depositado': '#D1FAE5'
+    function normalizarStatus(status) {
+        const s = (status || '').toString().trim().toLowerCase();
+        if (s === 'ag. locação' || s === 'ag. locacao' || s === 'ag. carregamento') return 'ag. carregamento';
+        if (s === 'liberada') return 'liberado';
+        if (s === 'depositado') return 'depositado';
+        return s;
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'ag. carregamento': '#FDE68A',
+            'liberado': '#DBEAFE',
+            'depositado': '#D1FAE5'
+        };
+        return colors[normalizarStatus(status)] || '#F3F4F6';
+    }
+
+    let dadosCompletos = [];
+    let filtroStatusAtivo = null;
+    let filtroFreeTimeAtivo = null;
+    let filtroAtrasoAtivo = null;
+    let filtroTransportadoraAtiva = null;
+    let dadosModalDeposito = {};
+
+    function showLoading() {
+        const el = document.getElementById('loading-overlay');
+        if (el) el.style.display = 'flex';
+    }
+
+    function hideLoading() {
+        const el = document.getElementById('loading-overlay');
+        if (el) el.style.display = 'none';
+    }
+
+    async function verificarAcesso() {
+        try {
+            if (typeof clienteSupabase === 'undefined') return false;
+
+            const { data: { user } } = await clienteSupabase.auth.getUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return false;
+            }
+
+            const { data: userData } = await clienteSupabase
+                .from('usuarios')
+                .select('perfil')
+                .eq('email', user.email)
+                .single();
+
+            if (!userData || (userData.perfil !== 'master' && userData.perfil !== 'administrador')) {
+                alert('Acesso negado.');
+                window.location.href = 'index.html';
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Erro em verificarAcesso:', error);
+            alert('Erro ao verificar acesso.');
+            return false;
+        }
+    }
+
+    function calcularDiasRestantes(dataRetirada, diasFreeTime) {
+        if (!dataRetirada || !diasFreeTime) return null;
+        const retirada = new Date(dataRetirada + 'T00:00:00');
+        const agora = new Date();
+        const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
+        return Math.ceil(diff / 86400000);
+    }
+
+    function obterFiltrosAtuais() {
+        return {
+            dataInicio: document.getElementById('filtroDataInicio').value,
+            dataFim: document.getElementById('filtroDataFim').value,
+            dataRetirada: document.getElementById('filtroDataRetirada').value,
+            armador: document.getElementById('filtroArmador').value,
+            container: document.getElementById('filtroContainer').value,
+            placa: document.getElementById('filtroPlaca').value,
+            cargaPulmao: document.getElementById('filtroCargaPulmao').value,
+            tipoCarga: document.getElementById('filtroTipoCarga').value,
+            terminal: document.getElementById('filtroTerminal').value,
+            cidade: document.getElementById('filtroCidade').value,
+            transportadora: document.getElementById('filtroTransportadora').value,
+            status: document.getElementById('filtroStatus').value
+        };
+    }
+
+    function obterDadosFiltrados() {
+        const filtros = obterFiltrosAtuais();
+        const fContainer = filtros.container.trim().toLowerCase();
+        const fArmador = filtros.armador.trim().toLowerCase();
+        const fStatusForm = filtros.status;
+        const fDataRetirada = filtros.dataRetirada;
+        const fDataInicio = filtros.dataInicio;
+        const fDataFim = filtros.dataFim;
+        const fTerminal = filtros.terminal.trim().toLowerCase();
+        const fCidade = filtros.cidade.trim().toLowerCase();
+        const fTransportadora = filtros.transportadora.trim().toLowerCase();
+        const fTipoCarga = filtros.tipoCarga;
+        const fCargaPulmao = filtros.cargaPulmao;
+
+        return dadosCompletos.filter(d => {
+            const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
+
+            if (fContainer && !(d.container || '').toLowerCase().includes(fContainer)) return false;
+            if (fArmador && !(d.armador || '').toLowerCase().includes(fArmador)) return false;
+            if (fStatusForm && statusNorm !== fStatusForm) return false;
+            if (fDataRetirada && d.data_retirada !== fDataRetirada) return false;
+            if (fTerminal && !(d.terminal_coleta || '').toLowerCase().includes(fTerminal)) return false;
+            if (fCidade && !(d.cidade || '').toLowerCase().includes(fCidade)) return false;
+            if (fTransportadora && !(d.transportadora || '').toLowerCase().includes(fTransportadora)) return false;
+            if (fTipoCarga && !(d.tipo_carga || '').toLowerCase().includes(fTipoCarga.toLowerCase())) return false;
+            if (fCargaPulmao && d.carga_pulmao !== fCargaPulmao) return false;
+
+            if (fDataInicio || fDataFim) {
+                const created = d.created_at ? new Date(d.created_at) : null;
+                if (!created) return false;
+
+                if (fDataInicio) {
+                    const ini = new Date(fDataInicio + 'T00:00:00');
+                    if (created < ini) return false;
+                }
+                if (fDataFim) {
+                    const fim = new Date(fDataFim + 'T23:59:59');
+                    if (created > fim) return false;
+                }
+            }
+
+            if (filtroStatusAtivo && statusNorm !== filtroStatusAtivo) return false;
+
+            if (filtroFreeTimeAtivo) {
+                const rule = getFreeTimeRuleCached(d.armador);
+                if (!rule || !d.data_retirada) return false;
+                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+                if (rest === null) return false;
+                const pct = ((rule.dias - rest) / rule.dias) * 100;
+                const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
+                if (faixa !== filtroFreeTimeAtivo) return false;
+            }
+
+            if (filtroAtrasoAtivo) {
+                const isDepositado = statusNorm === 'depositado' || d.finalizado;
+                if (!isDepositado) return false;
+                const rule = getFreeTimeRuleCached(d.armador);
+                if (!rule || !d.data_retirada) return false;
+                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+                const emAtraso = rest !== null && rest < 0;
+                if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
+                if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
+            }
+
+            if (filtroTransportadoraAtiva && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
+
+            return true;
+        });
+    }
+
+    function atualizarChips() {
+        const chipArea = document.getElementById('chips-area');
+        if (!chipArea) return;
+        chipArea.innerHTML = '';
+        const chips = [];
+        if (filtroStatusAtivo) chips.push({ label: filtroStatusAtivo.toUpperCase(), key: 'status' });
+        if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
+        if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
+        if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
+
+        chips.forEach(c => {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.style = 'background: var(--red); color: white; padding: 2px 10px; border-radius: 99px; font-size: 8px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer;';
+            chip.innerHTML = `${c.label} <span>&times;</span>`;
+            chip.onclick = () => {
+                if (c.key === 'status') filtroStatusAtivo = null;
+                else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
+                else if (c.key === 'atraso') filtroAtrasoAtivo = null;
+                else if (c.key === 'transp') filtroTransportadoraAtiva = null;
+                atualizarChips();
+                renderTudo();
             };
-            return colors[s] || '#F3F4F6';
-        }
+            chipArea.appendChild(chip);
+        });
+    }
 
-        function linkFoto(url, texto = 'Ver foto') {
-            return url
-                ? `<span class="loc-link" onclick="abrirFoto('${url}')">${texto}</span>`
-                : 'Sem foto';
-        }
+    function formatarDataISO(iso) {
+        if (!iso) return 'N/A';
+        let date;
+        if (iso.includes('T')) date = new Date(iso);
+        else date = new Date(iso + 'T00:00:00');
+        if (isNaN(date.getTime())) return 'N/A';
+        return date.toLocaleDateString('pt-BR');
+    }
 
-        async function carregarProcessos(filtros = {}) {
+    function fotoLink(url, titulo) {
+        return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${url}')">${titulo}</span>` : '-';
+    }
+
+    async function carregarProcessos() {
+        try {
             if (typeof clienteSupabase === 'undefined') {
-                setTimeout(() => carregarProcessos(filtros), 500);
+                throw new Error('clienteSupabase não foi carregado.');
+            }
+
+            const { data: { user } } = await clienteSupabase.auth.getUser();
+            if (!user) {
+                window.location.href = 'login.html';
                 return;
             }
-            const { data: { user } } = await clienteSupabase.auth.getUser();
-            if (!user) { window.location.href = 'login.html'; return; }
 
             const { data: userData } = await clienteSupabase
                 .from('usuarios')
@@ -533,432 +812,356 @@
                 .eq('email', user.email)
                 .single();
 
-            const perfil = userData ? userData.perfil.trim().toLowerCase() : "";
+            const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
             const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
-            if (ehAdmin) document.getElementById('th-transportadora').style.display = '';
 
             let query = clienteSupabase.from('coletas').select('*');
+
             if (!ehAdmin && userData?.transportadora) {
                 query = query.eq('transportadora', userData.transportadora);
             }
 
-            if (filtros.dataInicio || filtros.dataFim) {
-                const inicio = filtros.dataInicio ? new Date(filtros.dataInicio) : null;
-                const fim = filtros.dataFim ? new Date(filtros.dataFim) : null;
-                if (inicio && fim) {
-                    const start = new Date(inicio); start.setHours(0,0,0,0);
-                    const end = new Date(fim); end.setHours(23,59,59,999);
-                    query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
-                } else if (inicio) query = query.gte('created_at', inicio.toISOString());
-                else if (fim) query = query.lte('created_at', fim.toISOString());
-            }
-            if (filtros.dataRetirada) query = query.eq('data_retirada', filtros.dataRetirada);
-            if (filtros.armador) query = query.ilike('armador', `%${filtros.armador}%`);
-            if (filtros.container) query = query.ilike('container', `%${filtros.container}%`);
-            if (filtros.placa) query = query.ilike('placa', `%${filtros.placa}%`);
-            if (filtros.cargaPulmao) query = query.eq('carga_pulmao', filtros.cargaPulmao);
-            if (filtros.tipoCarga) query = query.ilike('tipo_carga', `%${filtros.tipoCarga}%`);
-            if (filtros.terminal) query = query.ilike('terminal_coleta', `%${filtros.terminal}%`);
-            if (filtros.cidade) query = query.ilike('cidade', `%${filtros.cidade}%`);
-            if (filtros.transportadora) query = query.ilike('transportadora', `%${filtros.transportadora}%`);
-            if (filtros.status) query = query.eq('status', filtros.status);
-
             const { data, error } = await query.order('created_at', { ascending: false });
-            if (error) { alert("Erro ao carregar: " + error.message); return; }
+            if (error) throw error;
 
-            dadosExportacao = data;
-            const tbody = document.getElementById('processos-body');
-            tbody.innerHTML = '';
-            for (let key in statusOriginais) delete statusOriginais[key];
+            dadosCompletos = data || [];
+            renderTudo();
+        } catch (error) {
+            console.error('Erro ao carregar processos:', error);
+            alert('Erro ao carregar processos: ' + (error?.message || error));
+        }
+    }
 
-            data.forEach(item => {
-                const dataHora = new Date(item.created_at);
+    function renderTudo() {
+        const dados = obterDadosFiltrados();
+        atualizarChips();
+        renderGraficos(dados);
+        renderTabela(dados);
+    }
 
-                const fotoUrl = item.foto_url
-                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
-                    : null;
+    function renderGraficos(dados) {
+        // sem gráficos neste arquivo
+    }
 
-                const fotoGensetUrl = item.genset || item.foto_genset_url
-                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.genset || item.foto_genset_url}`
-                    : null;
+    function renderTabela(dados) {
+        const tbody = document.getElementById('table-body');
+        if (!tbody) return;
 
-                const fotoLiberadoUrl = item.liberado || item.foto_liberado_url
-                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.liberado || item.foto_liberado_url}`
-                    : null;
+        tbody.innerHTML = '';
 
-                const fotoDepositadoUrl = item.depositado || item.foto_depositado_url
-                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.depositado || item.foto_depositado_url}`
-                    : null;
-
-                const statusAtual = normalizarStatus(item.status || 'ag. coleta');
-                const statusId = `status-${item.id}`;
-                const thumbsId = `thumbs-${item.id}`;
-                statusOriginais[statusId] = statusAtual;
-
-                const isFinalizado = item.finalizado || statusAtual === 'depositado';
-                let dataFinalizado = 'Pendente';
-                if (item.data_finalizado) dataFinalizado = new Date(item.data_finalizado).toLocaleDateString('pt-BR');
-
-                let localizacaoHtml = '';
-                const loc = item.localizacao || "N/A";
-                if (loc !== "N/A" && loc !== "GPS Bloqueado" && loc !== "Sem GPS") {
-                    localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${encodeURIComponent(loc)}')">📍 Local</span>`;
-                } else localizacaoHtml = loc;
-
-                const tipoCarga = item.tipo_carga || 'Resfriado';
-                const tipoLower = tipoCarga.toLowerCase();
-                let tipoBadge = '<span class="badge-tipo badge-resfriado">Resfriado</span>';
-
-                if (tipoLower.includes('congelado')) {
-                    tipoBadge = '<span class="badge-tipo badge-congelado">Congelado</span>';
-                }
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="col-nowrap">${dataHora.toLocaleDateString()} ${dataHora.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-                        <td class="col-nowrap">${item.data_retirada || 'N/A'}</td>
-                        <td>${item.armador || 'N/A'}</td>
-                        <td>${item.container || 'N/A'}</td>
-                        <td class="col-nowrap">${item.placa || 'N/A'}</td>
-                        <td>${item.tara || 'N/A'}</td>
-                        <td>${item.max_gross || 'N/A'}</td>
-                        <td>${item.carga_pulmao || 'N/A'}</td>
-                        <td>${tipoBadge}</td>
-                        <td>${item.terminal_coleta || 'N/A'}</td>
-                        <td>${item.cidade || 'N/A'}</td>
-                        ${ehAdmin ? `<td>${item.transportadora || 'N/A'}</td>` : ''}
-                        <td class="col-nowrap">
-                            <span id="${statusId}" class="status-badge" style="background-color:${getStatusColor(statusAtual)}" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span>
-                            <span id="${thumbsId}" class="thumbs-up">👍</span>
-                        </td>
-                        <td class="col-nowrap">${dataFinalizado}</td>
-                        <td class="col-nowrap">
-                            <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
-                            <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', 1)">▶</button>
-                        </td>
-                        <td class="col-nowrap">
-                            <button class="btn-confirm btn-sim" ${isFinalizado ? 'disabled' : ''} onclick="confirmarStatus('${item.id}', '${statusId}', '${thumbsId}')">Sim</button>
-                            <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
-                        </td>
-                        <td class="col-nowrap">${localizacaoHtml}</td>
-                        <td class="col-nowrap">${linkFoto(fotoUrl, 'Foto')}</td>
-                        <td class="col-nowrap">${linkFoto(fotoGensetUrl, 'Genset')}</td>
-                        <td class="col-nowrap">${linkFoto(fotoLiberadoUrl, 'Liberado')}</td>
-                        <td class="col-nowrap">${linkFoto(fotoDepositadoUrl, 'Depositado')}</td>
-                    </tr>
-                `;
-            });
+        if (dados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="18" class="sem-dados">Nenhum container encontrado.</td></tr>';
+            return;
         }
 
-        function navegarStatus(statusId, direcao) {
-            const span = document.getElementById(statusId);
-            if (!span) return;
-            const current = normalizarStatus(span.getAttribute('data-current') || span.getAttribute('data-original'));
-            const idx = statusFluxo.indexOf(current);
-            if (idx === -1) return;
-            let novoIdx = idx + direcao;
-            if (novoIdx < 0 || novoIdx >= statusFluxo.length) return;
-            const novoStatus = statusFluxo[novoIdx];
-            span.textContent = novoStatus.toUpperCase();
-            span.setAttribute('data-current', novoStatus);
-        }
+        dados.forEach(d => {
+            const rule = getFreeTimeRuleCached(d.armador);
+            const diasTotal = rule ? rule.dias : '-';
+            const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+            const vencido = diasRest !== null && diasRest < 0;
 
-        async function confirmarStatus(id, statusId, thumbsId) {
-            const span = document.getElementById(statusId);
-            if (!span) return;
-            let novoStatus = normalizarStatus(span.getAttribute('data-current') || span.getAttribute('data-original'));
-            if (!novoStatus) return;
+            const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
+            const statusText = statusNorm.toUpperCase();
+            const statusColor = getStatusColor(statusNorm);
 
-            if (novoStatus === 'liberado' || novoStatus === 'depositado') {
-                abrirModalFotoStatus(id, statusId, thumbsId, novoStatus);
-                return;
-            }
+            const fotoUrl = d.foto_url
+                ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${d.foto_url}`
+                : null;
 
-            const { error } = await clienteSupabase
-                .from('coletas')
-                .update({ status: 'ag. coleta', finalizado: false })
-                .eq('id', id);
+            const fotoGensetUrl = d.genset || d.foto_genset_url
+                ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${d.genset || d.foto_genset_url}`
+                : null;
 
-            if (error) { alert("Erro: " + error.message); return; }
+            const fotoLiberadoUrl = d.liberado || d.foto_liberado_url
+                ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${d.liberado || d.foto_liberado_url}`
+                : null;
 
-            finalizarConfirmacao(statusId, thumbsId, 'ag. coleta');
-            await carregarProcessos(obterFiltrosAtuais());
-        }
+            const fotoDepositadoUrl = d.depositado || d.foto_depositado_url
+                ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${d.depositado || d.foto_depositado_url}`
+                : null;
 
-        function abrirModalFotoStatus(id, statusId, thumbsId, novoStatus) {
-            dadosModalFotoStatus = {
-                id,
-                statusId,
-                thumbsId,
-                novoStatus,
-                file: null,
-                fileName: null
-            };
+            const isFinalizado = d.finalizado || statusNorm === 'depositado';
+            let dataFinalizado = 'Pendente';
+            if (d.data_finalizado) dataFinalizado = new Date(d.data_finalizado).toLocaleDateString('pt-BR');
 
-            const titulo = document.getElementById('titulo-foto-status');
-            const texto = document.getElementById('texto-foto-status');
-            const preview = document.getElementById('preview-foto-status');
-            const input = document.getElementById('input-foto-status');
-
-            input.value = '';
-            preview.src = '';
-            preview.style.display = 'none';
-
-            if (novoStatus === 'liberado') {
-                titulo.textContent = 'Foto do Genset';
-                texto.textContent = 'Tire a foto do genset para liberar';
+            let localizacaoHtml = '';
+            const loc = d.localizacao || 'N/A';
+            if (loc !== 'N/A' && loc !== 'GPS Bloqueado' && loc !== 'Sem GPS') {
+                localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${encodeURIComponent(loc)}')">📍 Local</span>`;
             } else {
-                titulo.textContent = 'Foto do Genset';
-                texto.textContent = 'Tire a foto do genset para depósito';
+                localizacaoHtml = loc;
             }
 
-            document.getElementById('modal-foto-status').style.display = 'flex';
-        }
+            const statusId = `status-${d.id}`;
+            const thumbsId = `thumbs-${d.id}`;
 
-        function fecharModalFotoStatus() {
-            document.getElementById('modal-foto-status').style.display = 'none';
-        }
-
-        document.getElementById('input-foto-status').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const preview = document.getElementById('preview-foto-status');
-            if (file) {
-                dadosModalFotoStatus.file = file;
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    preview.src = event.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
+            tbody.innerHTML += `
+                <tr>
+                    <td class="col-nowrap">${d.data_retirada || 'N/A'}</td>
+                    <td>${d.container || 'N/A'}</td>
+                    <td class="col-nowrap">
+                        <span id="${statusId}" class="status-badge" style="background-color:${statusColor}" data-original="${statusNorm}">${statusText}</span>
+                        <span id="${thumbsId}" class="thumbs-up">👍</span>
+                    </td>
+                    <td class="col-nowrap">
+                        <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
+                        <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', 1)">▶</button>
+                    </td>
+                    <td class="col-nowrap">
+                        <button class="btn-confirm btn-sim" ${isFinalizado ? 'disabled' : ''} onclick="confirmarStatus('${d.id}', '${statusId}', '${thumbsId}')">Sim</button>
+                        <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
+                    </td>
+                    <td>${d.armador || 'N/A'}</td>
+                    <td>${d.transportadora || 'N/A'}</td>
+                    <td>${d.terminal_coleta || 'N/A'}</td>
+                    <td>${d.cidade || 'N/A'}</td>
+                    <td class="col-nowrap">${dataFinalizado}</td>
+                    <td>${diasTotal}</td>
+                    <td>${diasRest !== null ? diasRest : '-'}</td>
+                    <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
+                    <td>${localizacaoHtml}</td>
+                    <td>${fotoLink(fotoUrl, 'RIC')}</td>
+                    <td>${fotoLink(fotoGensetUrl, 'GENSET')}</td>
+                    <td>${fotoLink(fotoLiberadoUrl, 'LIBERADO')}</td>
+                    <td>${fotoLink(fotoDepositadoUrl, 'DEPOSITADO')}</td>
+                </tr>
+            `;
         });
+    }
 
-        async function confirmarFotoStatus() {
-            if (!dadosModalFotoStatus || !dadosModalFotoStatus.novoStatus) return;
-            const file = dadosModalFotoStatus.file;
-            if (!file) return alert('Tire a foto antes de salvar.');
+    function navegarStatus(statusId, direcao) {
+        const span = document.getElementById(statusId);
+        if (!span) return;
+        const current = normalizarStatus(span.getAttribute('data-current') || span.getAttribute('data-original'));
+        const idx = STATUS_FLUXO.indexOf(current);
+        if (idx === -1) return;
+        const novoIdx = idx + direcao;
+        if (novoIdx < 0 || novoIdx >= STATUS_FLUXO.length) return;
+        const novoStatus = STATUS_FLUXO[novoIdx];
+        span.textContent = novoStatus.toUpperCase();
+        span.setAttribute('data-current', novoStatus);
+    }
 
-            try {
-                const { data: { user } } = await clienteSupabase.auth.getUser();
-                if (!user) return alert('Usuário não autenticado!');
-
-                const ext = file.name && file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
-                const fileName = `${Date.now()}_${user.email}_${dadosModalFotoStatus.id}_${dadosModalFotoStatus.novoStatus}.${ext}`.replace(/[^a-zA-Z0-9._@-]/g, '_');
-
-                const { error: uploadError } = await clienteSupabase.storage
-                    .from('coletas-fotos')
-                    .upload(fileName, file, { upsert: true });
-
-                if (uploadError) throw uploadError;
-
-                if (dadosModalFotoStatus.novoStatus === 'liberado') {
-                    const { error: dbError } = await clienteSupabase
-                        .from('coletas')
-                        .update({
-                            status: 'liberado',
-                            finalizado: false,
-                            liberado: fileName
-                        })
-                        .eq('id', dadosModalFotoStatus.id);
-
-                    if (dbError) throw dbError;
-
-                    fecharModalFotoStatus();
-                    finalizarConfirmacao(dadosModalFotoStatus.statusId, dadosModalFotoStatus.thumbsId, 'liberado');
-                    await carregarProcessos(obterFiltrosAtuais());
-                    return;
-                }
-
-                if (dadosModalFotoStatus.novoStatus === 'depositado') {
-                    dadosModalFotoStatus.fileName = fileName;
-                    fecharModalFotoStatus();
-                    document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
-                    document.getElementById('modal-data-deposito').style.display = 'flex';
-                    return;
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Erro ao salvar foto: ' + err.message);
-            }
-        }
-
-        function fecharModalDeposito() {
-            document.getElementById('modal-data-deposito').style.display = 'none';
-        }
-
-        async function confirmarDataDeposito() {
-            const dataEscolhida = document.getElementById('input-data-deposito').value;
-            if (!dataEscolhida) return alert('Selecione uma data.');
-
-            try {
-                const { id, statusId, thumbsId, fileName } = dadosModalFotoStatus;
-
-                const { error } = await clienteSupabase
-                    .from('coletas')
-                    .update({
-                        status: 'depositado',
-                        finalizado: true,
-                        data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString(),
-                        depositado: fileName
-                    })
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                finalizarConfirmacao(statusId, thumbsId, 'depositado');
-                fecharModalDeposito();
-                dadosModalFotoStatus = {};
-                await carregarProcessos(obterFiltrosAtuais());
-            } catch (err) {
-                console.error(err);
-                alert('Erro ao confirmar depósito: ' + err.message);
-            }
-        }
-
-        function finalizarConfirmacao(statusId, thumbsId, novoStatus) {
-            const span = document.getElementById(statusId);
+    function finalizarConfirmacao(statusId, thumbsId, novoStatus) {
+        const span = document.getElementById(statusId);
+        if (span) {
             span.setAttribute('data-original', novoStatus);
             span.setAttribute('data-current', '');
             span.textContent = novoStatus.toUpperCase();
             span.style.backgroundColor = getStatusColor(novoStatus);
-            statusOriginais[statusId] = novoStatus;
-            const thumbs = document.getElementById(thumbsId);
-            if (thumbs) { thumbs.classList.add('show'); setTimeout(() => thumbs.classList.remove('show'), 2000); }
+        }
+        const thumbs = document.getElementById(thumbsId);
+        if (thumbs) {
+            thumbs.classList.add('show');
+            setTimeout(() => thumbs.classList.remove('show'), 2000);
+        }
+    }
+
+    async function confirmarStatus(id, statusId, thumbsId) {
+        const span = document.getElementById(statusId);
+        if (!span) return;
+        const novoStatus = normalizarStatus(span.getAttribute('data-current') || span.getAttribute('data-original'));
+        if (!novoStatus) return;
+
+        if (novoStatus === 'depositado') {
+            dadosModalDeposito = { id, statusId, thumbsId, novoStatus };
+            document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-data-deposito').style.display = 'flex';
+            return;
         }
 
-        function resetarStatus(statusId) {
-            const span = document.getElementById(statusId);
-            if (!span) return;
-            const original = normalizarStatus(span.getAttribute('data-original'));
-            if (original) {
-                span.textContent = original.toUpperCase();
-                span.setAttribute('data-current', '');
-                span.style.backgroundColor = getStatusColor(original);
-            }
+        const { error } = await clienteSupabase.from('coletas').update({
+            status: novoStatus,
+            finalizado: false
+        }).eq('id', id);
+
+        if (error) {
+            alert('Erro: ' + error.message);
+            return;
         }
 
-        function obterFiltrosAtuais() {
-            return {
-                dataInicio: document.getElementById('filtroDataInicio').value,
-                dataFim: document.getElementById('filtroDataFim').value,
-                dataRetirada: document.getElementById('filtroDataRetirada').value,
-                armador: document.getElementById('filtroArmador').value,
-                container: document.getElementById('filtroContainer').value,
-                placa: document.getElementById('filtroPlaca').value,
-                cargaPulmao: document.getElementById('filtroCargaPulmao').value,
-                tipoCarga: document.getElementById('filtroTipoCarga').value,
-                terminal: document.getElementById('filtroTerminal').value,
-                cidade: document.getElementById('filtroCidade').value,
-                transportadora: document.getElementById('filtroTransportadora').value,
-                status: document.getElementById('filtroStatus').value
-            };
+        finalizarConfirmacao(statusId, thumbsId, novoStatus);
+        renderTudo();
+    }
+
+    async function confirmarDataDeposito() {
+        const dataEscolhida = document.getElementById('input-data-deposito').value;
+        if (!dataEscolhida) return alert('Selecione uma data.');
+
+        const { id, statusId, thumbsId, novoStatus } = dadosModalDeposito;
+
+        const { error } = await clienteSupabase.from('coletas').update({
+            status: novoStatus,
+            finalizado: true,
+            data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString()
+        }).eq('id', id);
+
+        if (error) {
+            alert('Erro: ' + error.message);
+            return;
         }
 
-        function aplicarFiltros() { carregarProcessos(obterFiltrosAtuais()); }
+        finalizarConfirmacao(statusId, thumbsId, novoStatus);
+        fecharModalDeposito();
+        renderTudo();
+    }
 
-        function limparFiltros() {
-            document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
-                if (el.tagName === 'SELECT') el.selectedIndex = 0;
-                else el.value = '';
-            });
-            carregarProcessos({});
+    function resetarStatus(statusId) {
+        const span = document.getElementById(statusId);
+        if (!span) return;
+        const original = normalizarStatus(span.getAttribute('data-original'));
+        if (original) {
+            span.textContent = original.toUpperCase();
+            span.setAttribute('data-current', '');
+            span.style.backgroundColor = getStatusColor(original);
         }
+    }
 
-        document.getElementById('filtroCargaPulmao').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtroTipoCarga').addEventListener('change', aplicarFiltros);
+    function aplicarFiltros() {
+        renderTudo();
+    }
 
-        window.addEventListener('click', function(e) {
-            if (e.target == document.getElementById('foto-modal')) fecharFoto();
-            if (e.target == document.getElementById('mapa-modal')) fecharMapa();
-            if (e.target == document.getElementById('modal-data-deposito')) fecharModalDeposito();
-            if (e.target == document.getElementById('modal-foto-status')) fecharModalFotoStatus();
+    function limparFiltros() {
+        document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
+            if (el.tagName === 'SELECT') el.selectedIndex = 0;
+            else el.value = '';
         });
+        filtroStatusAtivo = null;
+        filtroFreeTimeAtivo = null;
+        filtroAtrasoAtivo = null;
+        filtroTransportadoraAtiva = null;
+        renderTudo();
+    }
 
-        window.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                fecharFoto();
-                fecharMapa();
-                fecharModalDeposito();
-                fecharModalFotoStatus();
-            }
-        });
-
-        let scale = 1, transX = 0, transY = 0;
-        const containerImg = document.getElementById('container-img');
+    function abrirFoto(url) {
         const img = document.getElementById('foto-ampliada');
-        let isDragging = false, startX, startY;
+        const modal = document.getElementById('foto-modal');
+        if (!img || !modal) return;
+        img.src = url;
+        document.getElementById('container-img').style.transform = 'translate(0px, 0px) scale(1)';
+        modal.style.display = 'flex';
+    }
 
-        function abrirFoto(url) {
-            img.src = url;
-            scale = 1; transX = 0; transY = 0;
-            containerImg.style.transform = `translate(0px, 0px) scale(1)`;
-            document.getElementById('foto-modal').style.display = 'flex';
+    function fecharFoto() {
+        const modal = document.getElementById('foto-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function abrirMapa(query) {
+        const iframe = document.getElementById('mapa-iframe');
+        const modal = document.getElementById('mapa-modal');
+        if (!iframe || !modal) return;
+        iframe.src = `https://www.google.com/maps?q=${query}&output=embed`;
+        modal.style.display = 'flex';
+    }
+
+    function fecharMapa() {
+        const modal = document.getElementById('mapa-modal');
+        const iframe = document.getElementById('mapa-iframe');
+        if (modal) modal.style.display = 'none';
+        if (iframe) iframe.src = '';
+    }
+
+    function fecharModalDeposito() {
+        const modal = document.getElementById('modal-data-deposito');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function exportarExcel() {
+        try {
+            const dados = obterDadosFiltrados();
+            if (dados.length === 0) {
+                alert('Nenhum dado para exportar.');
+                return;
+            }
+
+            const exportData = dados.map(d => {
+                const rule = getFreeTimeRuleCached(d.armador);
+                const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+                const vencido = diasRest !== null && diasRest < 0;
+
+                return {
+                    Retirada: d.data_retirada || '',
+                    Container: d.container || '',
+                    Status: normalizarStatus(d.status).toUpperCase(),
+                    Armador: d.armador || '',
+                    Transportadora: d.transportadora || '',
+                    Terminal: d.terminal_coleta || '',
+                    Cidade: d.cidade || '',
+                    Finalizado: d.data_finalizado ? formatarDataISO(d.data_finalizado) : '',
+                    'FT Total': rule ? rule.dias : '',
+                    'Dias Rest': diasRest,
+                    Vencido: vencido ? 'SIM' : 'NÃO',
+                    Localização: d.localizacao || '',
+                    RIC: d.foto_url || '',
+                    GENSET: d.genset || d.foto_genset_url || '',
+                    LIBERADO: d.liberado || d.foto_liberado_url || '',
+                    DEPOSITADO: d.depositado || d.foto_depositado_url || ''
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Containers');
+            XLSX.writeFile(wb, 'Processos_Container.xlsx');
+        } catch (error) {
+            console.error('Erro ao exportar Excel:', error);
+            alert('Ocorreu um erro ao gerar o arquivo Excel.');
         }
+    }
 
-        function fecharFoto() { document.getElementById('foto-modal').style.display = 'none'; }
+    window.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('foto-modal')) fecharFoto();
+        if (e.target === document.getElementById('mapa-modal')) fecharMapa();
+        if (e.target === document.getElementById('modal-data-deposito')) fecharModalDeposito();
+    });
 
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            fecharFoto();
+            fecharMapa();
+            fecharModalDeposito();
+        }
+    });
+
+    let scale = 1, transX = 0, transY = 0;
+    const containerImg = document.getElementById('container-img');
+    let isDragging = false, startX, startY;
+
+    if (containerImg) {
         containerImg.addEventListener('wheel', (e) => {
             e.preventDefault();
             scale += e.deltaY * -0.001;
             scale = Math.min(Math.max(0.5, scale), 5);
             containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
+
         containerImg.addEventListener('mousedown', (e) => {
             isDragging = true;
             startX = e.clientX - transX;
             startY = e.clientY - transY;
         });
+
         window.addEventListener('mouseup', () => isDragging = false);
+
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             transX = e.clientX - startX;
             transY = e.clientY - startY;
             containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
+    }
 
-        function abrirMapa(query) {
-            document.getElementById('mapa-iframe').src = `https://www.google.com/maps?q=${query}&output=embed`;
-            document.getElementById('mapa-modal').style.display = 'flex';
+    window.addEventListener('load', async () => {
+        showLoading();
+        try {
+            const ok = await verificarAcesso();
+            if (!ok) return;
+            await carregarProcessos();
+        } finally {
+            hideLoading();
         }
-
-        function fecharMapa() {
-            document.getElementById('mapa-modal').style.display = 'none';
-            document.getElementById('mapa-iframe').src = '';
-        }
-
-        function exportarExcel() {
-            if(dadosExportacao.length === 0) return alert("Sem dados para exportar");
-
-            const exportData = dadosExportacao.map(d => ({
-                'Data/Hora': d.created_at ? new Date(d.created_at).toLocaleString('pt-BR') : '',
-                'Retirada': d.data_retirada || '',
-                'Armador': d.armador || '',
-                'Container': d.container || '',
-                'Placa': d.placa || '',
-                'Tara': d.tara || '',
-                'Max Gross': d.max_gross || '',
-                'C/P': d.carga_pulmao || '',
-                'Tipo': d.tipo_carga || '',
-                'Terminal': d.terminal_coleta || '',
-                'Cidade': d.cidade || '',
-                'Transportadora': d.transportadora || '',
-                'Status': normalizarStatus(d.status || 'ag. coleta').toUpperCase(),
-                'Finalizado': d.finalizado ? 'SIM' : 'NÃO',
-                'Localização': d.localizacao || '',
-                'Foto': d.foto_url || '',
-                'Genset': d.genset || d.foto_genset_url || '',
-                'Liberado': d.liberado || d.foto_liberado_url || '',
-                'Depositado': d.depositado || d.foto_depositado_url || ''
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Processos");
-            XLSX.writeFile(wb, "Processos_Container.xlsx");
-        }
-
-        window.onload = () => carregarProcessos();
-    </script>
+    });
+</script>
 </body>
 </html>

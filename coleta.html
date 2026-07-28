@@ -7,7 +7,6 @@
     <title>Registro | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Botões de opção */
         .option-buttons-container {
             display: flex;
             gap: 10px;
@@ -39,109 +38,14 @@
             background: var(--navy);
         }
 
-        /* Centralizar labels */
         .form-group label {
             text-align: center;
             display: block;
         }
 
-        /* Botão Salvar desabilitado */
         .btn-salvar-loading {
             opacity: 0.7;
             pointer-events: none;
-        }
-
-        /* AJUSTE MOBILE / APP WEB */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px !important;
-                display: block !important;
-            }
-
-            .card {
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 15px !important;
-                border-radius: 18px !important;
-            }
-
-            h2 {
-                font-size: 1.15rem !important;
-                margin-bottom: 16px !important;
-            }
-
-            .option-buttons-container {
-                flex-direction: column !important;
-                gap: 8px !important;
-            }
-
-            .btn-option {
-                width: 100% !important;
-                min-height: 46px;
-                font-size: 12px !important;
-            }
-
-            .form-group input,
-            .form-group select {
-                font-size: 16px !important;
-                min-height: 42px;
-                padding: 8px 0 !important;
-            }
-
-            .form-group label {
-                font-size: 9px !important;
-            }
-
-            .card > div[style*="grid-template-columns"] {
-                grid-template-columns: 1fr !important;
-                gap: 12px !important;
-            }
-
-            .btn-main {
-                width: 100% !important;
-                min-height: 48px;
-                font-size: 13px !important;
-                padding: 14px 18px !important;
-            }
-
-            .card > div[style*="margin-top: 20px; display: flex; gap: 10px;"] {
-                flex-direction: column !important;
-            }
-
-            #preview,
-            #gensetPreview {
-                max-width: 100% !important;
-            }
-
-            #custom-alert > div {
-                width: 94% !important;
-                max-width: 94% !important;
-                padding: 24px 20px !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 8px !important;
-            }
-
-            .card {
-                padding: 12px !important;
-                border-radius: 16px !important;
-            }
-
-            .btn-main {
-                font-size: 12px !important;
-                min-height: 46px;
-            }
-
-            .btn-option {
-                font-size: 11px !important;
-            }
-
-            h2 {
-                font-size: 1.05rem !important;
-            }
         }
     </style>
 </head>
@@ -150,7 +54,6 @@
     <div class="card" style="width: 550px;">
         <h2 style="color: var(--navy); margin-bottom: 20px; text-align: center;">NOVO REGISTRO</h2>
         
-        <!-- Botões de Tipo de Carga -->
         <div class="form-group">
             <label>TIPO DE CARGA</label>
             <div class="option-buttons-container">
@@ -160,7 +63,6 @@
             </div>
         </div>
 
-        <!-- Botões de Carga / Pulmão -->
         <div class="form-group">
             <label>CARGA OU PULMÃO</label>
             <div class="option-buttons-container">
@@ -169,7 +71,6 @@
             </div>
         </div>
 
-        <!-- Campos Manuais -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
             <div class="form-group">
                 <label>DATA DA RETIRADA</label>
@@ -221,9 +122,8 @@
             </div>
         </div>
 
-        <!-- Seção de Fotos -->
         <div class="form-group" style="border-top: 1px solid #eee; padding-top: 20px;">
-            <label>FOTO DO RECIBO (obrigatório)</label>
+            <label id="labelRic">TIRAR FOTO (RIC)</label>
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
             <button type="button" class="btn-main" onclick="document.getElementById('cameraInput').click()" 
                     style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
@@ -232,13 +132,12 @@
             <div id="status" style="font-size: 12px; color: var(--red); font-weight: bold; margin-top:5px;"></div>
             <img id="preview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
 
-            <!-- Campo extra para foto do genset -->
             <div id="genset-section" style="display: none; margin-top: 15px;">
-                <label>FOTO DO GENSET (obrigatório para Resfriado e Congelado com GenSet)</label>
+                <label id="labelGenset">TIRAR FOTO (PAINEL GENSET)</label>
                 <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display: none;">
-                <button type="button" class="btn-main" onclick="document.getElementById('gensetInput').click()" 
+                <button type="button" id="btnGensetCapture" class="btn-main" onclick="document.getElementById('gensetInput').click()" 
                         style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
-                    <span style="font-size: 20px;">📷</span> TIRAR FOTO (GENSET)
+                    <span style="font-size: 20px;">📷</span> TIRAR FOTO (PAINEL GENSET)
                 </button>
                 <img id="gensetPreview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
             </div>
@@ -250,11 +149,21 @@
         </div>
     </div>
 
-    <!-- Modal personalizado -->
     <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:white; padding:30px 40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; max-width:350px; width:90%;">
             <p style="font-size:1.2rem; font-weight:bold; color:#2d4b5e; margin-bottom:20px;" id="custom-alert-msg">Registro salvo com sucesso!</p>
             <button onclick="fecharAlerta()" style="background: #2d4b5e; color:white; border:none; padding:10px 30px; border-radius:99px; font-weight:bold; cursor:pointer; text-transform:uppercase;">OK</button>
+        </div>
+    </div>
+
+    <div id="modal-data-deposito" style="display:none; position:fixed; z-index:3000; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px 35px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; border:1px solid var(--gold);">
+            <p style="font-weight:700; margin-bottom:15px; color:var(--navy); font-size:18px;">Selecione a data do depósito</p>
+            <input type="date" id="input-data-deposito" style="padding:10px 15px; border-radius:10px; border:1px solid var(--navy); font-weight:600; font-size:16px; text-align:center; outline:none;">
+            <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                <button class="btn-main" style="background:#6c757d; padding:10px 20px;" onclick="fecharModalDeposito()">Cancelar</button>
+                <button class="btn-main" style="background:var(--navy); padding:10px 20px;" onclick="confirmarDataDeposito()">Confirmar</button>
+            </div>
         </div>
     </div>
 
@@ -265,6 +174,61 @@
         let cargaPulmaoSelecionado = '';
         let salvando = false;
 
+        let etapaFluxo = 'ric'; // ric -> painel_ag -> painel_lib -> painel_dep -> final
+        let registroId = null;
+        let fotoPendenteNome = null;
+
+        function tipoUsaFluxoCompleto() {
+            return tipoCargaSelecionado === 'Resfriado' || tipoCargaSelecionado === 'Congelado com GenSet';
+        }
+
+        function atualizarInterfaceEtapa() {
+            const gensetSection = document.getElementById('genset-section');
+            const labelGenset = document.getElementById('labelGenset');
+            const btnSalvar = document.getElementById('btnSalvar');
+            const btnGensetCapture = document.getElementById('btnGensetCapture');
+            const status = document.getElementById('status');
+            const preview = document.getElementById('gensetPreview');
+
+            if (!tipoUsaFluxoCompleto()) {
+                gensetSection.style.display = 'none';
+                status.innerText = '';
+                btnSalvar.innerText = 'SALVAR';
+                labelGenset.innerText = 'TIRAR FOTO (PAINEL GENSET)';
+                btnGensetCapture.innerHTML = '<span style="font-size: 20px;">📷</span> TIRAR FOTO (PAINEL GENSET)';
+                return;
+            }
+
+            gensetSection.style.display = (etapaFluxo === 'ric') ? 'none' : 'block';
+
+            if (etapaFluxo === 'painel_ag') {
+                labelGenset.innerText = 'AG. CARREGAMENTO: Tirar FOTO (PAINEL GENSET)';
+                status.innerText = 'AG. CARREGAMENTO: Tirar FOTO (PAINEL GENSET)';
+            } else if (etapaFluxo === 'painel_lib') {
+                labelGenset.innerText = 'STATUS: LIBERADO: Tirar FOTO (PAINEL GENSET)';
+                status.innerText = 'STATUS: LIBERADO: Tirar FOTO (PAINEL GENSET)';
+            } else if (etapaFluxo === 'painel_dep') {
+                labelGenset.innerText = 'DEPOSITADO: Tirar FOTO (PAINEL GENSET)';
+                status.innerText = 'DEPOSITADO: Tirar FOTO (PAINEL GENSET)';
+            } else {
+                labelGenset.innerText = 'TIRAR FOTO (PAINEL GENSET)';
+                status.innerText = '';
+            }
+
+            btnGensetCapture.innerHTML = '<span style="font-size: 20px;">📷</span> TIRAR FOTO (PAINEL GENSET)';
+
+            const hasGensetPhoto = !!document.getElementById('gensetInput').files[0];
+            if (etapaFluxo === 'ric') {
+                btnSalvar.innerText = 'SALVAR';
+            } else {
+                btnSalvar.innerText = hasGensetPhoto ? 'AVANÇAR E SALVAR' : 'SALVAR';
+            }
+
+            if (preview && !hasGensetPhoto) {
+                preview.style.display = 'none';
+            }
+        }
+
         function selecionarTipoCarga(tipo, btn) {
             document.getElementById('btnResfriado').classList.remove('active');
             document.getElementById('btnCongelado').classList.remove('active');
@@ -272,14 +236,14 @@
             btn.classList.add('active');
             tipoCargaSelecionado = tipo;
 
-            const gensetSection = document.getElementById('genset-section');
-            if (tipo === 'Resfriado' || tipo === 'Congelado com GenSet') {
-                gensetSection.style.display = 'block';
-            } else {
-                gensetSection.style.display = 'none';
-                document.getElementById('gensetInput').value = '';
-                document.getElementById('gensetPreview').style.display = 'none';
-            }
+            document.getElementById('gensetInput').value = '';
+            document.getElementById('gensetPreview').src = '';
+            document.getElementById('gensetPreview').style.display = 'none';
+
+            etapaFluxo = 'ric';
+            registroId = null;
+            fotoPendenteNome = null;
+            atualizarInterfaceEtapa();
         }
 
         function selecionarCargaPulmao(valor, btn) {
@@ -303,13 +267,20 @@
 
         document.getElementById('gensetInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
+            const btnSalvar = document.getElementById('btnSalvar');
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     document.getElementById('gensetPreview').src = event.target.result;
                     document.getElementById('gensetPreview').style.display = 'block';
+                    if (etapaFluxo !== 'ric') {
+                        btnSalvar.innerText = 'AVANÇAR E SALVAR';
+                    }
                 };
                 reader.readAsDataURL(file);
+            } else {
+                document.getElementById('gensetPreview').style.display = 'none';
+                if (etapaFluxo !== 'ric') btnSalvar.innerText = 'SALVAR';
             }
         });
 
@@ -333,14 +304,29 @@
                 btn.classList.add('btn-salvar-loading');
                 btn.disabled = true;
                 salvando = true;
-                document.getElementById('status').innerText = 'Salvando foto...';
             } else {
-                btn.innerText = 'SALVAR';
                 btn.classList.remove('btn-salvar-loading');
                 btn.disabled = false;
                 salvando = false;
-                document.getElementById('status').innerText = '';
+                if (tipoUsaFluxoCompleto() && etapaFluxo !== 'ric' && document.getElementById('gensetInput').files[0]) {
+                    btn.innerText = 'AVANÇAR E SALVAR';
+                } else {
+                    btn.innerText = 'SALVAR';
+                }
             }
+        }
+
+        async function uploadFoto(file, sufixo) {
+            const { data: { user } } = await clienteSupabase.auth.getUser();
+            const ext = (file.name && file.name.includes('.')) ? file.name.split('.').pop() : 'jpg';
+            const fileName = `${Date.now()}_${user.email}_${registroId || 'novo'}_${sufixo}.${ext}`.replace(/[^a-zA-Z0-9._@-]/g, '_');
+
+            const { error } = await clienteSupabase.storage
+                .from('coletas-fotos')
+                .upload(fileName, file, { upsert: true });
+
+            if (error) throw error;
+            return fileName;
         }
 
         async function salvarColeta() {
@@ -351,26 +337,26 @@
                 return;
             }
 
-            if (!tipoCargaSelecionado) return mostrarAlerta("Selecione o tipo de carga (Resfriado, Congelado ou Congelado com GenSet).");
+            if (!tipoCargaSelecionado) return mostrarAlerta("Selecione o tipo de carga.");
             if (!cargaPulmaoSelecionado) return mostrarAlerta("Selecione se é Carga ou Pulmão.");
 
             const dataRetirada = document.getElementById('dataRetirada').value;
             if (!dataRetirada) return mostrarAlerta("Por favor, preencha a Data da Retirada.");
-            
-            const fileInput = document.getElementById('cameraInput');
-            if (!fileInput.files[0]) return mostrarAlerta("Tire a foto do recibo (RIC)!");
-
-            const gensetInput = document.getElementById('gensetInput');
-            if ((tipoCargaSelecionado === 'Resfriado' || tipoCargaSelecionado === 'Congelado com GenSet') && !gensetInput.files[0]) {
-                return mostrarAlerta("Para este tipo de carga, é obrigatória a foto do genset.");
-            }
 
             const { data: { user } } = await clienteSupabase.auth.getUser();
             if (!user) return mostrarAlerta("Usuário não autenticado!");
-            
-            setSalvando(true);
 
             try {
+                setSalvando(true);
+
+                const armador = document.getElementById('armador').value;
+                const placa = document.getElementById('placa').value;
+                const tara = document.getElementById('tara').value;
+                const maxGross = document.getElementById('maxGross').value;
+                const terminalColeta = document.getElementById('terminalColeta').value;
+                const cidade = document.getElementById('cidade').value;
+                const containerFinal = document.getElementById('containerInput').value.trim() || "N/A";
+
                 let localizacao = "Sem GPS";
                 try {
                     const pos = await new Promise((resolve, reject) => {
@@ -386,9 +372,9 @@
                         const rua = addr.road || '';
                         const num = addr.house_number || '';
                         const bairro = addr.suburb || addr.neighbourhood || '';
-                        const cidade = addr.city || addr.town || '';
+                        const cidadeGps = addr.city || addr.town || '';
                         const estado = addr.state || addr.state_district || '';
-                        localizacao = [rua, num, bairro, cidade, estado].filter(Boolean).join(' - ');
+                        localizacao = [rua, num, bairro, cidadeGps, estado].filter(Boolean).join(' - ');
                     } else {
                         localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
                     }
@@ -403,60 +389,115 @@
                     .eq('email', user.email)
                     .single();
 
-                const fileNameRIC = `${Date.now()}_${user.email}_ric.jpg`;
-                const { error: uploadErrorRIC } = await clienteSupabase.storage
-                    .from('coletas-fotos')
-                    .upload(fileNameRIC, fileInput.files[0]);
-                if (uploadErrorRIC) throw uploadErrorRIC;
+                const fileInput = document.getElementById('cameraInput');
+                if (!fileInput.files[0]) return mostrarAlerta("Tire a foto do recibo (RIC)!");
 
-                let fileNameGenset = null;
-                if (tipoCargaSelecionado === 'Resfriado' || tipoCargaSelecionado === 'Congelado com GenSet') {
-                    fileNameGenset = `${Date.now()}_${user.email}_genset.jpg`;
-                    const { error: uploadErrorGenset } = await clienteSupabase.storage
-                        .from('coletas-fotos')
-                        .upload(fileNameGenset, gensetInput.files[0]);
-                    if (uploadErrorGenset) throw uploadErrorGenset;
+                // ETAPA 1: RIC -> cria registro com AG. CARREGAMENTO
+                if (etapaFluxo === 'ric') {
+                    const fileNameRIC = await uploadFoto(fileInput.files[0], 'ric');
+
+                    const insertObj = {
+                        email_usuario: user.email,
+                        data_retirada: dataRetirada,
+                        armador: armador,
+                        container: containerFinal,
+                        placa: placa,
+                        tara: tara,
+                        max_gross: maxGross,
+                        carga_pulmao: cargaPulmaoSelecionado,
+                        terminal_coleta: terminalColeta,
+                        cidade: cidade,
+                        foto_url: fileNameRIC,
+                        localizacao: localizacao,
+                        transportadora: userData ? userData.transportadora : "N/A",
+                        status: 'ag. carregamento',
+                        finalizado: false,
+                        tipo_carga: tipoCargaSelecionado,
+                        created_at: new Date().toISOString()
+                    };
+
+                    const { data: inserted, error: dbError } = await clienteSupabase.from('coletas').insert([insertObj]).select().single();
+                    if (dbError) throw dbError;
+
+                    registroId = inserted.id;
+
+                    if (tipoUsaFluxoCompleto()) {
+                        etapaFluxo = 'painel_ag';
+                        document.getElementById('gensetInput').value = '';
+                        document.getElementById('gensetPreview').src = '';
+                        document.getElementById('gensetPreview').style.display = 'none';
+                        atualizarInterfaceEtapa();
+                        setSalvando(false);
+                        return;
+                    }
+
+                    setSalvando(false);
+                    mostrarAlerta("Registro salvo com sucesso!", function() {
+                        window.location.href = 'index.html';
+                    });
+                    return;
                 }
 
-                const armador = document.getElementById('armador').value;
-                const placa = document.getElementById('placa').value;
-                const tara = document.getElementById('tara').value;
-                const maxGross = document.getElementById('maxGross').value;
-                const terminalColeta = document.getElementById('terminalColeta').value;
-                const cidade = document.getElementById('cidade').value;
-                const containerFinal = document.getElementById('containerInput').value.trim() || "N/A";
+                const gensetInput = document.getElementById('gensetInput');
+                if (!gensetInput.files[0]) return mostrarAlerta("Tire a foto do painel do genset.");
 
-                const statusInicial = 'ag. coleta';
+                if (!registroId) {
+                    return mostrarAlerta("Erro: registro não encontrado. Salve a foto do RIC novamente.");
+                }
 
-                const insertObj = {
-                    email_usuario: user.email,
-                    data_retirada: dataRetirada,
-                    armador: armador,
-                    container: containerFinal,
-                    placa: placa,
-                    tara: tara,
-                    max_gross: maxGross,
-                    carga_pulmao: cargaPulmaoSelecionado,
-                    terminal_coleta: terminalColeta,
-                    cidade: cidade,
-                    foto_url: fileNameRIC,
-                    localizacao: localizacao,
-                    transportadora: userData ? userData.transportadora : "N/A",
-                    status: statusInicial,
-                    finalizado: false,
-                    tipo_carga: tipoCargaSelecionado,
-                    created_at: new Date().toISOString()
-                };
+                // ETAPA 2: painel_ag -> atualiza para LIBERADO
+                if (etapaFluxo === 'painel_ag') {
+                    const fileName = await uploadFoto(gensetInput.files[0], 'genset');
+                    const { error } = await clienteSupabase
+                        .from('coletas')
+                        .update({ genset: fileName, status: 'liberado', finalizado: false })
+                        .eq('id', registroId);
+                    if (error) throw error;
 
-                if (fileNameGenset) insertObj.genset = fileNameGenset;
+                    etapaFluxo = 'painel_lib';
+                    document.getElementById('gensetInput').value = '';
+                    document.getElementById('gensetPreview').src = '';
+                    document.getElementById('gensetPreview').style.display = 'none';
+                    atualizarInterfaceEtapa();
+                    setSalvando(false);
+                    return;
+                }
 
-                const { error: dbError } = await clienteSupabase.from('coletas').insert([insertObj]);
-                if (dbError) throw dbError;
+                // ETAPA 3: painel_lib -> atualiza para DEPOSITADO
+                if (etapaFluxo === 'painel_lib') {
+                    const fileName = await uploadFoto(gensetInput.files[0], 'liberado');
+                    const { error } = await clienteSupabase
+                        .from('coletas')
+                        .update({ liberado: fileName, status: 'depositado', finalizado: false })
+                        .eq('id', registroId);
+                    if (error) throw error;
+
+                    etapaFluxo = 'painel_dep';
+                    document.getElementById('gensetInput').value = '';
+                    document.getElementById('gensetPreview').src = '';
+                    document.getElementById('gensetPreview').style.display = 'none';
+                    atualizarInterfaceEtapa();
+                    setSalvando(false);
+                    return;
+                }
+
+                // ETAPA 4: painel_dep -> abre modal de data e finaliza ao confirmar
+                if (etapaFluxo === 'painel_dep') {
+                    const fileName = await uploadFoto(gensetInput.files[0], 'depositado');
+                    fotoPendenteNome = fileName;
+
+                    document.getElementById('gensetInput').value = '';
+                    document.getElementById('gensetPreview').src = '';
+                    document.getElementById('gensetPreview').style.display = 'none';
+                    atualizarInterfaceEtapa();
+
+                    document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('modal-data-deposito').style.display = 'flex';
+                    setSalvando(false);
+                    return;
+                }
 
                 setSalvando(false);
-                mostrarAlerta("Registro salvo com sucesso!", function() {
-                    window.location.href = 'index.html';
-                });
             } catch (err) {
                 console.error(err);
                 setSalvando(false);
@@ -464,6 +505,38 @@
                 document.getElementById('status').innerText = 'Erro ao salvar.';
             }
         }
+
+        function fecharModalDeposito() {
+            document.getElementById('modal-data-deposito').style.display = 'none';
+        }
+
+        async function confirmarDataDeposito() {
+            const dataEscolhida = document.getElementById('input-data-deposito').value;
+            if (!dataEscolhida) return alert('Selecione uma data.');
+            if (!registroId || !fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
+
+            try {
+                const { error } = await clienteSupabase.from('coletas').update({
+                    status: 'depositado',
+                    finalizado: true,
+                    data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString(),
+                    depositado: fotoPendenteNome
+                }).eq('id', registroId);
+
+                if (error) throw error;
+
+                fecharModalDeposito();
+                etapaFluxo = 'final';
+                mostrarAlerta("Registro salvo com sucesso!", function() {
+                    window.location.href = 'index.html';
+                });
+            } catch (err) {
+                console.error(err);
+                mostrarAlerta("Erro ao salvar depósito: " + err.message);
+            }
+        }
+
+        atualizarInterfaceEtapa();
     </script>
 </body>
 </html>
