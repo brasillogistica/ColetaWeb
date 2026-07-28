@@ -37,7 +37,6 @@
             color: var(--navy);
         }
 
-        /* FILTROS - tudo em uma linha */
         .filter-bar {
             background: var(--white);
             border: 1px solid var(--gold);
@@ -54,11 +53,11 @@
             display: flex;
             gap: 8px;
             align-items: flex-end;
-            flex-wrap: nowrap;   /* força uma única linha */
+            flex-wrap: nowrap;
         }
         .filter-group {
-            flex: 1 1 0%;        /* todos os grupos ocupam a mesma largura */
-            min-width: 80px;     /* mínimo para não quebrar o conteúdo */
+            flex: 1 1 0%;
+            min-width: 80px;
             display: flex;
             flex-direction: column;
         }
@@ -102,7 +101,6 @@
             white-space: nowrap;
         }
 
-        /* BOTÕES */
         .btn-group {
             display: flex;
             gap: 6px;
@@ -129,7 +127,6 @@
         .btn-voltar { background: #7a8a95; color: white; }
         .btn-excel-small { background: #5a6c75; color: white; }
 
-        /* TABELA (sem alterações) */
         .table-container {
             background: var(--white);
             border: 1px solid var(--gold);
@@ -189,8 +186,7 @@
         .badge-resfriado { background: #d4edff; color: #004085; }
         .badge-congelado { background: #d1ecf1; color: #0c5460; }
 
-        /* MODAIS */
-        #foto-modal, #mapa-modal, #modal-data-deposito {
+        #foto-modal, #mapa-modal, #modal-data-deposito, #modal-foto-status {
             display: none; position: fixed; z-index: 3000; left: 0; top: 0;
             width: 100%; height: 100%; background: rgba(0,0,0,0.7);
             justify-content: center; align-items: center;
@@ -201,7 +197,7 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
         .mapa-container iframe { width: 100%; height: calc(100% - 40px); border: none; border-radius: 10px; }
-        .fechar-mapa, .fechar-foto {
+        .fechar-mapa, .fechar-foto, .fechar-foto-status {
             position: absolute; top: 15px; right: 20px; font-size: 32px;
             color: var(--navy); cursor: pointer; font-weight: bold; z-index: 10;
         }
@@ -221,6 +217,151 @@
             font-weight: 600; font-size: 16px; text-align: center; outline: none;
         }
         .modal-actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+
+        .foto-status-box {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--gold);
+            width: 90%;
+            max-width: 460px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            text-align: center;
+        }
+        .foto-status-box h3 {
+            color: var(--navy);
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+        .foto-status-box p {
+            color: var(--navy);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .foto-status-box .btn-main {
+            width: 100%;
+            margin-top: 10px;
+        }
+        #preview-foto-status {
+            max-width: 100%;
+            margin-top: 10px;
+            display: none;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+        }
+
+        /* AJUSTE MOBILE / APP WEB */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px !important;
+            }
+
+            .header-card {
+                flex-direction: column !important;
+                gap: 12px !important;
+                align-items: center !important;
+                text-align: center !important;
+                padding: 15px !important;
+                border-radius: 18px !important;
+            }
+
+            .header-title {
+                font-size: 14px !important;
+            }
+
+            .filter-bar {
+                padding: 12px !important;
+                border-radius: 18px !important;
+            }
+
+            .filter-row {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            .filter-group {
+                width: 100% !important;
+            }
+
+            .btn-group {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn-group .btn-filtrar,
+            .btn-group .btn-limpar,
+            .btn-group .btn-voltar,
+            .btn-group .btn-excel-small {
+                width: 100%;
+                min-height: 46px;
+                font-size: 12px;
+            }
+
+            .table-container {
+                padding: 10px !important;
+                border-radius: 18px !important;
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 1200px;
+            }
+
+            th, td {
+                white-space: nowrap;
+            }
+
+            .status-badge,
+            .badge-tipo {
+                font-size: 9px;
+            }
+
+            .mapa-container,
+            .modal-deposito-box,
+            .foto-status-box {
+                width: 95% !important;
+                max-width: 95% !important;
+                padding: 20px !important;
+            }
+
+            #foto-ampliada {
+                max-width: 95%;
+                max-height: 80vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px !important;
+            }
+
+            .header-card {
+                padding: 12px !important;
+            }
+
+            .filter-bar,
+            .table-container {
+                padding: 10px !important;
+            }
+
+            .btn-group .btn-filtrar,
+            .btn-group .btn-limpar,
+            .btn-group .btn-voltar,
+            .btn-group .btn-excel-small {
+                min-height: 44px;
+                font-size: 11px;
+            }
+
+            .header-title {
+                font-size: 13px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -233,7 +374,6 @@
         <div></div>
     </header>
 
-    <!-- FILTROS EM UMA LINHA -->
     <section class="filter-bar">
         <div class="filter-row">
             <div class="filter-group">
@@ -292,12 +432,8 @@
                 <label>Status</label>
                 <select id="filtroStatus">
                     <option value="">Todos</option>
-                    <option value="ag. locação">AG. LOCAÇÃO</option>
-                    <option value="ag. carregamento">AG. CARREGAMENTO</option>
-                    <option value="pendencia logistica">PENDÊNCIA LOGÍSTICA</option>
-                    <option value="faturado">FATURADO</option>
-                    <option value="ag. liberação">AG. LIBERAÇÃO</option>
-                    <option value="em viagem">EM VIAGEM</option>
+                    <option value="ag. coleta">AG. COLETA</option>
+                    <option value="liberado">LIBERADO</option>
                     <option value="depositado">DEPOSITADO</option>
                 </select>
             </div>
@@ -321,7 +457,7 @@
                         <th>Terminal</th><th>Cidade</th>
                         <th id="th-transportadora" style="display: none;">Transport.</th>
                         <th>Status</th><th>Finalizado</th><th>Ações</th><th>Confirmar</th>
-                        <th>Localização</th><th>Foto</th>
+                        <th>Localização</th><th>Foto</th><th>Genset</th><th>Liberado</th><th>Depositado</th>
                     </tr>
                 </thead>
                 <tbody id="processos-body"></tbody>
@@ -329,7 +465,6 @@
         </div>
     </div>
 
-    <!-- Modais (mantidos iguais) -->
     <div id="foto-modal"><span class="fechar-foto" onclick="fecharFoto()">&times;</span><div id="container-img"><img id="foto-ampliada"></div></div>
     <div id="mapa-modal"><div class="mapa-container"><span class="fechar-mapa" onclick="fecharMapa()">&times;</span><iframe id="mapa-iframe"></iframe></div></div>
     <div id="modal-data-deposito"><div class="modal-deposito-box">
@@ -337,15 +472,52 @@
         <div class="modal-actions"><button class="btn-limpar" onclick="fecharModalDeposito()">Cancelar</button><button class="btn-filtrar" onclick="confirmarDataDeposito()">Confirmar</button></div>
     </div></div>
 
+    <div id="modal-foto-status">
+        <div class="foto-status-box">
+            <span class="fechar-foto-status" onclick="fecharModalFotoStatus()">&times;</span>
+            <h3 id="titulo-foto-status">Foto</h3>
+            <p id="texto-foto-status">Tire a foto para continuar</p>
+            <input type="file" id="input-foto-status" accept="image/*" capture="environment" style="display:none;">
+            <button class="btn-main" style="background: var(--gold);" onclick="document.getElementById('input-foto-status').click()">
+                TIRAR FOTO
+            </button>
+            <img id="preview-foto-status" alt="Prévia da foto">
+            <button class="btn-main" style="background: var(--red);" onclick="confirmarFotoStatus()">
+                SALVAR FOTO
+            </button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
-        const statusFluxo = [
-            'ag. locação','ag. carregamento','pendencia logistica',
-            'faturado','ag. liberação','em viagem','depositado'
-        ];
+        const statusFluxo = ['ag. coleta', 'liberado', 'depositado'];
         const statusOriginais = {};
         let dadosExportacao = [];
         let dadosModalDeposito = {};
+        let dadosModalFotoStatus = {};
+
+        function normalizarStatus(status) {
+            const s = (status || '').toString().trim().toLowerCase();
+            if (s === 'ag. carregamento' || s === 'ag. locação' || s === 'ag. locacao') return 'ag. coleta';
+            if (s === 'liberada') return 'liberado';
+            return s;
+        }
+
+        function getStatusColor(status) {
+            const s = normalizarStatus(status);
+            const colors = {
+                'ag. coleta': '#FDE68A',
+                'liberado': '#DBEAFE',
+                'depositado': '#D1FAE5'
+            };
+            return colors[s] || '#F3F4F6';
+        }
+
+        function linkFoto(url, texto = 'Ver foto') {
+            return url
+                ? `<span class="loc-link" onclick="abrirFoto('${url}')">${texto}</span>`
+                : 'Sem foto';
+        }
 
         async function carregarProcessos(filtros = {}) {
             if (typeof clienteSupabase === 'undefined') {
@@ -370,7 +542,6 @@
                 query = query.eq('transportadora', userData.transportadora);
             }
 
-            // Filtros
             if (filtros.dataInicio || filtros.dataFim) {
                 const inicio = filtros.dataInicio ? new Date(filtros.dataInicio) : null;
                 const fim = filtros.dataFim ? new Date(filtros.dataFim) : null;
@@ -386,7 +557,7 @@
             if (filtros.container) query = query.ilike('container', `%${filtros.container}%`);
             if (filtros.placa) query = query.ilike('placa', `%${filtros.placa}%`);
             if (filtros.cargaPulmao) query = query.eq('carga_pulmao', filtros.cargaPulmao);
-            if (filtros.tipoCarga) query = query.ilike('tipo_carga', filtros.tipoCarga); // usando ilike
+            if (filtros.tipoCarga) query = query.ilike('tipo_carga', `%${filtros.tipoCarga}%`);
             if (filtros.terminal) query = query.ilike('terminal_coleta', `%${filtros.terminal}%`);
             if (filtros.cidade) query = query.ilike('cidade', `%${filtros.cidade}%`);
             if (filtros.transportadora) query = query.ilike('transportadora', `%${filtros.transportadora}%`);
@@ -402,10 +573,24 @@
 
             data.forEach(item => {
                 const dataHora = new Date(item.created_at);
-                const fotoUrl = item.foto_url 
+
+                const fotoUrl = item.foto_url
                     ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.foto_url}`
                     : null;
-                const statusAtual = item.status || 'ag. locação';
+
+                const fotoGensetUrl = item.genset || item.foto_genset_url
+                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.genset || item.foto_genset_url}`
+                    : null;
+
+                const fotoLiberadoUrl = item.liberado || item.foto_liberado_url
+                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.liberado || item.foto_liberado_url}`
+                    : null;
+
+                const fotoDepositadoUrl = item.depositado || item.foto_depositado_url
+                    ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${item.depositado || item.foto_depositado_url}`
+                    : null;
+
+                const statusAtual = normalizarStatus(item.status || 'ag. coleta');
                 const statusId = `status-${item.id}`;
                 const thumbsId = `thumbs-${item.id}`;
                 statusOriginais[statusId] = statusAtual;
@@ -421,9 +606,12 @@
                 } else localizacaoHtml = loc;
 
                 const tipoCarga = item.tipo_carga || 'Resfriado';
-                const tipoBadge = tipoCarga.toLowerCase().includes('resfriado')
-                    ? '<span class="badge-tipo badge-resfriado">Resfriado</span>'
-                    : '<span class="badge-tipo badge-congelado">Congelado</span>';
+                const tipoLower = tipoCarga.toLowerCase();
+                let tipoBadge = '<span class="badge-tipo badge-resfriado">Resfriado</span>';
+
+                if (tipoLower.includes('congelado')) {
+                    tipoBadge = '<span class="badge-tipo badge-congelado">Congelado</span>';
+                }
 
                 tbody.innerHTML += `
                     <tr>
@@ -436,10 +624,13 @@
                         <td>${item.max_gross || 'N/A'}</td>
                         <td>${item.carga_pulmao || 'N/A'}</td>
                         <td>${tipoBadge}</td>
-                        ${ehAdmin ? `<td>${item.transportadora || 'N/A'}</td>` : ''}
                         <td>${item.terminal_coleta || 'N/A'}</td>
                         <td>${item.cidade || 'N/A'}</td>
-                        <td class="col-nowrap"><span id="${statusId}" class="status-badge" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span><span id="${thumbsId}" class="thumbs-up">👍</span></td>
+                        ${ehAdmin ? `<td>${item.transportadora || 'N/A'}</td>` : ''}
+                        <td class="col-nowrap">
+                            <span id="${statusId}" class="status-badge" style="background-color:${getStatusColor(statusAtual)}" data-original="${statusAtual}">${statusAtual.toUpperCase()}</span>
+                            <span id="${thumbsId}" class="thumbs-up">👍</span>
+                        </td>
                         <td class="col-nowrap">${dataFinalizado}</td>
                         <td class="col-nowrap">
                             <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
@@ -450,7 +641,10 @@
                             <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
                         </td>
                         <td class="col-nowrap">${localizacaoHtml}</td>
-                        <td class="col-nowrap">${fotoUrl ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${fotoUrl}')">Ver Foto</span>` : 'Sem foto'}</td>
+                        <td class="col-nowrap">${linkFoto(fotoUrl, 'Foto')}</td>
+                        <td class="col-nowrap">${linkFoto(fotoGensetUrl, 'Genset')}</td>
+                        <td class="col-nowrap">${linkFoto(fotoLiberadoUrl, 'Liberado')}</td>
+                        <td class="col-nowrap">${linkFoto(fotoDepositadoUrl, 'Depositado')}</td>
                     </tr>
                 `;
             });
@@ -459,7 +653,7 @@
         function navegarStatus(statusId, direcao) {
             const span = document.getElementById(statusId);
             if (!span) return;
-            const current = span.getAttribute('data-current') || span.getAttribute('data-original');
+            const current = normalizarStatus(span.getAttribute('data-current') || span.getAttribute('data-original'));
             const idx = statusFluxo.indexOf(current);
             if (idx === -1) return;
             let novoIdx = idx + direcao;
@@ -472,37 +666,153 @@
         async function confirmarStatus(id, statusId, thumbsId) {
             const span = document.getElementById(statusId);
             if (!span) return;
-            let novoStatus = span.getAttribute('data-current') || span.getAttribute('data-original');
+            let novoStatus = normalizarStatus(span.getAttribute('data-current') || span.getAttribute('data-original'));
             if (!novoStatus) return;
-            if (novoStatus === 'depositado') {
-                abrirModalDeposito(id, statusId, thumbsId, novoStatus);
+
+            if (novoStatus === 'liberado' || novoStatus === 'depositado') {
+                abrirModalFotoStatus(id, statusId, thumbsId, novoStatus);
                 return;
             }
-            const { error } = await clienteSupabase.from('coletas').update({ status: novoStatus, finalizado: false }).eq('id', id);
+
+            const { error } = await clienteSupabase
+                .from('coletas')
+                .update({ status: 'ag. coleta', finalizado: false })
+                .eq('id', id);
+
             if (error) { alert("Erro: " + error.message); return; }
-            finalizarConfirmacao(statusId, thumbsId, novoStatus);
+
+            finalizarConfirmacao(statusId, thumbsId, 'ag. coleta');
+            await carregarProcessos(obterFiltrosAtuais());
         }
 
-        function abrirModalDeposito(id, statusId, thumbsId, novoStatus) {
-            dadosModalDeposito = { id, statusId, thumbsId, novoStatus };
-            document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-data-deposito').style.display = 'flex';
+        function abrirModalFotoStatus(id, statusId, thumbsId, novoStatus) {
+            dadosModalFotoStatus = {
+                id,
+                statusId,
+                thumbsId,
+                novoStatus,
+                file: null,
+                fileName: null
+            };
+
+            const titulo = document.getElementById('titulo-foto-status');
+            const texto = document.getElementById('texto-foto-status');
+            const preview = document.getElementById('preview-foto-status');
+            const input = document.getElementById('input-foto-status');
+
+            input.value = '';
+            preview.src = '';
+            preview.style.display = 'none';
+
+            if (novoStatus === 'liberado') {
+                titulo.textContent = 'Foto do Genset';
+                texto.textContent = 'Tire a foto do genset para liberar';
+            } else {
+                titulo.textContent = 'Foto do Genset';
+                texto.textContent = 'Tire a foto do genset para depósito';
+            }
+
+            document.getElementById('modal-foto-status').style.display = 'flex';
         }
-        function fecharModalDeposito() { document.getElementById('modal-data-deposito').style.display = 'none'; }
+
+        function fecharModalFotoStatus() {
+            document.getElementById('modal-foto-status').style.display = 'none';
+        }
+
+        document.getElementById('input-foto-status').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('preview-foto-status');
+            if (file) {
+                dadosModalFotoStatus.file = file;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function confirmarFotoStatus() {
+            if (!dadosModalFotoStatus || !dadosModalFotoStatus.novoStatus) return;
+            const file = dadosModalFotoStatus.file;
+            if (!file) return alert('Tire a foto antes de salvar.');
+
+            try {
+                const { data: { user } } = await clienteSupabase.auth.getUser();
+                if (!user) return alert('Usuário não autenticado!');
+
+                const ext = file.name && file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
+                const fileName = `${Date.now()}_${user.email}_${dadosModalFotoStatus.id}_${dadosModalFotoStatus.novoStatus}.${ext}`.replace(/[^a-zA-Z0-9._@-]/g, '_');
+
+                const { error: uploadError } = await clienteSupabase.storage
+                    .from('coletas-fotos')
+                    .upload(fileName, file, { upsert: true });
+
+                if (uploadError) throw uploadError;
+
+                if (dadosModalFotoStatus.novoStatus === 'liberado') {
+                    const { error: dbError } = await clienteSupabase
+                        .from('coletas')
+                        .update({
+                            status: 'liberado',
+                            finalizado: false,
+                            liberado: fileName
+                        })
+                        .eq('id', dadosModalFotoStatus.id);
+
+                    if (dbError) throw dbError;
+
+                    fecharModalFotoStatus();
+                    finalizarConfirmacao(dadosModalFotoStatus.statusId, dadosModalFotoStatus.thumbsId, 'liberado');
+                    await carregarProcessos(obterFiltrosAtuais());
+                    return;
+                }
+
+                if (dadosModalFotoStatus.novoStatus === 'depositado') {
+                    dadosModalFotoStatus.fileName = fileName;
+                    fecharModalFotoStatus();
+                    document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('modal-data-deposito').style.display = 'flex';
+                    return;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao salvar foto: ' + err.message);
+            }
+        }
+
+        function fecharModalDeposito() {
+            document.getElementById('modal-data-deposito').style.display = 'none';
+        }
 
         async function confirmarDataDeposito() {
             const dataEscolhida = document.getElementById('input-data-deposito').value;
             if (!dataEscolhida) return alert('Selecione uma data.');
-            const { id, statusId, thumbsId, novoStatus } = dadosModalDeposito;
-            const { error } = await clienteSupabase.from('coletas').update({
-                status: novoStatus,
-                finalizado: true,
-                data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString()
-            }).eq('id', id);
-            if (error) { alert("Erro: " + error.message); return; }
-            finalizarConfirmacao(statusId, thumbsId, novoStatus);
-            fecharModalDeposito();
-            carregarProcessos(obterFiltrosAtuais());
+
+            try {
+                const { id, statusId, thumbsId, fileName } = dadosModalFotoStatus;
+
+                const { error } = await clienteSupabase
+                    .from('coletas')
+                    .update({
+                        status: 'depositado',
+                        finalizado: true,
+                        data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString(),
+                        depositado: fileName
+                    })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                finalizarConfirmacao(statusId, thumbsId, 'depositado');
+                fecharModalDeposito();
+                dadosModalFotoStatus = {};
+                await carregarProcessos(obterFiltrosAtuais());
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao confirmar depósito: ' + err.message);
+            }
         }
 
         function finalizarConfirmacao(statusId, thumbsId, novoStatus) {
@@ -510,6 +820,7 @@
             span.setAttribute('data-original', novoStatus);
             span.setAttribute('data-current', '');
             span.textContent = novoStatus.toUpperCase();
+            span.style.backgroundColor = getStatusColor(novoStatus);
             statusOriginais[statusId] = novoStatus;
             const thumbs = document.getElementById(thumbsId);
             if (thumbs) { thumbs.classList.add('show'); setTimeout(() => thumbs.classList.remove('show'), 2000); }
@@ -518,8 +829,12 @@
         function resetarStatus(statusId) {
             const span = document.getElementById(statusId);
             if (!span) return;
-            const original = span.getAttribute('data-original');
-            if (original) { span.textContent = original.toUpperCase(); span.setAttribute('data-current', ''); }
+            const original = normalizarStatus(span.getAttribute('data-original'));
+            if (original) {
+                span.textContent = original.toUpperCase();
+                span.setAttribute('data-current', '');
+                span.style.backgroundColor = getStatusColor(original);
+            }
         }
 
         function obterFiltrosAtuais() {
@@ -540,6 +855,7 @@
         }
 
         function aplicarFiltros() { carregarProcessos(obterFiltrosAtuais()); }
+
         function limparFiltros() {
             document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
                 if (el.tagName === 'SELECT') el.selectedIndex = 0;
@@ -556,27 +872,43 @@
             if (e.target == document.getElementById('foto-modal')) fecharFoto();
             if (e.target == document.getElementById('mapa-modal')) fecharMapa();
             if (e.target == document.getElementById('modal-data-deposito')) fecharModalDeposito();
+            if (e.target == document.getElementById('modal-foto-status')) fecharModalFotoStatus();
         });
-        window.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharFoto(); fecharMapa(); fecharModalDeposito(); } });
 
-        // Zoom e arraste da foto
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharFoto();
+                fecharMapa();
+                fecharModalDeposito();
+                fecharModalFotoStatus();
+            }
+        });
+
         let scale = 1, transX = 0, transY = 0;
         const containerImg = document.getElementById('container-img');
         const img = document.getElementById('foto-ampliada');
         let isDragging = false, startX, startY;
+
         function abrirFoto(url) {
-            img.src = url; scale = 1; transX = 0; transY = 0;
+            img.src = url;
+            scale = 1; transX = 0; transY = 0;
             containerImg.style.transform = `translate(0px, 0px) scale(1)`;
             document.getElementById('foto-modal').style.display = 'flex';
         }
+
         function fecharFoto() { document.getElementById('foto-modal').style.display = 'none'; }
+
         containerImg.addEventListener('wheel', (e) => {
             e.preventDefault();
             scale += e.deltaY * -0.001;
             scale = Math.min(Math.max(0.5, scale), 5);
             containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
-        containerImg.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - transX; startY = e.clientY - transY; });
+        containerImg.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - transX;
+            startY = e.clientY - transY;
+        });
         window.addEventListener('mouseup', () => isDragging = false);
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
@@ -584,14 +916,43 @@
             transY = e.clientY - startY;
             containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
         });
+
         function abrirMapa(query) {
             document.getElementById('mapa-iframe').src = `https://www.google.com/maps?q=${query}&output=embed`;
             document.getElementById('mapa-modal').style.display = 'flex';
         }
-        function fecharMapa() { document.getElementById('mapa-modal').style.display = 'none'; document.getElementById('mapa-iframe').src = ''; }
+
+        function fecharMapa() {
+            document.getElementById('mapa-modal').style.display = 'none';
+            document.getElementById('mapa-iframe').src = '';
+        }
+
         function exportarExcel() {
             if(dadosExportacao.length === 0) return alert("Sem dados para exportar");
-            const ws = XLSX.utils.json_to_sheet(dadosExportacao);
+
+            const exportData = dadosExportacao.map(d => ({
+                'Data/Hora': d.created_at ? new Date(d.created_at).toLocaleString('pt-BR') : '',
+                'Retirada': d.data_retirada || '',
+                'Armador': d.armador || '',
+                'Container': d.container || '',
+                'Placa': d.placa || '',
+                'Tara': d.tara || '',
+                'Max Gross': d.max_gross || '',
+                'C/P': d.carga_pulmao || '',
+                'Tipo': d.tipo_carga || '',
+                'Terminal': d.terminal_coleta || '',
+                'Cidade': d.cidade || '',
+                'Transportadora': d.transportadora || '',
+                'Status': normalizarStatus(d.status || 'ag. coleta').toUpperCase(),
+                'Finalizado': d.finalizado ? 'SIM' : 'NÃO',
+                'Localização': d.localizacao || '',
+                'Foto': d.foto_url || '',
+                'Genset': d.genset || d.foto_genset_url || '',
+                'Liberado': d.liberado || d.foto_liberado_url || '',
+                'Depositado': d.depositado || d.foto_depositado_url || ''
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Processos");
             XLSX.writeFile(wb, "Processos_Container.xlsx");

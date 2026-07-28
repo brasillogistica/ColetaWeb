@@ -50,6 +50,99 @@
             opacity: 0.7;
             pointer-events: none;
         }
+
+        /* AJUSTE MOBILE / APP WEB */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px !important;
+                display: block !important;
+            }
+
+            .card {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 15px !important;
+                border-radius: 18px !important;
+            }
+
+            h2 {
+                font-size: 1.15rem !important;
+                margin-bottom: 16px !important;
+            }
+
+            .option-buttons-container {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+
+            .btn-option {
+                width: 100% !important;
+                min-height: 46px;
+                font-size: 12px !important;
+            }
+
+            .form-group input,
+            .form-group select {
+                font-size: 16px !important;
+                min-height: 42px;
+                padding: 8px 0 !important;
+            }
+
+            .form-group label {
+                font-size: 9px !important;
+            }
+
+            .card > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+
+            .btn-main {
+                width: 100% !important;
+                min-height: 48px;
+                font-size: 13px !important;
+                padding: 14px 18px !important;
+            }
+
+            .card > div[style*="margin-top: 20px; display: flex; gap: 10px;"] {
+                flex-direction: column !important;
+            }
+
+            #preview,
+            #gensetPreview {
+                max-width: 100% !important;
+            }
+
+            #custom-alert > div {
+                width: 94% !important;
+                max-width: 94% !important;
+                padding: 24px 20px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px !important;
+            }
+
+            .card {
+                padding: 12px !important;
+                border-radius: 16px !important;
+            }
+
+            .btn-main {
+                font-size: 12px !important;
+                min-height: 46px;
+            }
+
+            .btn-option {
+                font-size: 11px !important;
+            }
+
+            h2 {
+                font-size: 1.05rem !important;
+            }
+        }
     </style>
 </head>
 <body style="display: flex; justify-content: center; padding: 40px;">
@@ -63,6 +156,7 @@
             <div class="option-buttons-container">
                 <button id="btnResfriado" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
                 <button id="btnCongelado" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
+                <button id="btnCongeladoGenSet" class="btn-option" onclick="selecionarTipoCarga('Congelado com GenSet', this)">Congelado com GenSet</button>
             </div>
         </div>
 
@@ -75,7 +169,7 @@
             </div>
         </div>
 
-        <!-- Campos Manuais (nova ordem) -->
+        <!-- Campos Manuais -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
             <div class="form-group">
                 <label>DATA DA RETIRADA</label>
@@ -138,9 +232,9 @@
             <div id="status" style="font-size: 12px; color: var(--red); font-weight: bold; margin-top:5px;"></div>
             <img id="preview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
 
-            <!-- Campo extra para foto do genset (apenas Resfriado) -->
+            <!-- Campo extra para foto do genset -->
             <div id="genset-section" style="display: none; margin-top: 15px;">
-                <label>FOTO DO GENSET (obrigatório para Resfriado)</label>
+                <label>FOTO DO GENSET (obrigatório para Resfriado e Congelado com GenSet)</label>
                 <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display: none;">
                 <button type="button" class="btn-main" onclick="document.getElementById('gensetInput').click()" 
                         style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
@@ -167,20 +261,19 @@
     <script src="script.js"></script>
     
     <script>
-        // Variáveis para guardar seleções dos botões
         let tipoCargaSelecionado = '';
         let cargaPulmaoSelecionado = '';
-        let salvando = false;  // controle de duplo clique
+        let salvando = false;
 
-        // Seleção de Tipo de Carga
         function selecionarTipoCarga(tipo, btn) {
             document.getElementById('btnResfriado').classList.remove('active');
             document.getElementById('btnCongelado').classList.remove('active');
+            document.getElementById('btnCongeladoGenSet').classList.remove('active');
             btn.classList.add('active');
             tipoCargaSelecionado = tipo;
 
             const gensetSection = document.getElementById('genset-section');
-            if (tipo === 'Resfriado') {
+            if (tipo === 'Resfriado' || tipo === 'Congelado com GenSet') {
                 gensetSection.style.display = 'block';
             } else {
                 gensetSection.style.display = 'none';
@@ -189,7 +282,6 @@
             }
         }
 
-        // Seleção de Carga / Pulmão
         function selecionarCargaPulmao(valor, btn) {
             document.getElementById('btnCarga').classList.remove('active');
             document.getElementById('btnPulmao').classList.remove('active');
@@ -197,7 +289,6 @@
             cargaPulmaoSelecionado = valor;
         }
 
-        // Pré-visualização da foto do recibo (RIC)
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -210,7 +301,6 @@
             }
         });
 
-        // Pré-visualização da foto do genset
         document.getElementById('gensetInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -254,25 +344,25 @@
         }
 
         async function salvarColeta() {
-            if (salvando) return; // evita duplo clique
+            if (salvando) return;
 
             if (typeof clienteSupabase === 'undefined') {
                 mostrarAlerta("Erro: O sistema ainda está carregando.");
                 return;
             }
 
-            if (!tipoCargaSelecionado) return mostrarAlerta("Selecione o tipo de carga (Resfriado ou Congelado).");
+            if (!tipoCargaSelecionado) return mostrarAlerta("Selecione o tipo de carga (Resfriado, Congelado ou Congelado com GenSet).");
             if (!cargaPulmaoSelecionado) return mostrarAlerta("Selecione se é Carga ou Pulmão.");
 
             const dataRetirada = document.getElementById('dataRetirada').value;
-            if(!dataRetirada) return mostrarAlerta("Por favor, preencha a Data da Retirada.");
+            if (!dataRetirada) return mostrarAlerta("Por favor, preencha a Data da Retirada.");
             
             const fileInput = document.getElementById('cameraInput');
             if (!fileInput.files[0]) return mostrarAlerta("Tire a foto do recibo (RIC)!");
 
             const gensetInput = document.getElementById('gensetInput');
-            if (tipoCargaSelecionado === 'Resfriado' && !gensetInput.files[0]) {
-                return mostrarAlerta("Para carga Resfriada, é obrigatória a foto do genset com a temperatura programada.");
+            if ((tipoCargaSelecionado === 'Resfriado' || tipoCargaSelecionado === 'Congelado com GenSet') && !gensetInput.files[0]) {
+                return mostrarAlerta("Para este tipo de carga, é obrigatória a foto do genset.");
             }
 
             const { data: { user } } = await clienteSupabase.auth.getUser();
@@ -281,7 +371,6 @@
             setSalvando(true);
 
             try {
-                // Localização
                 let localizacao = "Sem GPS";
                 try {
                     const pos = await new Promise((resolve, reject) => {
@@ -314,16 +403,14 @@
                     .eq('email', user.email)
                     .single();
 
-                // Upload RIC
                 const fileNameRIC = `${Date.now()}_${user.email}_ric.jpg`;
                 const { error: uploadErrorRIC } = await clienteSupabase.storage
                     .from('coletas-fotos')
                     .upload(fileNameRIC, fileInput.files[0]);
                 if (uploadErrorRIC) throw uploadErrorRIC;
 
-                // Upload genset (se Resfriado)
                 let fileNameGenset = null;
-                if (tipoCargaSelecionado === 'Resfriado') {
+                if (tipoCargaSelecionado === 'Resfriado' || tipoCargaSelecionado === 'Congelado com GenSet') {
                     fileNameGenset = `${Date.now()}_${user.email}_genset.jpg`;
                     const { error: uploadErrorGenset } = await clienteSupabase.storage
                         .from('coletas-fotos')
@@ -339,7 +426,7 @@
                 const cidade = document.getElementById('cidade').value;
                 const containerFinal = document.getElementById('containerInput').value.trim() || "N/A";
 
-                const statusInicial = (cargaPulmaoSelecionado === 'Pulmão') ? 'ag. locação' : 'ag. carregamento';
+                const statusInicial = 'ag. coleta';
 
                 const insertObj = {
                     email_usuario: user.email,
@@ -361,7 +448,7 @@
                     created_at: new Date().toISOString()
                 };
 
-                if (fileNameGenset) insertObj.foto_genset_url = fileNameGenset;
+                if (fileNameGenset) insertObj.genset = fileNameGenset;
 
                 const { error: dbError } = await clienteSupabase.from('coletas').insert([insertObj]);
                 if (dbError) throw dbError;

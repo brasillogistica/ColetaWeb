@@ -10,10 +10,107 @@
     <style>
         /* Ajuste responsivo para celulares */
         @media (max-width: 768px) {
-            .responsive-card { flex-direction: column !important; gap: 20px !important; }
-            .side-col { flex: 0 0 100% !important; }
-            .header-card { flex-direction: column; gap: 15px; text-align: center; }
-            .header-left, .header-right { flex: 0 0 100% !important; text-align: center !important; }
+            body {
+                padding: 10px !important;
+            }
+
+            .responsive-card {
+                flex-direction: column !important;
+                gap: 20px !important;
+                border-radius: 18px !important;
+            }
+
+            .side-col {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+            }
+
+            .header-card {
+                flex-direction: column !important;
+                gap: 12px !important;
+                text-align: center !important;
+                padding: 15px !important;
+                align-items: center !important;
+            }
+
+            .header-left, .header-right {
+                flex: 0 0 100% !important;
+                text-align: center !important;
+                width: 100% !important;
+            }
+
+            .header-right button {
+                max-width: 100% !important;
+            }
+
+            #welcome-message {
+                font-size: 1.2rem !important;
+            }
+
+            .card {
+                padding: 15px !important;
+                border-radius: 18px !important;
+            }
+
+            .side-col {
+                gap: 12px !important;
+            }
+
+            .side-col button {
+                width: 100% !important;
+                min-height: 48px;
+                font-size: 13px !important;
+            }
+
+            #calendar-header {
+                font-size: 14px !important;
+            }
+
+            .calendar-grid {
+                max-width: 100% !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                grid-template-columns: 30px repeat(7, 1fr) !important;
+            }
+
+            .cal-cell {
+                padding: 8px !important;
+                font-size: 11px !important;
+            }
+
+            .cal-cell.head {
+                font-size: 10px !important;
+                padding: 8px !important;
+            }
+
+            #full-calendar-modal {
+                padding: 15px !important;
+            }
+
+            #full-calendar-content {
+                grid-template-columns: 1fr !important;
+                padding: 10px !important;
+                gap: 12px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px !important;
+            }
+
+            .card {
+                padding: 12px !important;
+            }
+
+            #welcome-message {
+                font-size: 1.05rem !important;
+            }
+
+            .side-col button {
+                min-height: 46px;
+                font-size: 12px !important;
+            }
         }
     </style>
 </head>
@@ -80,7 +177,6 @@
     <script src="script.js"></script>
     <script>
         async function verificarInicializacao() {
-            // Pequeno delay para garantir que clienteSupabase carregou
             if (typeof clienteSupabase === 'undefined') {
                 setTimeout(verificarInicializacao, 500);
                 return;
@@ -98,7 +194,6 @@
             document.getElementById('welcome-message').innerText = "Bem-vindo, " + nomeFormatado;
             
             renderCalendar();
-            // Chama a função que exibe os botões se for admin
             inicializarPainel();
         }
 

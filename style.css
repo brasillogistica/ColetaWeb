@@ -7,13 +7,33 @@
     --grey: #6c757d; 
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+html, body {
+    width: 100%;
+    min-height: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
 
 body { 
     font-family: 'Inter', sans-serif; 
     background: var(--bg); 
     color: var(--navy); 
     padding: 20px; 
+    overflow-x: hidden;
+}
+
+img, video, canvas, iframe {
+    max-width: 100%;
+}
+
+button, input, select, textarea {
+    font: inherit;
 }
 
 .card { 
@@ -27,7 +47,6 @@ body {
     display: none;
 }
 
-/* NOVA REGRA: garante que o modal de alerta comece oculto */
 #custom-alert {
     display: none;
 }
@@ -43,7 +62,9 @@ body {
     text-transform: uppercase; 
 }
 
-.form-group { margin-bottom: 15px; }
+.form-group { 
+    margin-bottom: 15px; 
+}
 
 .form-group label { 
     font-size: 10px; 
@@ -59,6 +80,7 @@ body {
     border-bottom: 2px solid var(--navy); 
     padding: 5px 0; 
     font-weight: 700; 
+    background: transparent;
 }
 
 .card table {
@@ -137,29 +159,179 @@ body {
     background: #f0f7ff; 
 }
 
+/* ===== MOBILE / APP WEB ===== */
 @media (max-width: 768px) {
-    body { padding: 10px; }
-    
-    .card { padding: 15px; }
-
-    .card[style*="display: flex"] {
-        flex-direction: column !important;
-        gap: 20px !important;
+    body { 
+        padding: 10px; 
     }
 
-    [style*="flex: 0 0 250px"], [style*="flex: 1"] {
+    .card { 
+        padding: 15px; 
+        border-radius: 18px; 
+    }
+
+    .btn-main {
+        width: 100%;
+        min-height: 48px;
+        padding: 14px 18px;
+        font-size: 13px;
+    }
+
+    .form-group input,
+    .form-group select {
+        font-size: 16px;
+        min-height: 42px;
+        padding: 8px 0;
+    }
+
+    .option-buttons-container {
+        flex-direction: column !important;
+    }
+
+    .btn-option {
+        width: 100% !important;
+        min-height: 44px;
+    }
+
+    .header-card {
+        flex-direction: column !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+        text-align: center !important;
+        padding: 15px !important;
+    }
+
+    .header-left,
+    .header-right {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .responsive-card,
+    .card[style*="display: flex"] {
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .side-col {
         flex: 0 0 100% !important;
         width: 100% !important;
     }
 
+    .card[style*="width: 400px"],
+    .card[style*="width: 550px"] {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .card table,
+    .table-wrapper {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+
+    table {
+        min-width: 900px;
+    }
+
+    th, td {
+        white-space: nowrap;
+    }
+
     .calendar-grid {
+        max-width: 100% !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        max-width: 100% !important;
         grid-template-columns: 30px repeat(7, 1fr);
     }
 
-    .card:first-child {
-        text-align: center;
+    .cal-cell {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    #full-calendar-content {
+        grid-template-columns: 1fr;
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .annual-day {
+        font-size: 12px;
+        padding: 6px;
+    }
+
+    #modal-data-deposito .modal-deposito-box,
+    #modal-foto-status .foto-status-box,
+    .mapa-container {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: 20px !important;
+    }
+
+    #foto-ampliada {
+        max-width: 95%;
+        max-height: 80vh;
+    }
+
+    .filter-bar {
+        padding: 12px !important;
+    }
+
+    .filter-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    .filter-group {
+        width: 100% !important;
+    }
+
+    .btn-group {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .btn-group .btn-filtrar,
+    .btn-group .btn-limpar,
+    .btn-group .btn-voltar,
+    .btn-group .btn-excel-small {
+        width: 100%;
+    }
+
+    .table-container {
+        padding: 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 8px;
+    }
+
+    .card {
+        padding: 12px;
+        border-radius: 16px;
+    }
+
+    .btn-main {
+        font-size: 12px;
+        min-height: 46px;
+    }
+
+    .form-group label {
+        font-size: 9px;
+    }
+
+    .cal-cell.head {
+        font-size: 10px;
+        padding: 8px;
+    }
+
+    .cal-cell {
+        font-size: 11px;
+        padding: 6px;
     }
 }

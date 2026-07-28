@@ -125,7 +125,7 @@
             top: 0;
             background: var(--navy);
             color: white;
-            padding: 12px 24px;          /* ajustado de 28px para 24px */
+            padding: 12px 24px;
             text-align: center;
             font-weight: 700;
             text-transform: uppercase;
@@ -145,7 +145,7 @@
         }
 
         td {
-            padding: 12px 24px;          /* mesmo ajuste */
+            padding: 12px 24px;
             border-bottom: 1px solid #f2f2f2;
             color: var(--navy);
             text-align: center;
@@ -200,6 +200,146 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* AJUSTE MOBILE / APP WEB */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px !important;
+                max-width: 100% !important;
+            }
+
+            .header-card {
+                flex-direction: column !important;
+                gap: 10px !important;
+                align-items: center !important;
+                text-align: center !important;
+                padding: 15px !important;
+                border-radius: 18px !important;
+            }
+
+            .header-title {
+                font-size: 12px !important;
+            }
+
+            .filter-bar {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 12px !important;
+                border-radius: 18px !important;
+            }
+
+            .filter-group {
+                min-width: 100% !important;
+                width: 100% !important;
+            }
+
+            .btn-filtrar,
+            .btn-limpar,
+            .btn-voltar {
+                width: 100% !important;
+                align-self: stretch !important;
+                min-height: 44px !important;
+                font-size: 11px !important;
+            }
+
+            .chips-container {
+                margin-bottom: 10px !important;
+            }
+
+            .dashboard-grid {
+                display: flex !important;
+                flex-direction: column !important;
+                max-height: none !important;
+                gap: 10px !important;
+            }
+
+            .card-left,
+            .card-right,
+            .cost-card,
+            .table-card {
+                width: 100% !important;
+                max-height: none !important;
+                grid-column: auto !important;
+                grid-row: auto !important;
+            }
+
+            .card-left canvas,
+            .card-right canvas {
+                height: 220px !important;
+                max-height: 220px !important;
+            }
+
+            .cost-card {
+                max-height: none !important;
+            }
+
+            .cost-card canvas {
+                height: 220px !important;
+            }
+
+            .table-container {
+                padding: 10px !important;
+                border-radius: 18px !important;
+            }
+
+            .table-wrapper {
+                max-height: 60vh !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 1200px !important;
+            }
+
+            th, td {
+                padding: 10px 14px !important;
+            }
+
+            .btn-excel-small {
+                width: 100%;
+                min-height: 44px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px !important;
+            }
+
+            .header-card {
+                padding: 12px !important;
+            }
+
+            .header-title {
+                font-size: 11px !important;
+            }
+
+            .filter-bar {
+                padding: 10px !important;
+            }
+
+            .card {
+                padding: 10px !important;
+                border-radius: 16px !important;
+            }
+
+            .chart-title {
+                font-size: 8px !important;
+            }
+
+            .card-left canvas,
+            .card-right canvas,
+            .cost-card canvas {
+                height: 200px !important;
+                max-height: 200px !important;
+            }
+
+            .table-wrapper {
+                max-height: 55vh !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -309,9 +449,6 @@
 
 <script src="script.js"></script>
 <script>
-    // -------------------------------------------------------------
-    // FREE TIME RULES & CACHE
-    // -------------------------------------------------------------
     const FREE_TIME_RULES = {
         "PIL": { dias: 30, custo: 100 }, "HAPAG LLOYD": { dias: 30, custo: 297 }, "HAPAG": { dias: 30, custo: 297 },
         "ONE": { dias: 30, custo: 100 }, "ALPHA SHIPPING": { dias: 30, custo: 100 }, "ALPHA": { dias: 30, custo: 100 },
@@ -338,7 +475,6 @@
         return null;
     }
 
-    // Cores suaves para os status
     function getStatusColor(status) {
         const colors = {
             'ag. locação': '#FEF3C7',
@@ -352,9 +488,6 @@
         return colors[status] || '#F3F4F6';
     }
 
-    // -------------------------------------------------------------
-    // CONSTANTS & STATE
-    // -------------------------------------------------------------
     const STATUS_FLUXO = ['ag. locação','ag. carregamento','pendencia logistica','faturado','ag. liberação','em viagem','depositado'];
     let dadosCompletos = [], charts = {};
     let filtroStatusAtivo = null;
@@ -564,7 +697,6 @@
             }
         };
 
-        // STATUS
         charts.status = new Chart(document.getElementById('chartStatus'), {
             type: 'bar',
             data: {
@@ -590,7 +722,6 @@
             plugins: [ChartDataLabels]
         });
 
-        // FREE TIME
         charts.freeTime = new Chart(document.getElementById('chartFreeTime'), {
             type: 'bar',
             data: {
@@ -615,7 +746,6 @@
             plugins: [ChartDataLabels]
         });
 
-        // DEPOSITADOS EM ATRASO
         charts.atraso = new Chart(document.getElementById('chartAtraso'), {
             type: 'bar',
             data: {
@@ -640,7 +770,6 @@
             plugins: [ChartDataLabels]
         });
 
-        // TRANSPORTADORAS
         charts.transp = new Chart(document.getElementById('chartTransportadora'), {
             type: 'bar',
             data: {
@@ -669,7 +798,6 @@
             plugins: []
         });
 
-        // CUSTO TOTAL (LINHA)
         charts.custo = new Chart(document.getElementById('chartCusto'), {
             type: 'line',
             data: {

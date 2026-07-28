@@ -5,8 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Login | ColetaWeb</title>
-    <!-- Carrega a biblioteca Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @media (max-width: 768px) {
+            body {
+                padding: 12px !important;
+                height: 100vh !important;
+                align-items: center !important;
+            }
+
+            .card {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 18px !important;
+                border-radius: 18px !important;
+            }
+
+            .card > div:first-child {
+                font-size: 22px !important;
+                margin-bottom: 24px !important;
+            }
+
+            h2 {
+                font-size: 1.1rem !important;
+                margin-bottom: 16px !important;
+            }
+
+            .form-group input {
+                font-size: 16px !important;
+                min-height: 42px;
+            }
+
+            .btn-main {
+                width: 100% !important;
+                min-height: 48px;
+                font-size: 13px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px !important;
+            }
+
+            .card {
+                padding: 14px !important;
+                border-radius: 16px !important;
+            }
+
+            h2 {
+                font-size: 1rem !important;
+            }
+        }
+    </style>
 </head>
 <body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
 
@@ -62,7 +113,6 @@
             }
         }
 
-        // Permite logar ao apertar "Enter" no campo de senha
         document.getElementById("password").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
