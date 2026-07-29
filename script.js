@@ -17,19 +17,46 @@ window.fazerLogout = async function () {
     window.location.href = 'login.html';
 };
 
+async function buscarUsuarioLogado() {
+    if (!clienteSupabase) return null;
+
+    try {
+        const { data: { user } } = await clienteSupabase.auth.getUser();
+        if (!user) return null;
+
+        const { data: userData, error } = await clienteSupabase
+            .from('usuarios')
+            .select('email, perfil, status, transportadora')
+            .eq('email', user.email)
+            .single();
+
+        if (error) {
+            console.error('Erro ao buscar usuário logado:', error);
+            return {
+                email: user.email,
+                perfil: '',
+                status: '',
+                transportadora: ''
+            };
+        }
+
+        return {
+            email: user.email,
+            perfil: userData?.perfil || '',
+            status: userData?.status || '',
+            transportadora: userData?.transportadora || ''
+        };
+    } catch (e) {
+        console.error('Erro em buscarUsuarioLogado:', e);
+        return null;
+    }
+}
+
 async function checarPermissaoMaster() {
     if (!clienteSupabase) return false;
 
     try {
-        const { data: { user } } = await clienteSupabase.auth.getUser();
-        if (!user) return false;
-
-        const { data: userData } = await clienteSupabase
-            .from('usuarios')
-            .select('perfil, status')
-            .eq('email', user.email)
-            .single();
-
+        const userData = await buscarUsuarioLogado();
         if (!userData) return false;
 
         const perfil = (userData.perfil || '').trim().toLowerCase();
@@ -88,9 +115,9 @@ function popularArmadores() {
 
     sel.innerHTML = '<option value="">SELECIONE...</option>';
     const armadores = [
-        'MSC', 'CMA', 'MAERSK', 'HAPAG', 'ALPHA',
-        'HAPAG LLOYD', 'PIL', 'ONE', 'COSCO', 'ZIM',
-        'EVERGREEN', 'HMM', 'YANG MING', 'INTERTRANS', 'BR-X CARGO'
+        'MSC', 'CMA CGM', 'MAERSK', 'HAPAG LLOYD', 'PIL',
+        'ONE', 'COSCO', 'ZIM', 'EVERGREEN', 'HMM',
+        'YANG MING', 'INTERTRANS', 'BR-X CARGO', 'ALPHA SHIPPING'
     ];
 
     armadores.forEach(a => sel.add(new Option(a, a)));
@@ -223,3 +250,15 @@ function closeFullCalendar() {
     const modal = document.getElementById('full-calendar-modal');
     if (modal) modal.style.display = 'none';
 }
+
+window.buscarUsuarioLogado = buscarUsuarioLogado;
+window.checarPermissaoMaster = checarPermissaoMaster;
+window.inicializarPainel = inicializarPainel;
+window.protegerPaginaAdmin = protegerPaginaAdmin;
+window.popularArmadores = popularArmadores;
+window.popularLocais = popularLocais;
+window.autoFill = autoFill;
+window.renderCalendar = renderCalendar;
+window.expandCalendar = expandCalendar;
+window.closeFullCalendar = closeFullCalendar;
+window.getWeekNumber = getWeekNumber;

@@ -307,6 +307,19 @@
       pointer-events: none;
     }
 
+    .etapa-box {
+      margin: 7px 0 10px;
+      padding: 7px 9px;
+      border: 1px dashed var(--gold);
+      border-radius: 11px;
+      background: #fcfcfc;
+      color: var(--navy);
+      font-size: 10px;
+      line-height: 1.3;
+      font-weight: 700;
+      display: none;
+    }
+
     .fields-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -661,6 +674,9 @@
   <div class="layout">
     <section class="card-panel form-panel">
       <h2 class="form-title">NOVO REGISTRO / RETOMAR PROCESSO</h2>
+
+      <div id="resumoRegistroAtual" class="etapa-box">Nenhum registro aberto.</div>
+      <div id="infoEtapa" class="etapa-box">1) Selecione o tipo de carga.</div>
 
       <div class="form-group">
         <label>TIPO DE CARGA</label>
@@ -1333,12 +1349,6 @@
     function atualizarMensagemEtapa() {
       const info = document.getElementById('infoEtapa');
       if (!info) return;
-
-      if (!tipoCargaSelecionado) {
-        info.style.display = 'none';
-        return;
-      }
-
       info.style.display = 'none';
     }
 
@@ -1574,7 +1584,7 @@
         let query = clienteSupabase.from('coletas').select('*').order('created_at', { ascending: false });
 
         if (!ehAdmin && transportadoraUsuario) {
-          query = query.eq('transportadora', transportadoraUsuario);
+          query = query.eq('transportadora', transportadoraUsuario.trim());
         }
 
         const { data, error } = await query;
@@ -1590,6 +1600,7 @@
         filtrarResultadosBusca();
       } catch (err) {
         console.error('Erro ao carregar registros em andamento:', err);
+        mostrarAlerta('Erro ao carregar registros: ' + err.message);
       }
     }
 
@@ -1745,6 +1756,8 @@
       document.getElementById('btnSalvar').innerText = 'SALVAR';
 
       limparRascunho();
+      atualizarResumoRegistroAtual();
+      atualizarMensagemEtapa();
       filtrarResultadosBusca();
     }
 
@@ -2047,19 +2060,20 @@
         .single();
 
       if (!userData) {
+        alert('Acesso negado.');
         window.location.href = 'index.html';
         return false;
       }
 
       perfilUsuario = (userData.perfil || '').trim().toLowerCase();
-      transportadoraUsuario = userData.transportadora || '';
-      ehAdmin = perfilUsuario === 'master' || perfilUsuario === 'mestre' || perfilUsuario === 'administrador';
       const status = (userData.status || '').trim().toLowerCase();
+      transportadoraUsuario = (userData.transportadora || '').trim();
 
-      const permitido = ehAdmin;
-      const aprovado = perfilUsuario === 'master' || status === 'aprovado';
+      const ehMaster = perfilUsuario === 'master' || perfilUsuario === 'mestre';
+      ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
+      const ehTransportadora = !!transportadoraUsuario;
 
-      if (!permitido || !aprovado) {
+      if (!ehAdmin && !ehTransportadora) {
         alert('Acesso negado.');
         window.location.href = 'index.html';
         return false;
