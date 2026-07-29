@@ -213,11 +213,9 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        width: auto;
-        height: auto;
-        max-width: 96vw;
-        max-height: 96vh;
-        padding: 0;
+        width: min(96vw, 1200px);
+        height: min(92vh, 900px);
+        padding: 14px;
         background: transparent;
         box-shadow: none;
         overflow: visible;
@@ -225,8 +223,10 @@
 
     .foto-stage {
         position: relative;
-        width: 100px;
-        height: 100px;
+        width: fit-content;
+        height: fit-content;
+        max-width: 100%;
+        max-height: 100%;
         overflow: hidden;
         background: transparent;
         border-radius: 12px;
@@ -238,14 +238,13 @@
     }
 
     #foto-ampliada {
-        position: absolute;
-        top: 50%;
-        left: 50%;
+        display: block;
+        max-width: 92vw;
+        max-height: 82vh;
         width: auto;
         height: auto;
-        max-width: none;
-        max-height: none;
-        display: block;
+        object-fit: contain;
+        object-position: center center;
         user-select: none;
         -webkit-user-drag: none;
         transform-origin: center center;
@@ -253,6 +252,7 @@
         pointer-events: none;
         border-radius: 12px;
         background: transparent;
+        image-orientation: from-image;
     }
 
     .foto-titulo {
@@ -423,13 +423,13 @@
         }
 
         .foto-box {
-            max-width: 98vw !important;
-            max-height: 98vh !important;
+            width: 96vw !important;
+            height: 88vh !important;
         }
 
-        .foto-stage {
-            max-width: 96vw !important;
-            max-height: 88vh !important;
+        #foto-ampliada {
+            max-width: 92vw !important;
+            max-height: 78vh !important;
         }
     }
 </style>
@@ -596,7 +596,6 @@
     let refreshInterval = null;
 
     let fotoZoom = 1;
-    let fotoBaseScale = 1;
     let fotoPanX = 0;
     let fotoPanY = 0;
     let fotoIsDragging = false;
@@ -694,6 +693,13 @@
             alert('Erro ao verificar acesso.');
             return false;
         }
+    }
+
+    function formatarDataISO(iso) {
+        if (!iso) return 'N/A';
+        const date = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
+        if (isNaN(date.getTime())) return 'N/A';
+        return date.toLocaleDateString('pt-BR');
     }
 
     function calcularDiasRestantes(dataRetirada, diasFreeTime) {
@@ -809,7 +815,7 @@
     }
 
     function fotoLink(url, titulo) {
-        return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${url}', '${titulo}')">${titulo}</span>` : '-';
+        return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick='abrirFoto(${JSON.stringify(url)}, ${JSON.stringify(titulo)})'>${titulo}</span>` : '-';
     }
 
     async function carregarProcessos() {
@@ -892,7 +898,7 @@
 
             tbody.innerHTML += `
                 <tr>
-                    <td class="col-nowrap">${d.data_retirada || 'N/A'}</td>
+                    <td class="col-nowrap">${d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A'}</td>
                     <td>${d.container || 'N/A'}</td>
                     <td class="col-nowrap">
                         <span class="status-badge" style="background-color:${statusColor}">${statusText}</span>
@@ -945,7 +951,7 @@
                 const vencido = diasRest !== null && diasRest < 0;
 
                 return {
-                    Retirada: d.data_retirada || '',
+                    Retirada: d.data_retirada ? formatarDataISO(d.data_retirada) : '',
                     Container: d.container || '',
                     Status: normalizarStatus(d.status).toUpperCase(),
                     Armador: d.armador || '',
@@ -978,8 +984,8 @@
     function aplicarTransformFoto() {
         const img = document.getElementById('foto-ampliada');
         if (!img) return;
-        const scale = fotoBaseScale * fotoZoom;
-        img.style.transform = `translate(-50%, -50%) translate(${fotoPanX}px, ${fotoPanY}px) scale(${scale})`;
+        const scale = fotoZoom;
+        img.style.transform = `translate(${fotoPanX}px, ${fotoPanY}px) scale(${scale})`;
     }
 
     function ajustarFotoParaTela() {
@@ -987,17 +993,23 @@
         const stage = document.getElementById('container-img');
         if (!img || !stage || !img.naturalWidth || !img.naturalHeight) return;
 
-        const margemLargura = window.innerWidth * 0.96;
-        const margemAltura = window.innerHeight * 0.90;
+        const maxW = Math.floor(window.innerWidth * 0.92);
+        const maxH = Math.floor(window.innerHeight * 0.82);
+        const ratio = img.naturalWidth / img.naturalHeight;
 
-        fotoBaseScale = Math.min(margemLargura / img.naturalWidth, margemAltura / img.naturalHeight);
-        if (!isFinite(fotoBaseScale) || fotoBaseScale <= 0) fotoBaseScale = 1;
+        let w = maxW;
+        let h = Math.floor(w / ratio);
 
-        const largura = Math.round(img.naturalWidth * fotoBaseScale);
-        const altura = Math.round(img.naturalHeight * fotoBaseScale);
+        if (h > maxH) {
+            h = maxH;
+            w = Math.floor(h * ratio);
+        }
 
-        stage.style.width = largura + 'px';
-        stage.style.height = altura + 'px';
+        w = Math.max(180, w);
+        h = Math.max(180, h);
+
+        stage.style.width = w + 'px';
+        stage.style.height = h + 'px';
 
         fotoZoom = 1;
         fotoPanX = 0;
@@ -1085,14 +1097,14 @@
         title.textContent = titulo || '';
 
         img.onload = () => {
-            ajustarFotoParaTela();
+            requestAnimationFrame(() => ajustarFotoParaTela());
         };
 
         img.src = url;
 
         setTimeout(() => {
             if (img.complete) ajustarFotoParaTela();
-        }, 80);
+        }, 120);
     }
 
     function fecharFoto() {
