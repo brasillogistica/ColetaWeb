@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,800 +6,786 @@
   <title>Registro | ColetaWeb</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --panel-radius: 16px;
-    }
-
-    body {
-      margin: 0;
-      padding: 14px;
-      background: var(--bg);
-      color: var(--navy);
-      font-family: 'Inter', sans-serif;
-    }
-
-    .page-shell {
-      max-width: 1600px;
-      margin: 0 auto;
-    }
-
-    .page-header {
-      background: var(--white);
-      border: 1px solid var(--gold);
-      border-radius: 18px;
-      padding: 12px 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-minerva {
-      justify-self: start;
-      font-weight: 800;
-      font-size: 18px;
-      line-height: 1;
-      white-space: nowrap;
-    }
-
-    .logo-minerva .m { color: var(--navy); }
-    .logo-minerva .f { color: var(--red); }
-
-    .page-header h2 {
-      margin: 0;
-      font-size: 16px;
-      color: var(--navy);
-      text-transform: uppercase;
-      font-weight: 800;
-      letter-spacing: .2px;
-      white-space: nowrap;
-      justify-self: center;
-      text-align: center;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-self: end;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 280px;
-      gap: 12px;
-      align-items: start;
-    }
-
-    .card-panel {
-      background: var(--white);
-      border: 1px solid var(--gold);
-      border-radius: var(--panel-radius);
-      padding: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-
-    .search-panel {
-      position: sticky;
-      top: 14px;
-      max-height: calc(100vh - 28px);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .search-panel h3 {
-      margin: 0 0 8px 0;
-      color: var(--navy);
-      font-size: 14px;
-      text-transform: uppercase;
-      font-weight: 800;
-      letter-spacing: .2px;
-    }
-
-    .search-row {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .search-row input {
-      width: 100%;
-      border: none;
-      border-bottom: 1px solid var(--gold);
-      padding: 7px 3px;
-      font-size: 12px;
-      outline: none;
-      color: var(--navy);
-      background: transparent;
-      font-weight: 600;
-    }
-
-    .search-row button {
-      white-space: nowrap;
-      min-width: 60px;
-      padding: 7px 9px !important;
-      font-size: 9px !important;
-    }
-
-    .search-small-actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-
-    .search-small-actions .btn-main {
-      flex: 1;
-      min-width: 0;
-      padding: 7px 9px !important;
-      font-size: 9px !important;
-    }
-
-    .search-selected {
-      margin-top: 10px;
-      padding: 8px 9px;
-      border-radius: 11px;
-      background: #fbfbfb;
-      border: 1px dashed var(--gold);
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--navy);
-      line-height: 1.35;
-    }
-
-    .search-count {
-      margin-top: 8px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--navy);
-    }
-
-    .results-list {
-      margin-top: 8px;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      padding-right: 3px;
-      flex: 1;
-      min-height: 0;
-    }
-
-    .result-item {
-      border: 1px solid #e8e0c8;
-      border-radius: 12px;
-      padding: 8px 9px;
-      cursor: pointer;
-      background: #fff;
-      transition: all 0.15s ease;
-    }
-
-    .result-item:hover {
-      transform: translateY(-1px);
-      border-color: var(--navy);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-
-    .result-item.active {
-      border-color: var(--navy);
-      background: #f5f9fc;
-    }
-
-    .result-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-
-    .result-container {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--navy);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .result-badge {
-      padding: 3px 6px;
-      border-radius: 99px;
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .badge-ric { background: #FDE68A; }
-    .badge-genset1 { background: #DBEAFE; }
-    .badge-genset2 { background: #C7F9CC; }
-    .badge-genset3 { background: #DDD6FE; }
-    .badge-final { background: #D1FAE5; }
-
-    .result-meta {
-      font-size: 10px;
-      color: #556;
-      line-height: 1.4;
-    }
-
-    .result-meta strong {
-      color: var(--navy);
-    }
-
-    .form-panel {
-      min-width: 0;
-      padding: 12px;
-    }
-
-    .form-title {
-      color: var(--navy);
-      margin: 0 0 6px 0;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .2px;
-    }
-
-    .option-buttons-container {
-      display: flex;
-      gap: 7px;
-      margin-bottom: 5px;
-      flex-wrap: wrap;
-    }
-
-    .btn-option {
-      flex: 1;
-      min-width: 110px;
-      padding: 8px 12px;
-      border-radius: 99px;
-      font-weight: 700;
-      font-size: 10px;
-      text-transform: uppercase;
-      cursor: pointer;
-      border: 2px solid var(--gold);
-      background: transparent;
-      color: var(--navy);
-      transition: all 0.2s;
-      text-align: center;
-      line-height: 1.15;
-    }
-
-    .btn-option.active {
-      background: var(--navy);
-      color: white;
-      border-color: var(--navy);
-    }
-
-    .btn-option:hover {
-      background: #f0f0f0;
-    }
-
-    .btn-option.active:hover {
-      background: var(--navy);
-    }
-
-    .form-group label {
-      text-align: center;
-      display: block;
-      font-weight: 800;
-      font-size: 9px;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 4px;
-      letter-spacing: .2px;
-    }
-
-    .btn-salvar-loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .bloqueado {
-      opacity: 0.55;
-      pointer-events: none;
-    }
-
-    .etapa-box {
-      margin: 7px 0 10px;
-      padding: 7px 9px;
-      border: 1px dashed var(--gold);
-      border-radius: 11px;
-      background: #fcfcfc;
-      color: var(--navy);
-      font-size: 10px;
-      line-height: 1.3;
-      font-weight: 700;
-      display: none;
-    }
-
-    .fields-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px 10px;
-      margin-bottom: 12px;
-    }
-
-    .fields-grid .form-group input,
-    .fields-grid .form-group select {
-      width: 100%;
-      border: none;
-      border-bottom: 1px solid var(--navy);
-      padding: 6px 0;
-      font-size: 12px;
-      color: var(--navy);
-      background: transparent;
-      outline: none;
-      font-weight: 600;
-    }
-
-    .fields-grid .form-group input::placeholder {
-      color: #8a8a8a;
-    }
-
-    .thumbs-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 7px;
-      margin-top: 10px;
-      align-items: start;
-      justify-items: center;
-    }
-
-    .thumb-card {
-      width: 100%;
-      max-width: 138px;
-      border: 1px solid var(--gold);
-      border-radius: 11px;
-      padding: 5px;
-      background: white;
-      text-align: center;
-      cursor: pointer;
-      min-height: 128px;
-    }
-
-    .thumb-card.empty {
-      border-style: dashed;
-      color: #999;
-      cursor: default;
-    }
-
-    .thumb-card img {
-      width: 100%;
-      height: 76px;
-      object-fit: cover;
-      border-radius: 8px;
-      display: block;
-    }
-
-    .thumb-card small {
-      display: block;
-      margin-top: 4px;
-      font-size: 8px;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: var(--navy);
-      line-height: 1.1;
-    }
-
-    .preview-mini {
-      max-width: 100%;
-      max-height: 140px;
-      object-fit: cover;
-      border-radius: 9px;
-      border: 1px solid var(--gold);
-      cursor: pointer;
-    }
-
-    .foto-bloco {
-      margin-top: 12px;
-      border-top: 1px solid #eee;
-      padding-top: 10px;
-    }
-
-    .foto-bloco h3 {
-      font-size: 12px;
-      color: var(--navy);
-      margin-bottom: 8px;
-      text-align: center;
-      font-weight: 800;
-    }
-
-    .botao-salvar {
-      display: block;
-      width: 160px;
-      margin: 12px auto 0;
-      padding: 8px 14px;
-      font-size: 11px;
-    }
-
-    .btn-main {
-      border: none;
-      color: white;
-      border-radius: 99px;
-      font-weight: 800;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .btn-main:hover {
-      filter: brightness(0.96);
-      transform: translateY(-1px);
-    }
-
-    #modal-data-deposito {
-      display: none;
-      position: fixed;
-      z-index: 3000;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      justify-content: center;
-      align-items: center;
-      padding: 18px;
-    }
-
-    #modal-foto {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 4000;
-      background: rgba(0,0,0,0.85);
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .foto-box {
-      background: white;
-      border-radius: 18px;
-      padding: 14px;
-      max-width: 94vw;
-      max-height: 94vh;
-      position: relative;
-      box-shadow: 0 10px 35px rgba(0,0,0,0.35);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      overflow: hidden;
-    }
-
-    .foto-stage {
-      flex: 1;
-      min-height: 0;
-      width: 100%;
-      overflow: hidden;
-      border-radius: 12px;
-      background: #f8f8f8;
-      position: relative;
-      touch-action: none;
-      cursor: grab;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .foto-stage:active {
-      cursor: grabbing;
-    }
-
-    #foto-ampliada {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: auto;
-      height: auto;
-      max-width: none;
-      max-height: none;
-      display: block;
-      user-select: none;
-      -webkit-user-drag: none;
-      transform-origin: center center;
-      will-change: transform;
-      pointer-events: none;
-      border-radius: 12px;
-      background: transparent;
-    }
-
-    .foto-titulo {
-      text-align: center;
-      font-weight: 800;
-      color: var(--navy);
-      font-size: 13px;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid var(--gold);
-      border-top-color: var(--navy);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .confirm-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 5000;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-
-    .confirm-card {
-      background: var(--white);
-      border: 1px solid var(--gold);
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
-      width: min(92vw, 520px);
-      padding: 18px 18px 16px;
-    }
-
-    .confirm-card p {
-      margin: 0;
-      color: var(--navy);
-      font-size: 13px;
-      line-height: 1.45;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .confirm-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 16px;
-    }
-
-    .confirm-actions .btn-main {
-      min-width: 110px;
-      padding: 9px 14px;
-      font-size: 10px;
-    }
-
-    @media (max-width: 1300px) {
-      .fields-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 1100px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .search-panel {
-        position: relative;
-        top: 0;
-        max-height: none;
-      }
-
-      .page-header {
-        grid-template-columns: 1fr;
-        text-align: center;
-      }
-
-      .logo-minerva,
-      .page-header h2,
-      .header-actions {
-        justify-self: center;
-      }
-    }
-
-    @media (max-width: 768px) {
-      body {
-        padding: 10px;
-      }
-
-      .page-header h2 {
-        font-size: 15px;
-      }
-
-      .header-actions {
-        justify-content: center;
-      }
-
-      .thumbs-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .thumb-card {
-        max-width: none;
-      }
-
-      .option-buttons-container {
-        flex-direction: column;
-      }
-
-      .btn-option {
-        min-width: 100%;
-      }
-
-      .search-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .search-row button,
-      .search-small-actions button {
-        width: 100%;
-      }
-
-      .fields-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .confirm-actions {
-        flex-direction: column;
-      }
-
-      .confirm-actions .btn-main {
-        width: 100%;
-      }
-    }
+    * { box-sizing: border-box; }:root {
+  --panel-radius: 16px;
+}
+
+body {
+  margin: 0;
+  padding: 14px;
+  background: var(--bg);
+  color: var(--navy);
+  font-family: 'Inter', sans-serif;
+}
+
+.page-shell {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.page-header {
+  background: var(--white);
+  border: 1px solid var(--gold);
+  border-radius: 18px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-minerva {
+  justify-self: start;
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.logo-minerva .m { color: var(--navy); }
+.logo-minerva .f { color: var(--red); }
+
+.page-header h2 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--navy);
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  justify-self: center;
+  text-align: center;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-self: end;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 12px;
+  align-items: start;
+}
+
+.card-panel {
+  background: var(--white);
+  border: 1px solid var(--gold);
+  border-radius: var(--panel-radius);
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.search-panel {
+  position: sticky;
+  top: 14px;
+  max-height: calc(100vh - 28px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-panel h3 {
+  margin: 0 0 8px 0;
+  color: var(--navy);
+  font-size: 14px;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+.search-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.search-row input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--gold);
+  padding: 7px 3px;
+  font-size: 12px;
+  outline: none;
+  color: var(--navy);
+  background: transparent;
+  font-weight: 600;
+}
+
+.search-row button {
+  white-space: nowrap;
+  min-width: 60px;
+  padding: 7px 9px !important;
+  font-size: 9px !important;
+}
+
+.search-small-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.search-small-actions .btn-main {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 9px !important;
+  font-size: 9px !important;
+}
+
+.search-selected {
+  margin-top: 10px;
+  padding: 8px 9px;
+  border-radius: 11px;
+  background: #fbfbfb;
+  border: 1px dashed var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.35;
+}
+
+.search-count {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.results-list {
+  margin-top: 8px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-right: 3px;
+  flex: 1;
+  min-height: 0;
+}
+
+.result-item {
+  border: 1px solid #e8e0c8;
+  border-radius: 12px;
+  padding: 8px 9px;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.15s ease;
+}
+
+.result-item:hover {
+  transform: translateY(-1px);
+  border-color: var(--navy);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.result-item.active {
+  border-color: var(--navy);
+  background: #f5f9fc;
+}
+
+.result-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.result-container {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--navy);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-badge {
+  padding: 3px 6px;
+  border-radius: 99px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-ric { background: #FDE68A; }
+.badge-genset1 { background: #DBEAFE; }
+.badge-genset2 { background: #C7F9CC; }
+.badge-genset3 { background: #DDD6FE; }
+.badge-final { background: #D1FAE5; }
+
+.result-meta {
+  font-size: 10px;
+  color: #556;
+  line-height: 1.4;
+}
+
+.result-meta strong {
+  color: var(--navy);
+}
+
+.form-panel {
+  min-width: 0;
+  padding: 12px;
+}
+
+.form-title {
+  color: var(--navy);
+  margin: 0 0 6px 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .2px;
+}
+
+.option-buttons-container {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+}
+
+.btn-option {
+  flex: 1;
+  min-width: 110px;
+  padding: 8px 12px;
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 2px solid var(--gold);
+  background: transparent;
+  color: var(--navy);
+  transition: all 0.2s;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.btn-option.active {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+
+.btn-option:hover {
+  background: #f0f0f0;
+}
+
+.btn-option.active:hover {
+  background: var(--navy);
+}
+
+.form-group label {
+  text-align: center;
+  display: block;
+  font-weight: 800;
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+  letter-spacing: .2px;
+}
+
+.btn-salvar-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.bloqueado {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.etapa-box {
+  margin: 7px 0 10px;
+  padding: 7px 9px;
+  border: 1px dashed var(--gold);
+  border-radius: 11px;
+  background: #fcfcfc;
+  color: var(--navy);
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 700;
+  display: none;
+}
+
+.fields-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.fields-grid .form-group input,
+.fields-grid .form-group select {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--navy);
+  padding: 6px 0;
+  font-size: 12px;
+  color: var(--navy);
+  background: transparent;
+  outline: none;
+  font-weight: 600;
+}
+
+.fields-grid .form-group input::placeholder {
+  color: #8a8a8a;
+}
+
+.thumbs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+  align-items: start;
+  justify-items: center;
+}
+
+.thumb-card {
+  width: 100%;
+  max-width: 138px;
+  border: 1px solid var(--gold);
+  border-radius: 11px;
+  padding: 5px;
+  background: white;
+  text-align: center;
+  cursor: pointer;
+  min-height: 128px;
+}
+
+.thumb-card.empty {
+  border-style: dashed;
+  color: #999;
+  cursor: default;
+}
+
+.thumb-card img {
+  width: 100%;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.thumb-card small {
+  display: block;
+  margin-top: 4px;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--navy);
+  line-height: 1.1;
+}
+
+.preview-mini {
+  max-width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: 9px;
+  border: 1px solid var(--gold);
+  cursor: pointer;
+}
+
+.foto-bloco {
+  margin-top: 12px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.foto-bloco h3 {
+  font-size: 12px;
+  color: var(--navy);
+  margin-bottom: 8px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.botao-salvar {
+  display: block;
+  width: 160px;
+  margin: 12px auto 0;
+  padding: 8px 14px;
+  font-size: 11px;
+}
+
+.btn-main {
+  border: none;
+  color: white;
+  border-radius: 99px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-main:hover {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+}
+
+#modal-data-deposito,
+#modal-foto {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+#modal-foto {
+  z-index: 4000;
+  background: rgba(0,0,0,0.85);
+}
+
+.foto-box {
+  background: white;
+  border-radius: 18px;
+  padding: 14px;
+  width: fit-content;
+  height: fit-content;
+  max-width: 96vw;
+  max-height: 92vh;
+  position: relative;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.foto-stage {
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f8f8f8;
+  position: relative;
+  touch-action: none;
+  cursor: grab;
+  display: block;
+}
+
+.foto-stage:active {
+  cursor: grabbing;
+}
+
+#foto-ampliada {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: center center;
+  will-change: transform;
+  pointer-events: none;
+  border-radius: 12px;
+  background: transparent;
+  image-orientation: from-image;
+}
+
+.foto-titulo {
+  text-align: center;
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 13px;
+  padding-bottom: 2px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--gold);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.confirm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 5000;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.confirm-card {
+  background: var(--white);
+  border: 1px solid var(--gold);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+  width: min(92vw, 520px);
+  padding: 18px 18px 16px;
+}
+
+.confirm-card p {
+  margin: 0;
+  color: var(--navy);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+  font-weight: 600;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.confirm-actions .btn-main {
+  min-width: 110px;
+  padding: 9px 14px;
+  font-size: 10px;
+}
+
+@media (max-width: 1300px) {
+  .fields-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .search-panel {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+
+  .page-header {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .logo-minerva,
+  .page-header h2,
+  .header-actions {
+    justify-self: center;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .page-header h2 {
+    font-size: 15px;
+  }
+
+  .header-actions {
+    justify-content: center;
+  }
+
+  .thumbs-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .thumb-card {
+    max-width: none;
+  }
+
+  .option-buttons-container {
+    flex-direction: column;
+  }
+
+  .btn-option {
+    min-width: 100%;
+  }
+
+  .search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-row button,
+  .search-small-actions button {
+    width: 100%;
+  }
+
+  .fields-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .confirm-actions {
+    flex-direction: column;
+  }
+
+  .confirm-actions .btn-main {
+    width: 100%;
+  }
+
+  .foto-box {
+    width: 96vw !important;
+    height: 88vh !important;
+  }
+}
   </style>
 </head>
 <body>
-<div class="page-shell">
-
-  <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center;">
+<div class="page-shell">  <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center;">
     <div class="spinner"></div>
-  </div>
-
-  <div class="page-header">
+  </div>  <div class="page-header">
     <div class="logo-minerva">
       <span class="m">minerva</span><span class="f">foods</span>
-    </div>
+    </div><h2>Registro | ColetaWeb</h2>
 
-    <h2>Registro | ColetaWeb</h2>
-
-    <div class="header-actions">
-      <button type="button" class="btn-main" style="background:#6c757d; padding:9px 16px; font-size:11px;" onclick="novoRegistro()">NOVO REGISTRO</button>
-      <button type="button" class="btn-main" style="background:#2d4b5e; padding:9px 16px; font-size:11px;" onclick="voltar()">VOLTAR</button>
-    </div>
-  </div>
-
-  <div class="layout">
+<div class="header-actions">
+  <button type="button" class="btn-main" style="background:#6c757d; padding:9px 16px; font-size:11px;" onclick="novoRegistro()">NOVO REGISTRO</button>
+  <button type="button" class="btn-main" style="background:#2d4b5e; padding:9px 16px; font-size:11px;" onclick="voltar()">VOLTAR</button>
+</div>
+  </div>  <div class="layout">
     <section class="card-panel form-panel">
-      <h2 class="form-title">NOVO REGISTRO / RETOMAR PROCESSO</h2>
+      <h2 class="form-title">NOVO REGISTRO / RETOMAR PROCESSO</h2>  <div id="resumoRegistroAtual" class="etapa-box">Nenhum registro aberto.</div>
+  <div id="infoEtapa" class="etapa-box">1) Selecione o tipo de carga.</div>
 
-      <div id="resumoRegistroAtual" class="etapa-box">Nenhum registro aberto.</div>
-      <div id="infoEtapa" class="etapa-box">1) Selecione o tipo de carga.</div>
-
-      <div class="form-group">
-        <label>TIPO DE CARGA</label>
-        <div class="option-buttons-container">
-          <button id="btnResfriado" type="button" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
-          <button id="btnCongeladoGenSet" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado com GenSet', this)">Congelado com GenSet</button>
-          <button id="btnCongelado" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
-        </div>
-      </div>
-
-      <div class="form-group" id="grupoCargaPulmao" style="display:none;">
-        <label>CARGA OU PULMÃO</label>
-        <div class="option-buttons-container">
-          <button id="btnCarga" type="button" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
-          <button id="btnPulmao" type="button" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
-        </div>
-      </div>
-
-      <div id="blocoCampos" style="display:block;">
-        <div class="fields-grid">
-          <div class="form-group">
-            <label>DATA DA RETIRADA</label>
-            <input type="date" id="dataRetirada" disabled>
-          </div>
-          <div class="form-group">
-            <label>ARMADOR</label>
-            <select id="armador" disabled>
-              <option value="">SELECIONE...</option>
-              <option value="PIL">PIL</option>
-              <option value="HAPAG LLOYD">HAPAG LLOYD</option>
-              <option value="ONE">ONE</option>
-              <option value="ALPHA SHIPPING">ALPHA SHIPPING</option>
-              <option value="CMA CGM">CMA CGM</option>
-              <option value="YANG MING">YANG MING</option>
-              <option value="HMM">HMM</option>
-              <option value="MAERSK">MAERSK</option>
-              <option value="MSC">MSC</option>
-              <option value="COSCO">COSCO</option>
-              <option value="EVERGREEN">EVERGREEN</option>
-              <option value="ZIM">ZIM</option>
-              <option value="INTERTRANS">INTERTRANS</option>
-              <option value="BR-X CARGO">BR-X CARGO</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>PLACA</label>
-            <input type="text" id="placa" placeholder="Digite a placa" disabled>
-          </div>
-          <div class="form-group">
-            <label>CIDADE</label>
-            <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro..." disabled>
-          </div>
-          <div class="form-group">
-            <label>TERMINAL DE COLETA</label>
-            <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG..." disabled>
-          </div>
-          <div class="form-group">
-            <label>CONTAINER</label>
-            <input type="text" id="containerInput" placeholder="Digite o número do container" disabled>
-          </div>
-          <div class="form-group">
-            <label>TARA</label>
-            <input type="text" id="tara" placeholder="Ex: 4730" disabled>
-          </div>
-          <div class="form-group">
-            <label>MAX GROSS</label>
-            <input type="text" id="maxGross" placeholder="Ex: 35000" disabled>
-          </div>
-        </div>
-      </div>
-
-      <div id="blocoRic" class="foto-bloco" style="display:none;">
-        <h3 id="labelRic">ETAPA 1/4 - FOTO DO RIC</h3>
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-        <button type="button" id="btnRicCapture" class="btn-main" onclick="acionarCamera('cameraInput')"
-          style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
-          <span style="font-size:17px;">📷</span> TIRAR FOTO (RIC)
-        </button>
-        <div id="statusRic" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
-        <img id="preview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização RIC">
-      </div>
-
-      <div id="genset-section" class="foto-bloco" style="display:none;">
-        <h3 id="labelGenset">ETAPA 2/4 - FOTO DO GENSET</h3>
-        <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display:none;">
-        <button type="button" id="btnGensetCapture" class="btn-main" onclick="acionarCamera('gensetInput')"
-          style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
-          <span style="font-size:17px;">📷</span> TIRAR FOTO (PAINEL GENSET)
-        </button>
-        <div id="statusGenset" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
-        <img id="gensetPreview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização GENSET">
-      </div>
-
-      <div id="galeriaFotos" class="thumbs-grid" style="display:none;"></div>
-
-      <button class="btn-main botao-salvar" id="btnSalvar" style="background:#E84D53;" onclick="salvarColeta()" disabled>SALVAR</button>
-    </section>
-
-    <aside class="card-panel search-panel">
-      <h3>Retomar registro</h3>
-
-      <div class="search-row">
-        <input type="text" id="buscaContainer" placeholder="Digite o container..." autocomplete="off">
-        <button type="button" class="btn-main" style="background:var(--navy);" onclick="buscarContainers()">BUSCAR</button>
-      </div>
-
-      <div class="search-small-actions">
-        <button type="button" class="btn-main" style="background:#6c757d;" onclick="limparBusca()">LIMPAR BUSCA</button>
-      </div>
-
-      <div class="search-selected" id="registroSelecionadoInfo">Nenhum processo selecionado.</div>
-      <div class="search-count" id="resultadoBuscaCount">0 registros em andamento.</div>
-      <div class="results-list" id="listaResultados"></div>
-    </aside>
+  <div class="form-group">
+    <label>TIPO DE CARGA</label>
+    <div class="option-buttons-container">
+      <button id="btnResfriado" type="button" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
+      <button id="btnCongeladoGenSet" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado com GenSet', this)">Congelado com GenSet</button>
+      <button id="btnCongelado" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
+    </div>
   </div>
 
-  <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center; padding:18px;">
+  <div class="form-group" id="grupoCargaPulmao" style="display:none;">
+    <label>CARGA OU PULMÃO</label>
+    <div class="option-buttons-container">
+      <button id="btnCarga" type="button" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
+      <button id="btnPulmao" type="button" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
+    </div>
+  </div>
+
+  <div id="blocoCampos" style="display:block;">
+    <div class="fields-grid">
+      <div class="form-group">
+        <label>DATA DA RETIRADA</label>
+        <input type="date" id="dataRetirada" disabled>
+      </div>
+      <div class="form-group">
+        <label>ARMADOR</label>
+        <select id="armador" disabled>
+          <option value="">SELECIONE...</option>
+          <option value="PIL">PIL</option>
+          <option value="HAPAG LLOYD">HAPAG LLOYD</option>
+          <option value="ONE">ONE</option>
+          <option value="ALPHA SHIPPING">ALPHA SHIPPING</option>
+          <option value="CMA CGM">CMA CGM</option>
+          <option value="YANG MING">YANG MING</option>
+          <option value="HMM">HMM</option>
+          <option value="MAERSK">MAERSK</option>
+          <option value="MSC">MSC</option>
+          <option value="COSCO">COSCO</option>
+          <option value="EVERGREEN">EVERGREEN</option>
+          <option value="ZIM">ZIM</option>
+          <option value="INTERTRANS">INTERTRANS</option>
+          <option value="BR-X CARGO">BR-X CARGO</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>PLACA</label>
+        <input type="text" id="placa" placeholder="Digite a placa" disabled>
+      </div>
+      <div class="form-group">
+        <label>CIDADE</label>
+        <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro..." disabled>
+      </div>
+      <div class="form-group">
+        <label>TERMINAL DE COLETA</label>
+        <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG..." disabled>
+      </div>
+      <div class="form-group">
+        <label>CONTAINER</label>
+        <input type="text" id="containerInput" placeholder="Digite o número do container" disabled>
+      </div>
+      <div class="form-group">
+        <label>TARA</label>
+        <input type="text" id="tara" placeholder="Ex: 4730" disabled>
+      </div>
+      <div class="form-group">
+        <label>MAX GROSS</label>
+        <input type="text" id="maxGross" placeholder="Ex: 35000" disabled>
+      </div>
+    </div>
+  </div>
+
+  <div id="blocoRic" class="foto-bloco" style="display:none;">
+    <h3 id="labelRic">ETAPA 1/4 - FOTO DO RIC</h3>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+    <button type="button" id="btnRicCapture" class="btn-main" onclick="acionarCamera('cameraInput')"
+      style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
+      <span style="font-size:17px;">📷</span> TIRAR FOTO (RIC)
+    </button>
+    <div id="statusRic" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
+    <img id="preview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização RIC">
+  </div>
+
+  <div id="genset-section" class="foto-bloco" style="display:none;">
+    <h3 id="labelGenset">ETAPA 2/4 - FOTO DO GENSET</h3>
+    <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display:none;">
+    <button type="button" id="btnGensetCapture" class="btn-main" onclick="acionarCamera('gensetInput')"
+      style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
+      <span style="font-size:17px;">📷</span> TIRAR FOTO (PAINEL GENSET)
+    </button>
+    <div id="statusGenset" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
+    <img id="gensetPreview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização GENSET">
+  </div>
+
+  <div id="galeriaFotos" class="thumbs-grid" style="display:none;"></div>
+
+  <button class="btn-main botao-salvar" id="btnSalvar" style="background:#E84D53;" onclick="salvarColeta()" disabled>SALVAR</button>
+</section>
+
+<aside class="card-panel search-panel">
+  <h3>Retomar registro</h3>
+
+  <div class="search-row">
+    <input type="text" id="buscaContainer" placeholder="Digite o container..." autocomplete="off">
+    <button type="button" class="btn-main" style="background:var(--navy);" onclick="buscarContainers()">BUSCAR</button>
+  </div>
+
+  <div class="search-small-actions">
+    <button type="button" class="btn-main" style="background:#6c757d;" onclick="limparBusca()">LIMPAR BUSCA</button>
+  </div>
+
+  <div class="search-selected" id="registroSelecionadoInfo">Nenhum processo selecionado.</div>
+  <div class="search-count" id="resultadoBuscaCount">0 registros em andamento.</div>
+  <div class="results-list" id="listaResultados"></div>
+</aside>
+  </div>  <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center; padding:18px;">
     <div style="background:white; padding:26px 30px; border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; max-width:340px; width:90%;">
       <p style="font-size:1rem; font-weight:bold; color:#2d4b5e; margin-bottom:18px;" id="custom-alert-msg">Registro salvo com sucesso!</p>
       <button onclick="fecharAlerta()" style="background:#2d4b5e; color:white; border:none; padding:10px 24px; border-radius:99px; font-weight:bold; cursor:pointer; text-transform:uppercase;">OK</button>
     </div>
-  </div>
-
-  <div id="modal-data-deposito" style="display:none; position:fixed; z-index:3000; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
+  </div>  <div id="modal-data-deposito" style="display:none; position:fixed; z-index:3000; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
     <div style="background:white; padding:24px 24px; border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; border:1px solid var(--gold); width:min(92vw, 400px);">
       <p style="font-weight:700; margin-bottom:14px; color:var(--navy); font-size:17px;">Selecione a data do depósito</p>
       <input type="date" id="input-data-deposito" style="padding:10px 12px; border-radius:10px; border:1px solid var(--navy); font-weight:600; font-size:15px; text-align:center; outline:none; width:100%;">
@@ -809,9 +794,7 @@
         <button class="btn-main" style="background:var(--navy); padding:9px 16px;" onclick="confirmarDataDeposito()">Confirmar</button>
       </div>
     </div>
-  </div>
-
-  <div id="modal-foto" style="display:none; position:fixed; inset:0; z-index:4000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; padding:20px;">
+  </div>  <div id="modal-foto" style="display:none; position:fixed; inset:0; z-index:4000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; padding:20px;">
     <div class="foto-box" id="foto-box">
       <button onclick="fecharModalFoto()" style="position:absolute; top:8px; right:10px; border:none; background:none; font-size:34px; cursor:pointer; color:var(--navy); z-index:2;">&times;</button>
       <div id="foto-stage" class="foto-stage">
@@ -819,9 +802,7 @@
       </div>
       <div id="foto-modal-title" class="foto-titulo"></div>
     </div>
-  </div>
-
-  <div id="confirmNovoRegistro" class="confirm-overlay">
+  </div>  <div id="confirmNovoRegistro" class="confirm-overlay">
     <div class="confirm-card">
       <p id="confirmNovoRegistroMsg">Deseja iniciar um novo registro? O processo atual será limpo da tela.</p>
       <div class="confirm-actions">
@@ -829,10 +810,7 @@
         <button class="btn-main" style="background:#6c757d;" onclick="responderConfirmNovoRegistro(false)">Cancelar</button>
       </div>
     </div>
-  </div>
-
-  <script src="script.js"></script>
-  <script>
+  </div>  <script src="script.js"></script>  <script>
     const DRAFT_KEY = 'coletaweb_draft_v11';
     const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
     const ETAPAS = ['ric', 'genset1', 'genset2', 'genset3'];
@@ -867,7 +845,6 @@
     let confirmNovoRegistroCallback = null;
 
     let fotoZoom = 1;
-    let fotoBaseScale = 1;
     let fotoPanX = 0;
     let fotoPanY = 0;
     let fotoIsDragging = false;
@@ -1053,7 +1030,6 @@
       img.src = src;
 
       fotoZoom = 1;
-      fotoBaseScale = 1;
       fotoPanX = 0;
       fotoPanY = 0;
       fotoTouchLastDist = null;
@@ -1062,12 +1038,12 @@
       document.getElementById('modal-foto').style.display = 'flex';
 
       img.onload = () => {
-        ajustarFotoParaTela();
+        requestAnimationFrame(() => ajustarFotoParaTela());
       };
 
       setTimeout(() => {
         if (img.complete) ajustarFotoParaTela();
-      }, 60);
+      }, 120);
     }
 
     function fecharModalFoto() {
@@ -1075,7 +1051,6 @@
       const img = document.getElementById('foto-modal-img');
       img.src = '';
       fotoZoom = 1;
-      fotoBaseScale = 1;
       fotoPanX = 0;
       fotoPanY = 0;
       fotoIsDragging = false;
@@ -1203,8 +1178,8 @@
     function aplicarTransformFoto() {
       const img = document.getElementById('foto-modal-img');
       if (!img) return;
-      const scale = fotoBaseScale * fotoZoom;
-      img.style.transform = `translate(-50%, -50%) translate(${fotoPanX}px, ${fotoPanY}px) scale(${scale})`;
+      const scale = 1 * fotoZoom;
+      img.style.transform = `translate(${fotoPanX}px, ${fotoPanY}px) scale(${scale})`;
     }
 
     function ajustarFotoParaTela() {
@@ -1212,18 +1187,31 @@
       const stage = document.getElementById('foto-stage');
       if (!img || !stage || !img.naturalWidth || !img.naturalHeight) return;
 
-      const modalW = Math.min(window.innerWidth * 0.96, 1200);
-      const modalH = Math.min(window.innerHeight * 0.90, 900);
+      const maxW = Math.floor(window.innerWidth * 0.92);
+      const maxH = Math.floor(window.innerHeight * 0.82);
+      const ratio = img.naturalWidth / img.naturalHeight;
 
-      fotoBaseScale = Math.min(modalW / img.naturalWidth, modalH / img.naturalHeight);
-      if (!isFinite(fotoBaseScale) || fotoBaseScale <= 0) fotoBaseScale = 1;
+      let w = maxW;
+      let h = Math.floor(w / ratio);
 
-      const scaledW = Math.round(img.naturalWidth * fotoBaseScale);
-      const scaledH = Math.round(img.naturalHeight * fotoBaseScale);
+      if (h > maxH) {
+        h = maxH;
+        w = Math.floor(h * ratio);
+      }
 
-      stage.style.width = `${scaledW}px`;
-      stage.style.height = `${scaledH}px`;
+      w = Math.max(180, w);
+      h = Math.max(180, h);
 
+      stage.style.width = w + 'px';
+      stage.style.height = h + 'px';
+
+      fotoZoom = 1;
+      fotoPanX = 0;
+      fotoPanY = 0;
+      aplicarTransformFoto();
+    }
+
+    function resetarZoomFoto() {
       fotoZoom = 1;
       fotoPanX = 0;
       fotoPanY = 0;
@@ -1337,12 +1325,7 @@
 
       img.addEventListener('dblclick', function() {
         if (fotoZoom === 1) zoomFoto(1);
-        else {
-          fotoZoom = 1;
-          fotoPanX = 0;
-          fotoPanY = 0;
-          aplicarTransformFoto();
-        }
+        else resetarZoomFoto();
       });
     }
 
@@ -2118,7 +2101,6 @@
         }, 20000);
       }
     });
-  </script>
-</div>
+  </script></div>
 </body>
 </html>
