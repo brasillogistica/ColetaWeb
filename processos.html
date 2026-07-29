@@ -243,13 +243,59 @@
         }
 
         .foto-box {
-            background: white;
-            border-radius: 18px;
-            padding: 14px;
-            max-width: 92vw;
-            max-height: 92vh;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: auto;
+            height: auto;
+            max-width: 96vw;
+            max-height: 96vh;
+            padding: 0;
+            background: transparent;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        .foto-stage {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            background: transparent;
+            border-radius: 12px;
+            touch-action: none;
+            cursor: grab;
+        }
+        .foto-stage:active {
+            cursor: grabbing;
+        }
+
+        #foto-ampliada {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: auto;
+            height: auto;
+            max-width: none;
+            max-height: none;
+            display: block;
+            user-select: none;
+            -webkit-user-drag: none;
+            transform-origin: center center;
+            will-change: transform;
+            pointer-events: none;
+            border-radius: 12px;
+            background: transparent;
+        }
+
+        .foto-titulo {
+            text-align: center;
+            font-weight: 800;
+            color: var(--navy);
+            font-size: 13px;
         }
 
         .mapa-container {
@@ -278,23 +324,6 @@
             font-weight: bold;
             z-index: 10;
             line-height: 1;
-        }
-
-        #foto-ampliada {
-            max-width: 86vw;
-            max-height: 82vh;
-            display: block;
-            border-radius: 12px;
-            object-fit: contain;
-            user-select: none;
-        }
-
-        .foto-titulo {
-            margin-top: 8px;
-            text-align: center;
-            font-weight: 800;
-            color: var(--navy);
-            font-size: 13px;
         }
 
         .modal-deposito-box {
@@ -423,9 +452,14 @@
                 padding: 20px !important;
             }
 
-            #foto-ampliada {
-                max-width: 90vw;
-                max-height: 70vh;
+            .foto-box {
+                max-width: 98vw !important;
+                max-height: 98vh !important;
+            }
+
+            .foto-stage {
+                max-width: 96vw !important;
+                max-height: 88vh !important;
             }
         }
     </style>
@@ -526,8 +560,6 @@
                     <th>Retirada</th>
                     <th>Container</th>
                     <th>Status</th>
-                    <th>Ações</th>
-                    <th>Confirmar</th>
                     <th>Armador</th>
                     <th>Transport.</th>
                     <th>Terminal</th>
@@ -538,9 +570,9 @@
                     <th>Vencido?</th>
                     <th>Localização</th>
                     <th>RIC</th>
-                    <th>GENSET 1</th>
-                    <th>GENSET 2</th>
-                    <th>GENSET 3</th>
+                    <th>AG. CARREGAMENTO</th>
+                    <th>LIBERADO</th>
+                    <th>DEPOSITADO</th>
                 </tr>
             </thead>
             <tbody id="table-body"></tbody>
@@ -551,7 +583,7 @@
 <div id="foto-modal">
     <div class="foto-box">
         <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
-        <div id="container-img">
+        <div id="container-img" class="foto-stage">
             <img id="foto-ampliada" alt="Foto ampliada">
         </div>
         <div id="foto-titulo" class="foto-titulo"></div>
@@ -603,8 +635,27 @@
 
     const STATUS_FLUXO = ['ag. carregamento', 'liberado', 'depositado'];
     const freeTimeCache = new Map();
-
     const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
+
+    let dadosCompletos = [];
+    let filtroStatusAtivo = null;
+    let filtroFreeTimeAtivo = null;
+    let filtroAtrasoAtivo = null;
+    let filtroTransportadoraAtiva = null;
+    let dadosModalDeposito = {};
+    let refreshInterval = null;
+
+    let fotoZoom = 1;
+    let fotoBaseScale = 1;
+    let fotoPanX = 0;
+    let fotoPanY = 0;
+    let fotoIsDragging = false;
+    let fotoDragStartX = 0;
+    let fotoDragStartY = 0;
+    let fotoStartPanX = 0;
+    let fotoStartPanY = 0;
+    let fotoTouchLastDist = null;
+    let fotoTouchStartZoom = 1;
 
     function getFreeTimeRuleCached(armador) {
         if (!armador) return null;
@@ -636,14 +687,6 @@
         };
         return colors[normalizarStatus(status)] || '#F3F4F6';
     }
-
-    let dadosCompletos = [];
-    let filtroStatusAtivo = null;
-    let filtroFreeTimeAtivo = null;
-    let filtroAtrasoAtivo = null;
-    let filtroTransportadoraAtiva = null;
-    let dadosModalDeposito = {};
-    let refreshInterval = null;
 
     function showLoading() {
         const el = document.getElementById('loading-overlay');
@@ -865,7 +908,7 @@
         tbody.innerHTML = '';
 
         if (dados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="18" class="sem-dados">Nenhum container encontrado.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="16" class="sem-dados">Nenhum container encontrado.</td></tr>';
             return;
         }
 
@@ -883,7 +926,6 @@
             const fotoGenset2Url = d.liberado ? `${STORAGE_BASE}${d.liberado}` : null;
             const fotoGenset3Url = d.depositado ? `${STORAGE_BASE}${d.depositado}` : null;
 
-            const isFinalizado = d.finalizado || statusNorm === 'depositado';
             let dataFinalizado = 'Pendente';
             if (d.data_finalizado) dataFinalizado = new Date(d.data_finalizado).toLocaleDateString('pt-BR');
 
@@ -895,24 +937,12 @@
                 localizacaoHtml = loc;
             }
 
-            const statusId = `status-${d.id}`;
-            const thumbsId = `thumbs-${d.id}`;
-
             tbody.innerHTML += `
                 <tr>
                     <td class="col-nowrap">${d.data_retirada || 'N/A'}</td>
                     <td>${d.container || 'N/A'}</td>
                     <td class="col-nowrap">
-                        <span id="${statusId}" class="status-badge" style="background-color:${statusColor}" data-original="${statusNorm}">${statusText}</span>
-                        <span id="${thumbsId}" class="thumbs-up">👍</span>
-                    </td>
-                    <td class="col-nowrap">
-                        <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', -1)">◀</button>
-                        <button class="btn-status" ${isFinalizado ? 'disabled' : ''} onclick="navegarStatus('${statusId}', 1)">▶</button>
-                    </td>
-                    <td class="col-nowrap">
-                        <button class="btn-confirm btn-sim" ${isFinalizado ? 'disabled' : ''} onclick="confirmarStatus('${d.id}', '${statusId}', '${thumbsId}')">Sim</button>
-                        <button class="btn-confirm btn-nao" ${isFinalizado ? 'disabled' : ''} onclick="resetarStatus('${statusId}')">Não</button>
+                        <span class="status-badge" style="background-color:${statusColor}">${statusText}</span>
                     </td>
                     <td>${d.armador || 'N/A'}</td>
                     <td>${d.transportadora || 'N/A'}</td>
@@ -924,100 +954,12 @@
                     <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
                     <td>${localizacaoHtml}</td>
                     <td>${fotoLink(fotoUrl, 'RIC')}</td>
-                    <td>${fotoLink(fotoGenset1Url, 'GENSET 1')}</td>
-                    <td>${fotoLink(fotoGenset2Url, 'GENSET 2')}</td>
-                    <td>${fotoLink(fotoGenset3Url, 'GENSET 3')}</td>
+                    <td>${fotoLink(fotoGenset1Url, 'AG. CARREGAMENTO')}</td>
+                    <td>${fotoLink(fotoGenset2Url, 'LIBERADO')}</td>
+                    <td>${fotoLink(fotoGenset3Url, 'DEPOSITADO')}</td>
                 </tr>
             `;
         });
-    }
-
-    function navegarStatus(statusId, direcao) {
-        const span = document.getElementById(statusId);
-        if (!span) return;
-        const current = normalizarStatus(span.getAttribute('data-current') || span.getAttribute('data-original'));
-        const idx = STATUS_FLUXO.indexOf(current);
-        if (idx === -1) return;
-        const novoIdx = idx + direcao;
-        if (novoIdx < 0 || novoIdx >= STATUS_FLUXO.length) return;
-        const novoStatus = STATUS_FLUXO[novoIdx];
-        span.textContent = novoStatus.toUpperCase();
-        span.setAttribute('data-current', novoStatus);
-    }
-
-    function finalizarConfirmacao(statusId, thumbsId, novoStatus) {
-        const span = document.getElementById(statusId);
-        if (span) {
-            span.setAttribute('data-original', novoStatus);
-            span.setAttribute('data-current', '');
-            span.textContent = novoStatus.toUpperCase();
-            span.style.backgroundColor = getStatusColor(novoStatus);
-        }
-        const thumbs = document.getElementById(thumbsId);
-        if (thumbs) {
-            thumbs.classList.add('show');
-            setTimeout(() => thumbs.classList.remove('show'), 2000);
-        }
-    }
-
-    async function confirmarStatus(id, statusId, thumbsId) {
-        const span = document.getElementById(statusId);
-        if (!span) return;
-        const novoStatus = normalizarStatus(span.getAttribute('data-current') || span.getAttribute('data-original'));
-        if (!novoStatus) return;
-
-        if (novoStatus === 'depositado') {
-            dadosModalDeposito = { id, statusId, thumbsId, novoStatus };
-            document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modal-data-deposito').style.display = 'flex';
-            return;
-        }
-
-        const { error } = await clienteSupabase.from('coletas').update({
-            status: novoStatus,
-            finalizado: false
-        }).eq('id', id);
-
-        if (error) {
-            alert('Erro: ' + error.message);
-            return;
-        }
-
-        finalizarConfirmacao(statusId, thumbsId, novoStatus);
-        renderTudo();
-    }
-
-    async function confirmarDataDeposito() {
-        const dataEscolhida = document.getElementById('input-data-deposito').value;
-        if (!dataEscolhida) return alert('Selecione uma data.');
-
-        const { id, statusId, thumbsId, novoStatus } = dadosModalDeposito;
-
-        const { error } = await clienteSupabase.from('coletas').update({
-            status: novoStatus,
-            finalizado: true,
-            data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString()
-        }).eq('id', id);
-
-        if (error) {
-            alert('Erro: ' + error.message);
-            return;
-        }
-
-        finalizarConfirmacao(statusId, thumbsId, novoStatus);
-        fecharModalDeposito();
-        renderTudo();
-    }
-
-    function resetarStatus(statusId) {
-        const span = document.getElementById(statusId);
-        if (!span) return;
-        const original = normalizarStatus(span.getAttribute('data-original'));
-        if (original) {
-            span.textContent = original.toUpperCase();
-            span.setAttribute('data-current', '');
-            span.style.backgroundColor = getStatusColor(original);
-        }
     }
 
     function aplicarFiltros() {
@@ -1036,20 +978,135 @@
         renderTudo();
     }
 
+    function aplicarTransformFoto() {
+        const img = document.getElementById('foto-ampliada');
+        if (!img) return;
+        const scale = fotoBaseScale * fotoZoom;
+        img.style.transform = `translate(-50%, -50%) translate(${fotoPanX}px, ${fotoPanY}px) scale(${scale})`;
+    }
+
+    function ajustarFotoParaTela() {
+        const img = document.getElementById('foto-ampliada');
+        const stage = document.getElementById('container-img');
+        if (!img || !stage || !img.naturalWidth || !img.naturalHeight) return;
+
+        const margemLargura = window.innerWidth * 0.96;
+        const margemAltura = window.innerHeight * 0.90;
+
+        fotoBaseScale = Math.min(margemLargura / img.naturalWidth, margemAltura / img.naturalHeight);
+        if (!isFinite(fotoBaseScale) || fotoBaseScale <= 0) fotoBaseScale = 1;
+
+        const largura = Math.round(img.naturalWidth * fotoBaseScale);
+        const altura = Math.round(img.naturalHeight * fotoBaseScale);
+
+        stage.style.width = largura + 'px';
+        stage.style.height = altura + 'px';
+
+        fotoZoom = 1;
+        fotoPanX = 0;
+        fotoPanY = 0;
+        aplicarTransformFoto();
+    }
+
+    function resetarZoomFoto() {
+        fotoZoom = 1;
+        fotoPanX = 0;
+        fotoPanY = 0;
+        aplicarTransformFoto();
+    }
+
+    function zoomFoto(delta) {
+        const novoZoom = Math.max(1, Math.min(5, fotoZoom + delta));
+        fotoZoom = novoZoom;
+        if (fotoZoom === 1) {
+            fotoPanX = 0;
+            fotoPanY = 0;
+        }
+        aplicarTransformFoto();
+    }
+
+    function iniciarDragFoto(e) {
+        if (fotoZoom <= 1) return;
+        fotoIsDragging = true;
+        fotoDragStartX = e.clientX;
+        fotoDragStartY = e.clientY;
+        fotoStartPanX = fotoPanX;
+        fotoStartPanY = fotoPanY;
+        e.preventDefault();
+    }
+
+    function moverDragFoto(e) {
+        if (!fotoIsDragging) return;
+        fotoPanX = fotoStartPanX + (e.clientX - fotoDragStartX);
+        fotoPanY = fotoStartPanY + (e.clientY - fotoDragStartY);
+        aplicarTransformFoto();
+    }
+
+    function finalizarDragFoto() {
+        fotoIsDragging = false;
+    }
+
+    function getDistanceTouch(t1, t2) {
+        const dx = t1.clientX - t2.clientX;
+        const dy = t1.clientY - t2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function iniciarPinchFoto(e) {
+        if (e.touches.length === 2) {
+            fotoTouchLastDist = getDistanceTouch(e.touches[0], e.touches[1]);
+            fotoTouchStartZoom = fotoZoom;
+        }
+    }
+
+    function moverPinchFoto(e) {
+        if (e.touches.length === 2 && fotoTouchLastDist) {
+            const newDist = getDistanceTouch(e.touches[0], e.touches[1]);
+            const ratio = newDist / fotoTouchLastDist;
+            fotoZoom = Math.max(1, Math.min(5, fotoTouchStartZoom * ratio));
+            if (fotoZoom === 1) {
+                fotoPanX = 0;
+                fotoPanY = 0;
+            }
+            aplicarTransformFoto();
+            e.preventDefault();
+        }
+    }
+
+    function finalizarPinchFoto() {
+        fotoTouchLastDist = null;
+    }
+
     function abrirFoto(url, titulo) {
         const img = document.getElementById('foto-ampliada');
         const modal = document.getElementById('foto-modal');
         const title = document.getElementById('foto-titulo');
-        if (!img || !modal || !title) return;
-        img.src = url;
-        title.textContent = titulo || '';
-        document.getElementById('container-img').style.transform = 'translate(0px, 0px) scale(1)';
+        const stage = document.getElementById('container-img');
+        if (!img || !modal || !title || !stage) return;
+
         modal.style.display = 'flex';
+        title.textContent = titulo || '';
+
+        img.onload = () => {
+            ajustarFotoParaTela();
+        };
+
+        img.src = url;
+
+        setTimeout(() => {
+            if (img.complete) ajustarFotoParaTela();
+        }, 80);
     }
 
     function fecharFoto() {
         const modal = document.getElementById('foto-modal');
         if (modal) modal.style.display = 'none';
+        resetarZoomFoto();
+        const img = document.getElementById('foto-ampliada');
+        if (img) {
+            img.src = '';
+            img.onload = null;
+        }
     }
 
     function abrirMapa(query) {
@@ -1100,9 +1157,9 @@
                     Vencido: vencido ? 'SIM' : 'NÃO',
                     Localização: d.localizacao || '',
                     RIC: d.foto_url || '',
-                    'GENSET 1': d.genset || '',
-                    'GENSET 2': d.liberado || '',
-                    'GENSET 3': d.depositado || ''
+                    'AG. CARREGAMENTO': d.genset || '',
+                    'LIBERADO': d.liberado || '',
+                    'DEPOSITADO': d.depositado || ''
                 };
             });
 
@@ -1136,6 +1193,57 @@
             const ok = await verificarAcesso();
             if (!ok) return;
             await carregarProcessos();
+
+            const fotoStage = document.getElementById('container-img');
+            const fotoImg = document.getElementById('foto-ampliada');
+
+            if (fotoStage) {
+                fotoStage.addEventListener('wheel', function(e) {
+                    e.preventDefault();
+                    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+                    zoomFoto(delta);
+                }, { passive: false });
+
+                fotoStage.addEventListener('mousedown', iniciarDragFoto);
+                window.addEventListener('mousemove', moverDragFoto);
+                window.addEventListener('mouseup', finalizarDragFoto);
+
+                fotoStage.addEventListener('touchstart', function(e) {
+                    if (e.touches.length === 1 && fotoZoom > 1) {
+                        fotoIsDragging = true;
+                        fotoDragStartX = e.touches[0].clientX;
+                        fotoDragStartY = e.touches[0].clientY;
+                        fotoStartPanX = fotoPanX;
+                        fotoStartPanY = fotoPanY;
+                    }
+                    if (e.touches.length === 2) {
+                        iniciarPinchFoto(e);
+                    }
+                }, { passive: false });
+
+                fotoStage.addEventListener('touchmove', function(e) {
+                    if (e.touches.length === 1 && fotoIsDragging) {
+                        fotoPanX = fotoStartPanX + (e.touches[0].clientX - fotoDragStartX);
+                        fotoPanY = fotoStartPanY + (e.touches[0].clientY - fotoDragStartY);
+                        aplicarTransformFoto();
+                        e.preventDefault();
+                    } else if (e.touches.length === 2) {
+                        moverPinchFoto(e);
+                    }
+                }, { passive: false });
+
+                fotoStage.addEventListener('touchend', function() {
+                    fotoIsDragging = false;
+                    finalizarPinchFoto();
+                });
+            }
+
+            if (fotoImg) {
+                fotoImg.addEventListener('dblclick', function() {
+                    if (fotoZoom === 1) zoomFoto(1);
+                    else resetarZoomFoto();
+                });
+            }
 
             if (refreshInterval) clearInterval(refreshInterval);
             refreshInterval = setInterval(() => {
