@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processos Container | ColetaWeb</title>
+    <title>Processos - Container | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -158,6 +158,7 @@
             white-space: nowrap;
             position: sticky;
             top: 0;
+            z-index: 2;
         }
         th:first-child { border-radius: 12px 0 0 0; }
         th:last-child { border-radius: 0 12px 0 0; }
@@ -227,17 +228,6 @@
             font-size: 12px;
         }
 
-        .badge-tipo {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 99px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .badge-resfriado { background: #d4edff; color: #004085; }
-        .badge-congelado { background: #d1ecf1; color: #0c5460; }
-
         #foto-modal, #mapa-modal, #modal-data-deposito {
             display: none;
             position: fixed;
@@ -249,7 +239,19 @@
             background: rgba(0,0,0,0.7);
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
+
+        .foto-box {
+            background: white;
+            border-radius: 18px;
+            padding: 14px;
+            max-width: 92vw;
+            max-height: 92vh;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+        }
+
         .mapa-container {
             background: white;
             border-radius: 20px;
@@ -268,27 +270,33 @@
         }
         .fechar-mapa, .fechar-foto {
             position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 32px;
+            top: 10px;
+            right: 14px;
+            font-size: 34px;
             color: var(--navy);
             cursor: pointer;
             font-weight: bold;
             z-index: 10;
+            line-height: 1;
         }
-        #container-img {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.1s;
-        }
+
         #foto-ampliada {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 86vw;
+            max-height: 82vh;
+            display: block;
+            border-radius: 12px;
+            object-fit: contain;
             user-select: none;
         }
+
+        .foto-titulo {
+            margin-top: 8px;
+            text-align: center;
+            font-weight: 800;
+            color: var(--navy);
+            font-size: 13px;
+        }
+
         .modal-deposito-box {
             background: white;
             padding: 30px 35px;
@@ -340,6 +348,13 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .sem-dados {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-weight: 700;
+        }
 
         @media (max-width: 768px) {
             body { padding: 10px !important; }
@@ -407,6 +422,11 @@
                 max-width: 95% !important;
                 padding: 20px !important;
             }
+
+            #foto-ampliada {
+                max-width: 90vw;
+                max-height: 70vh;
+            }
         }
     </style>
 </head>
@@ -420,7 +440,7 @@
     <div class="logo-minerva">
         <span class="m">minerva</span><span class="f">foods</span>
     </div>
-    <div class="header-title">Processos – Container</div>
+    <div class="header-title">Processos - Container</div>
     <div></div>
 </header>
 
@@ -518,9 +538,9 @@
                     <th>Vencido?</th>
                     <th>Localização</th>
                     <th>RIC</th>
-                    <th>GENSET</th>
-                    <th>LIBERADO</th>
-                    <th>DEPOSITADO</th>
+                    <th>GENSET 1</th>
+                    <th>GENSET 2</th>
+                    <th>GENSET 3</th>
                 </tr>
             </thead>
             <tbody id="table-body"></tbody>
@@ -529,9 +549,12 @@
 </div>
 
 <div id="foto-modal">
-    <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
-    <div id="container-img">
-        <img id="foto-ampliada">
+    <div class="foto-box">
+        <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
+        <div id="container-img">
+            <img id="foto-ampliada" alt="Foto ampliada">
+        </div>
+        <div id="foto-titulo" class="foto-titulo"></div>
     </div>
 </div>
 
@@ -579,8 +602,10 @@
     };
 
     const STATUS_FLUXO = ['ag. carregamento', 'liberado', 'depositado'];
-
     const freeTimeCache = new Map();
+
+    const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
+
     function getFreeTimeRuleCached(armador) {
         if (!armador) return null;
         const nome = armador.trim().toUpperCase();
@@ -618,6 +643,7 @@
     let filtroAtrasoAtivo = null;
     let filtroTransportadoraAtiva = null;
     let dadosModalDeposito = {};
+    let refreshInterval = null;
 
     function showLoading() {
         const el = document.getElementById('loading-overlay');
@@ -629,9 +655,14 @@
         if (el) el.style.display = 'none';
     }
 
+    function getValue(id) {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    }
+
     async function verificarAcesso() {
         try {
-            if (typeof clienteSupabase === 'undefined') return false;
+            if (!clienteSupabase) return false;
 
             const { data: { user } } = await clienteSupabase.auth.getUser();
             if (!user) {
@@ -641,11 +672,21 @@
 
             const { data: userData } = await clienteSupabase
                 .from('usuarios')
-                .select('perfil')
+                .select('perfil, status')
                 .eq('email', user.email)
                 .single();
 
-            if (!userData || (userData.perfil !== 'master' && userData.perfil !== 'administrador')) {
+            if (!userData) {
+                window.location.href = 'index.html';
+                return false;
+            }
+
+            const perfil = (userData.perfil || '').trim().toLowerCase();
+            const status = (userData.status || '').trim().toLowerCase();
+            const permitido = perfil === 'master' || perfil === 'administrador';
+            const aprovado = perfil === 'master' || status === 'aprovado';
+
+            if (!permitido || !aprovado) {
                 alert('Acesso negado.');
                 window.location.href = 'index.html';
                 return false;
@@ -667,42 +708,26 @@
         return Math.ceil(diff / 86400000);
     }
 
-    function obterFiltrosAtuais() {
-        return {
-            dataInicio: document.getElementById('filtroDataInicio').value,
-            dataFim: document.getElementById('filtroDataFim').value,
-            dataRetirada: document.getElementById('filtroDataRetirada').value,
-            armador: document.getElementById('filtroArmador').value,
-            container: document.getElementById('filtroContainer').value,
-            placa: document.getElementById('filtroPlaca').value,
-            cargaPulmao: document.getElementById('filtroCargaPulmao').value,
-            tipoCarga: document.getElementById('filtroTipoCarga').value,
-            terminal: document.getElementById('filtroTerminal').value,
-            cidade: document.getElementById('filtroCidade').value,
-            transportadora: document.getElementById('filtroTransportadora').value,
-            status: document.getElementById('filtroStatus').value
-        };
-    }
-
     function obterDadosFiltrados() {
-        const filtros = obterFiltrosAtuais();
-        const fContainer = filtros.container.trim().toLowerCase();
-        const fArmador = filtros.armador.trim().toLowerCase();
-        const fStatusForm = filtros.status;
-        const fDataRetirada = filtros.dataRetirada;
-        const fDataInicio = filtros.dataInicio;
-        const fDataFim = filtros.dataFim;
-        const fTerminal = filtros.terminal.trim().toLowerCase();
-        const fCidade = filtros.cidade.trim().toLowerCase();
-        const fTransportadora = filtros.transportadora.trim().toLowerCase();
-        const fTipoCarga = filtros.tipoCarga;
-        const fCargaPulmao = filtros.cargaPulmao;
+        const fContainer = getValue('filtroContainer').trim().toLowerCase();
+        const fArmador = getValue('filtroArmador').trim().toLowerCase();
+        const fStatusForm = getValue('filtroStatus');
+        const fDataRetirada = getValue('filtroDataRetirada');
+        const fDataInicio = getValue('filtroDataInicio');
+        const fDataFim = getValue('filtroDataFim');
+        const fTerminal = getValue('filtroTerminal').trim().toLowerCase();
+        const fCidade = getValue('filtroCidade').trim().toLowerCase();
+        const fTransportadora = getValue('filtroTransportadora').trim().toLowerCase();
+        const fTipoCarga = getValue('filtroTipoCarga');
+        const fCargaPulmao = getValue('filtroCargaPulmao');
+        const fPlaca = getValue('filtroPlaca').trim().toLowerCase();
 
         return dadosCompletos.filter(d => {
             const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
 
             if (fContainer && !(d.container || '').toLowerCase().includes(fContainer)) return false;
             if (fArmador && !(d.armador || '').toLowerCase().includes(fArmador)) return false;
+            if (fPlaca && !(d.placa || '').toLowerCase().includes(fPlaca)) return false;
             if (fStatusForm && statusNorm !== fStatusForm) return false;
             if (fDataRetirada && d.data_retirada !== fDataRetirada) return false;
             if (fTerminal && !(d.terminal_coleta || '').toLowerCase().includes(fTerminal)) return false;
@@ -783,22 +808,18 @@
 
     function formatarDataISO(iso) {
         if (!iso) return 'N/A';
-        let date;
-        if (iso.includes('T')) date = new Date(iso);
-        else date = new Date(iso + 'T00:00:00');
+        const date = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
         if (isNaN(date.getTime())) return 'N/A';
         return date.toLocaleDateString('pt-BR');
     }
 
     function fotoLink(url, titulo) {
-        return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${url}')">${titulo}</span>` : '-';
+        return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${url}', '${titulo}')">${titulo}</span>` : '-';
     }
 
     async function carregarProcessos() {
         try {
-            if (typeof clienteSupabase === 'undefined') {
-                throw new Error('clienteSupabase não foi carregado.');
-            }
+            if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
 
             const { data: { user } } = await clienteSupabase.auth.getUser();
             if (!user) {
@@ -816,7 +837,6 @@
             const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
 
             let query = clienteSupabase.from('coletas').select('*');
-
             if (!ehAdmin && userData?.transportadora) {
                 query = query.eq('transportadora', userData.transportadora);
             }
@@ -835,12 +855,7 @@
     function renderTudo() {
         const dados = obterDadosFiltrados();
         atualizarChips();
-        renderGraficos(dados);
         renderTabela(dados);
-    }
-
-    function renderGraficos(dados) {
-        // sem gráficos neste arquivo
     }
 
     function renderTabela(dados) {
@@ -859,26 +874,14 @@
             const diasTotal = rule ? rule.dias : '-';
             const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
             const vencido = diasRest !== null && diasRest < 0;
-
             const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
             const statusText = statusNorm.toUpperCase();
             const statusColor = getStatusColor(statusNorm);
 
-            const fotoUrl = d.foto_url
-                ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${d.foto_url}`
-                : null;
-
-            const fotoGensetUrl = d.genset || d.foto_genset_url
-                ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${d.genset || d.foto_genset_url}`
-                : null;
-
-            const fotoLiberadoUrl = d.liberado || d.foto_liberado_url
-                ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${d.liberado || d.foto_liberado_url}`
-                : null;
-
-            const fotoDepositadoUrl = d.depositado || d.foto_depositado_url
-                ? `https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/${d.depositado || d.foto_depositado_url}`
-                : null;
+            const fotoUrl = d.foto_url ? `${STORAGE_BASE}${d.foto_url}` : null;
+            const fotoGenset1Url = d.genset ? `${STORAGE_BASE}${d.genset}` : null;
+            const fotoGenset2Url = d.liberado ? `${STORAGE_BASE}${d.liberado}` : null;
+            const fotoGenset3Url = d.depositado ? `${STORAGE_BASE}${d.depositado}` : null;
 
             const isFinalizado = d.finalizado || statusNorm === 'depositado';
             let dataFinalizado = 'Pendente';
@@ -921,9 +924,9 @@
                     <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
                     <td>${localizacaoHtml}</td>
                     <td>${fotoLink(fotoUrl, 'RIC')}</td>
-                    <td>${fotoLink(fotoGensetUrl, 'GENSET')}</td>
-                    <td>${fotoLink(fotoLiberadoUrl, 'LIBERADO')}</td>
-                    <td>${fotoLink(fotoDepositadoUrl, 'DEPOSITADO')}</td>
+                    <td>${fotoLink(fotoGenset1Url, 'GENSET 1')}</td>
+                    <td>${fotoLink(fotoGenset2Url, 'GENSET 2')}</td>
+                    <td>${fotoLink(fotoGenset3Url, 'GENSET 3')}</td>
                 </tr>
             `;
         });
@@ -1033,11 +1036,13 @@
         renderTudo();
     }
 
-    function abrirFoto(url) {
+    function abrirFoto(url, titulo) {
         const img = document.getElementById('foto-ampliada');
         const modal = document.getElementById('foto-modal');
-        if (!img || !modal) return;
+        const title = document.getElementById('foto-titulo');
+        if (!img || !modal || !title) return;
         img.src = url;
+        title.textContent = titulo || '';
         document.getElementById('container-img').style.transform = 'translate(0px, 0px) scale(1)';
         modal.style.display = 'flex';
     }
@@ -1086,6 +1091,7 @@
                     Status: normalizarStatus(d.status).toUpperCase(),
                     Armador: d.armador || '',
                     Transportadora: d.transportadora || '',
+                    Placa: d.placa || '',
                     Terminal: d.terminal_coleta || '',
                     Cidade: d.cidade || '',
                     Finalizado: d.data_finalizado ? formatarDataISO(d.data_finalizado) : '',
@@ -1094,9 +1100,9 @@
                     Vencido: vencido ? 'SIM' : 'NÃO',
                     Localização: d.localizacao || '',
                     RIC: d.foto_url || '',
-                    GENSET: d.genset || d.foto_genset_url || '',
-                    LIBERADO: d.liberado || d.foto_liberado_url || '',
-                    DEPOSITADO: d.depositado || d.foto_depositado_url || ''
+                    'GENSET 1': d.genset || '',
+                    'GENSET 2': d.liberado || '',
+                    'GENSET 3': d.depositado || ''
                 };
             });
 
@@ -1124,42 +1130,27 @@
         }
     });
 
-    let scale = 1, transX = 0, transY = 0;
-    const containerImg = document.getElementById('container-img');
-    let isDragging = false, startX, startY;
-
-    if (containerImg) {
-        containerImg.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            scale += e.deltaY * -0.001;
-            scale = Math.min(Math.max(0.5, scale), 5);
-            containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
-        });
-
-        containerImg.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX - transX;
-            startY = e.clientY - transY;
-        });
-
-        window.addEventListener('mouseup', () => isDragging = false);
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            transX = e.clientX - startX;
-            transY = e.clientY - startY;
-            containerImg.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
-        });
-    }
-
     window.addEventListener('load', async () => {
         showLoading();
         try {
             const ok = await verificarAcesso();
             if (!ok) return;
             await carregarProcessos();
+
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    carregarProcessos();
+                }
+            }, 20000);
         } finally {
             hideLoading();
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            carregarProcessos();
         }
     });
 </script>

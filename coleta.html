@@ -7,11 +7,7 @@
     <title>Registro | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .option-buttons-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
+        .option-buttons-container { display: flex; gap: 10px; margin-bottom: 5px; }
         .btn-option {
             flex: 1;
             padding: 10px 16px;
@@ -26,133 +22,212 @@
             transition: all 0.2s;
             text-align: center;
         }
-        .btn-option.active {
-            background: var(--navy);
-            color: white;
-            border-color: var(--navy);
-        }
-        .btn-option:hover {
-            background: #f0f0f0;
-        }
-        .btn-option.active:hover {
-            background: var(--navy);
+        .btn-option.active { background: var(--navy); color: white; border-color: var(--navy); }
+        .btn-option:hover { background: #f0f0f0; }
+        .btn-option.active:hover { background: var(--navy); }
+        .form-group label { text-align: center; display: block; }
+        .btn-salvar-loading { opacity: 0.7; pointer-events: none; }
+        .bloqueado { opacity: 0.55; pointer-events: none; }
+
+        .etapa-box {
+            margin: 10px 0 15px;
+            padding: 10px 12px;
+            border: 1px dashed var(--gold);
+            border-radius: 12px;
+            background: #fcfcfc;
+            color: var(--navy);
+            font-size: 12px;
+            line-height: 1.4;
+            font-weight: 700;
         }
 
-        .form-group label {
+        .thumbs-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .thumb-card {
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            padding: 6px;
+            background: white;
             text-align: center;
+            cursor: pointer;
+            min-height: 110px;
+        }
+
+        .thumb-card.empty {
+            border-style: dashed;
+            color: #999;
+            cursor: default;
+        }
+
+        .thumb-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 10px;
             display: block;
         }
 
-        .btn-salvar-loading {
-            opacity: 0.7;
-            pointer-events: none;
+        .thumb-card small {
+            display: block;
+            margin-top: 4px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--navy);
+        }
+
+        .preview-mini {
+            max-width: 100%;
+            max-height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+            cursor: pointer;
+        }
+
+        .foto-bloco {
+            margin-top: 14px;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+        }
+
+        .foto-bloco h3 {
+            font-size: 13px;
+            color: var(--navy);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .botao-acao {
+            flex: 1;
+            padding: 10px 20px;
+        }
+
+        @media (max-width: 768px) {
+            .thumbs-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .thumbs-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
-<body style="display: flex; justify-content: center; padding: 40px;">
+<body style="display:flex; justify-content:center; padding:40px;">
 
-    <div class="card" style="width: 550px;">
-        <h2 style="color: var(--navy); margin-bottom: 20px; text-align: center;">NOVO REGISTRO</h2>
-        
+    <div class="card" style="width:550px;">
+        <h2 style="color: var(--navy); margin-bottom: 8px; text-align:center;">NOVO REGISTRO</h2>
+        <div id="infoEtapa" class="etapa-box">1) Selecione o tipo de carga.</div>
+
         <div class="form-group">
             <label>TIPO DE CARGA</label>
             <div class="option-buttons-container">
-                <button id="btnResfriado" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
-                <button id="btnCongelado" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
-                <button id="btnCongeladoGenSet" class="btn-option" onclick="selecionarTipoCarga('Congelado com GenSet', this)">Congelado com GenSet</button>
+                <button id="btnResfriado" type="button" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
+                <button id="btnCongeladoGenSet" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado com GenSet', this)">Congelado com GenSet</button>
+                <button id="btnCongelado" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="grupoCargaPulmao" style="display:none;">
             <label>CARGA OU PULMÃO</label>
             <div class="option-buttons-container">
-                <button id="btnCarga" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
-                <button id="btnPulmao" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
+                <button id="btnCarga" type="button" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
+                <button id="btnPulmao" type="button" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-            <div class="form-group">
-                <label>DATA DA RETIRADA</label>
-                <input type="date" id="dataRetirada">
-            </div>
-            <div class="form-group">
-                <label>ARMADOR</label>
-                <select id="armador">
-                    <option value="">SELECIONE...</option>
-                    <option value="PIL">PIL</option>
-                    <option value="HAPAG LLOYD">HAPAG LLOYD</option>
-                    <option value="ONE">ONE</option>
-                    <option value="ALPHA SHIPPING">ALPHA SHIPPING</option>
-                    <option value="CMA CGM">CMA CGM</option>
-                    <option value="YANG MING">YANG MING</option>
-                    <option value="HMM">HMM</option>
-                    <option value="MAERSK">MAERSK</option>
-                    <option value="MSC">MSC</option>
-                    <option value="COSCO">COSCO</option>
-                    <option value="EVERGREEN">EVERGREEN</option>
-                    <option value="ZIM">ZIM</option>
-                    <option value="INTERTRANS">INTERTRANS</option>
-                    <option value="BR-X CARGO">BR-X CARGO</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>PLACA</label>
-                <input type="text" id="placa" placeholder="Digite a placa">
-            </div>
-            <div class="form-group">
-                <label>CIDADE</label>
-                <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro...">
-            </div>
-            <div class="form-group">
-                <label>TERMINAL DE COLETA</label>
-                <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG...">
-            </div>
-            <div class="form-group">
-                <label>CONTAINER</label>
-                <input type="text" id="containerInput" placeholder="Digite o número do container">
-            </div>
-            <div class="form-group">
-                <label>TARA</label>
-                <input type="text" id="tara" placeholder="Ex: 4730">
-            </div>
-            <div class="form-group">
-                <label>MAX GROSS</label>
-                <input type="text" id="maxGross" placeholder="Ex: 35000">
+        <div id="blocoCampos" style="display:block;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
+                <div class="form-group">
+                    <label>DATA DA RETIRADA</label>
+                    <input type="date" id="dataRetirada" disabled>
+                </div>
+                <div class="form-group">
+                    <label>ARMADOR</label>
+                    <select id="armador" disabled>
+                        <option value="">SELECIONE...</option>
+                        <option value="PIL">PIL</option>
+                        <option value="HAPAG LLOYD">HAPAG LLOYD</option>
+                        <option value="ONE">ONE</option>
+                        <option value="ALPHA SHIPPING">ALPHA SHIPPING</option>
+                        <option value="CMA CGM">CMA CGM</option>
+                        <option value="YANG MING">YANG MING</option>
+                        <option value="HMM">HMM</option>
+                        <option value="MAERSK">MAERSK</option>
+                        <option value="MSC">MSC</option>
+                        <option value="COSCO">COSCO</option>
+                        <option value="EVERGREEN">EVERGREEN</option>
+                        <option value="ZIM">ZIM</option>
+                        <option value="INTERTRANS">INTERTRANS</option>
+                        <option value="BR-X CARGO">BR-X CARGO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>PLACA</label>
+                    <input type="text" id="placa" placeholder="Digite a placa" disabled>
+                </div>
+                <div class="form-group">
+                    <label>CIDADE</label>
+                    <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro..." disabled>
+                </div>
+                <div class="form-group">
+                    <label>TERMINAL DE COLETA</label>
+                    <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG..." disabled>
+                </div>
+                <div class="form-group">
+                    <label>CONTAINER</label>
+                    <input type="text" id="containerInput" placeholder="Digite o número do container" disabled>
+                </div>
+                <div class="form-group">
+                    <label>TARA</label>
+                    <input type="text" id="tara" placeholder="Ex: 4730" disabled>
+                </div>
+                <div class="form-group">
+                    <label>MAX GROSS</label>
+                    <input type="text" id="maxGross" placeholder="Ex: 35000" disabled>
+                </div>
             </div>
         </div>
 
-        <div class="form-group" style="border-top: 1px solid #eee; padding-top: 20px;">
-            <label id="labelRic">TIRAR FOTO (RIC)</label>
-            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
-            <button type="button" class="btn-main" onclick="document.getElementById('cameraInput').click()" 
-                    style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
-                <span style="font-size: 20px;">📷</span> TIRAR FOTO (RIC)
+        <div id="blocoRic" class="foto-bloco" style="display:none;">
+            <h3 id="labelRic">ETAPA 1/4 - FOTO DO RIC</h3>
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+            <button type="button" id="btnRicCapture" class="btn-main" onclick="acionarCamera('cameraInput')"
+                style="background: var(--gold); padding:10px 20px; width:100%; display:flex; align-items:center; justify-content:center; gap:10px; border-radius:99px; margin-bottom:10px;">
+                <span style="font-size:20px;">📷</span> TIRAR FOTO (RIC)
             </button>
-            <div id="status" style="font-size: 12px; color: var(--red); font-weight: bold; margin-top:5px;"></div>
-            <img id="preview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
-
-            <div id="genset-section" style="display: none; margin-top: 15px;">
-                <label id="labelGenset">TIRAR FOTO (PAINEL GENSET)</label>
-                <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display: none;">
-                <button type="button" id="btnGensetCapture" class="btn-main" onclick="document.getElementById('gensetInput').click()" 
-                        style="background: var(--gold); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 99px; margin-bottom: 10px;">
-                    <span style="font-size: 20px;">📷</span> TIRAR FOTO (PAINEL GENSET)
-                </button>
-                <img id="gensetPreview" style="max-width: 100%; margin-top: 10px; display: none; border-radius: 10px; border: 1px solid var(--gold);">
-            </div>
+            <div id="statusRic" style="font-size:12px; color:var(--red); font-weight:bold; margin-top:5px; text-align:center;"></div>
+            <img id="preview" class="preview-mini" style="display:none; margin-top:10px;" alt="Pré-visualização RIC">
         </div>
-        
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <button class="btn-main" style="background: #6c757d; padding: 10px 20px;" onclick="window.location.href='index.html'">VOLTAR</button>
-            <button class="btn-main" id="btnSalvar" style="background: #E84D53; padding: 10px 20px;" onclick="salvarColeta()">SALVAR</button>
+
+        <div id="genset-section" class="foto-bloco" style="display:none;">
+            <h3 id="labelGenset">ETAPA 2/4 - FOTO DO GENSET</h3>
+            <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display:none;">
+            <button type="button" id="btnGensetCapture" class="btn-main" onclick="acionarCamera('gensetInput')"
+                style="background: var(--gold); padding:10px 20px; width:100%; display:flex; align-items:center; justify-content:center; gap:10px; border-radius:99px; margin-bottom:10px;">
+                <span style="font-size:20px;">📷</span> TIRAR FOTO (PAINEL GENSET)
+            </button>
+            <div id="statusGenset" style="font-size:12px; color:var(--red); font-weight:bold; margin-top:5px; text-align:center;"></div>
+            <img id="gensetPreview" class="preview-mini" style="display:none; margin-top:10px;" alt="Pré-visualização GENSET">
+        </div>
+
+        <div id="galeriaFotos" class="thumbs-grid" style="display:none;"></div>
+
+        <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn-main botao-acao" style="background:#6c757d;" onclick="voltarParaInicio()">VOLTAR</button>
+            <button class="btn-main botao-acao" id="btnSalvar" style="background:#E84D53;" onclick="salvarColeta()" disabled>SALVAR</button>
+            <button class="btn-main botao-acao" id="btnProximoPasso" style="background:var(--navy); display:none;" onclick="irProximoPasso()">PRÓXIMO PASSO</button>
         </div>
     </div>
 
     <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:white; padding:30px 40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; max-width:350px; width:90%;">
             <p style="font-size:1.2rem; font-weight:bold; color:#2d4b5e; margin-bottom:20px;" id="custom-alert-msg">Registro salvo com sucesso!</p>
-            <button onclick="fecharAlerta()" style="background: #2d4b5e; color:white; border:none; padding:10px 30px; border-radius:99px; font-weight:bold; cursor:pointer; text-transform:uppercase;">OK</button>
+            <button onclick="fecharAlerta()" style="background:#2d4b5e; color:white; border:none; padding:10px 30px; border-radius:99px; font-weight:bold; cursor:pointer; text-transform:uppercase;">OK</button>
         </div>
     </div>
 
@@ -167,82 +242,393 @@
         </div>
     </div>
 
+    <div id="modal-foto" style="display:none; position:fixed; inset:0; z-index:4000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; padding:20px;">
+        <div id="modal-foto-box" style="background:white; border-radius:18px; padding:14px; max-width:92vw; max-height:92vh; position:relative; box-shadow:0 10px 35px rgba(0,0,0,0.35);">
+            <button onclick="fecharModalFoto()" style="position:absolute; top:8px; right:10px; border:none; background:none; font-size:34px; cursor:pointer; color:var(--navy); z-index:2;">&times;</button>
+            <img id="foto-modal-img" alt="Foto ampliada" style="max-width:86vw; max-height:82vh; display:block; border-radius:12px; object-fit:contain;">
+            <div id="foto-modal-title" style="margin-top:8px; text-align:center; font-weight:800; color:var(--navy); font-size:13px;"></div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
-    
     <script>
+        const DRAFT_KEY = 'coletaweb_draft_v3';
+        const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
+        const ETAPAS = ['ric', 'genset1', 'genset2', 'genset3'];
+
         let tipoCargaSelecionado = '';
         let cargaPulmaoSelecionado = '';
+        let etapaFluxo = 'ric';
+        let registroId = null;
+        let fotoAtualDataUrl = '';
+        let esperandoProximoPasso = false;
+        let fotoPendenteNome = '';
+        let modalDepositoAberto = false;
         let salvando = false;
 
-        let etapaFluxo = 'ric'; // ric -> painel_ag -> painel_lib -> painel_dep -> final
-        let registroId = null;
-        let fotoPendenteNome = null;
+        let fotosSalvas = {
+            ric: null,
+            genset1: null,
+            genset2: null,
+            genset3: null
+        };
 
-        function tipoUsaFluxoCompleto() {
-            return tipoCargaSelecionado === 'Resfriado' || tipoCargaSelecionado === 'Congelado com GenSet';
+        function obterUrlFoto(nomeOuUrl) {
+            if (!nomeOuUrl) return '';
+            if (nomeOuUrl.startsWith('http') || nomeOuUrl.startsWith('data:')) return nomeOuUrl;
+            return STORAGE_BASE + nomeOuUrl;
         }
 
-        function atualizarInterfaceEtapa() {
-            const gensetSection = document.getElementById('genset-section');
-            const labelGenset = document.getElementById('labelGenset');
-            const btnSalvar = document.getElementById('btnSalvar');
-            const btnGensetCapture = document.getElementById('btnGensetCapture');
-            const status = document.getElementById('status');
-            const preview = document.getElementById('gensetPreview');
+        function proximaEtapa(etapa) {
+            const idx = ETAPAS.indexOf(etapa);
+            if (idx === -1 || idx === ETAPAS.length - 1) return null;
+            return ETAPAS[idx + 1];
+        }
 
-            if (!tipoUsaFluxoCompleto()) {
-                gensetSection.style.display = 'none';
-                status.innerText = '';
-                btnSalvar.innerText = 'SALVAR';
-                labelGenset.innerText = 'TIRAR FOTO (PAINEL GENSET)';
-                btnGensetCapture.innerHTML = '<span style="font-size: 20px;">📷</span> TIRAR FOTO (PAINEL GENSET)';
+        function textoEtapa(etapa) {
+            if (etapa === 'ric') return 'ETAPA 1/4 - FOTO DO RIC';
+            if (etapa === 'genset1') return 'ETAPA 2/4 - FOTO DO GENSET (AG. CARREGAMENTO)';
+            if (etapa === 'genset2') return 'ETAPA 3/4 - FOTO DO GENSET (LIBERADO)';
+            if (etapa === 'genset3') return 'ETAPA 4/4 - FOTO DO GENSET (DEPÓSITO / FINALIZAÇÃO)';
+            return '';
+        }
+
+        function camposObrigatoriosPreenchidos() {
+            const ids = [
+                'dataRetirada', 'armador', 'placa', 'cidade',
+                'terminalColeta', 'containerInput', 'tara', 'maxGross'
+            ];
+            return ids.every(id => (document.getElementById(id)?.value || '').trim() !== '');
+        }
+
+        function obterValoresCampos() {
+            return {
+                data_retirada: document.getElementById('dataRetirada').value,
+                armador: document.getElementById('armador').value.trim(),
+                placa: document.getElementById('placa').value.trim(),
+                cidade: document.getElementById('cidade').value.trim(),
+                terminalColeta: document.getElementById('terminalColeta').value.trim(),
+                container: document.getElementById('containerInput').value.trim(),
+                tara: document.getElementById('tara').value.trim(),
+                maxGross: document.getElementById('maxGross').value.trim()
+            };
+        }
+
+        function salvarRascunho() {
+            const payload = {
+                tipoCargaSelecionado,
+                cargaPulmaoSelecionado,
+                etapaFluxo,
+                registroId,
+                fotoAtualDataUrl,
+                esperandoProximoPasso,
+                fotoPendenteNome,
+                modalDepositoAberto,
+                fotosSalvas,
+                campos: obterValoresCampos()
+            };
+            try {
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+            } catch (e) {
+                console.warn('Não foi possível salvar o rascunho no localStorage:', e);
+            }
+        }
+
+        function limparRascunho() {
+            localStorage.removeItem(DRAFT_KEY);
+        }
+
+        function setSalvando(ativar) {
+            const btn = document.getElementById('btnSalvar');
+            if (!btn) return;
+
+            if (ativar) {
+                btn.innerText = 'SALVANDO...';
+                btn.classList.add('btn-salvar-loading');
+                btn.disabled = true;
+                salvando = true;
+            } else {
+                btn.classList.remove('btn-salvar-loading');
+                salvando = false;
+                btn.disabled = !fotoAtualDataUrl;
+                btn.innerText = 'SALVAR';
+            }
+        }
+
+        function mostrarAlerta(mensagem, callback) {
+            document.getElementById('custom-alert-msg').textContent = mensagem;
+            document.getElementById('custom-alert').style.display = 'flex';
+            window._callbackAlerta = callback || null;
+        }
+
+        function fecharAlerta() {
+            document.getElementById('custom-alert').style.display = 'none';
+            if (typeof window._callbackAlerta === 'function') {
+                const cb = window._callbackAlerta;
+                window._callbackAlerta = null;
+                cb();
+            }
+        }
+
+        function fecharModalDeposito() {
+            document.getElementById('modal-data-deposito').style.display = 'none';
+            modalDepositoAberto = false;
+            salvarRascunho();
+        }
+
+        function abrirModalDeposito() {
+            const modal = document.getElementById('modal-data-deposito');
+            const input = document.getElementById('input-data-deposito');
+            input.value = new Date().toISOString().split('T')[0];
+            modal.style.display = 'flex';
+            modalDepositoAberto = true;
+            salvarRascunho();
+        }
+
+        function abrirModalFoto(src, titulo) {
+            const img = document.getElementById('foto-modal-img');
+            const label = document.getElementById('foto-modal-title');
+            img.src = src;
+            label.textContent = titulo || '';
+            document.getElementById('modal-foto').style.display = 'flex';
+        }
+
+        function fecharModalFoto() {
+            document.getElementById('modal-foto').style.display = 'none';
+        }
+
+        function acionarCamera(inputId) {
+            const input = document.getElementById(inputId);
+            if (!input || input.disabled) return;
+            input.click();
+        }
+
+        async function comprimirImagem(file) {
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const img = await new Promise((resolve, reject) => {
+                const image = new Image();
+                image.onload = () => resolve(image);
+                image.onerror = reject;
+                image.src = dataUrl;
+            });
+
+            const maxWidth = 1280;
+            const maxHeight = 720;
+            let { width, height } = img;
+
+            const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            return canvas.toDataURL('image/jpeg', 0.82);
+        }
+
+        function dataURLtoBlob(dataUrl) {
+            const arr = dataUrl.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) u8arr[n] = bstr.charCodeAt(n);
+            return new Blob([u8arr], { type: mime });
+        }
+
+        async function uploadFoto(dataUrl, sufixo) {
+            const { data: { user } } = await clienteSupabase.auth.getUser();
+            const blob = dataURLtoBlob(dataUrl);
+            const fileName = `${Date.now()}_${user.email}_${registroId || 'novo'}_${sufixo}.jpg`
+                .replace(/[^a-zA-Z0-9._@-]/g, '_');
+
+            const { error } = await clienteSupabase.storage
+                .from('coletas-fotos')
+                .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
+
+            if (error) throw error;
+            return fileName;
+        }
+
+        function limparPreviewRic() {
+            const img = document.getElementById('preview');
+            img.src = '';
+            img.style.display = 'none';
+            img.onclick = null;
+        }
+
+        function limparPreviewGenset() {
+            const img = document.getElementById('gensetPreview');
+            img.src = '';
+            img.style.display = 'none';
+            img.onclick = null;
+        }
+
+        function renderGaleria() {
+            const galeria = document.getElementById('galeriaFotos');
+            galeria.innerHTML = '';
+
+            const itens = [
+                { etapa: 'ric', titulo: 'RIC' },
+                { etapa: 'genset1', titulo: 'GENSET 1' },
+                { etapa: 'genset2', titulo: 'GENSET 2' },
+                { etapa: 'genset3', titulo: 'GENSET 3' }
+            ];
+
+            itens.forEach(item => {
+                const url = (item.etapa === etapaFluxo && fotoAtualDataUrl)
+                    ? fotoAtualDataUrl
+                    : (fotosSalvas[item.etapa]?.url || '');
+
+                const card = document.createElement('div');
+                card.className = 'thumb-card' + (url ? '' : ' empty');
+
+                if (url) {
+                    card.innerHTML = `<img src="${url}" alt="${item.titulo}"><small>${item.titulo}</small>`;
+                    card.onclick = () => abrirModalFoto(url, item.titulo);
+                } else {
+                    card.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:80px; font-size:12px; font-weight:800;">SEM FOTO</div><small>${item.titulo}</small>`;
+                }
+
+                galeria.appendChild(card);
+            });
+
+            galeria.style.display = 'grid';
+        }
+
+        function atualizarMensagemEtapa() {
+            const info = document.getElementById('infoEtapa');
+
+            if (!tipoCargaSelecionado) {
+                info.textContent = '1) Selecione o tipo de carga.';
+                return;
+            }
+            if (!cargaPulmaoSelecionado) {
+                info.textContent = '2) Agora escolha se é Carga ou Pulmão.';
+                return;
+            }
+            if (!camposObrigatoriosPreenchidos()) {
+                info.textContent = '3) Preencha os campos obrigatórios para liberar as fotos.';
                 return;
             }
 
-            gensetSection.style.display = (etapaFluxo === 'ric') ? 'none' : 'block';
-
-            if (etapaFluxo === 'painel_ag') {
-                labelGenset.innerText = 'AG. CARREGAMENTO: Tirar FOTO (PAINEL GENSET)';
-                status.innerText = 'AG. CARREGAMENTO: Tirar FOTO (PAINEL GENSET)';
-            } else if (etapaFluxo === 'painel_lib') {
-                labelGenset.innerText = 'STATUS: LIBERADO: Tirar FOTO (PAINEL GENSET)';
-                status.innerText = 'STATUS: LIBERADO: Tirar FOTO (PAINEL GENSET)';
-            } else if (etapaFluxo === 'painel_dep') {
-                labelGenset.innerText = 'DEPOSITADO: Tirar FOTO (PAINEL GENSET)';
-                status.innerText = 'DEPOSITADO: Tirar FOTO (PAINEL GENSET)';
-            } else {
-                labelGenset.innerText = 'TIRAR FOTO (PAINEL GENSET)';
-                status.innerText = '';
+            if (esperandoProximoPasso) {
+                info.textContent = 'Foto salva. Clique em "PRÓXIMO PASSO" para seguir.';
+                return;
             }
 
-            btnGensetCapture.innerHTML = '<span style="font-size: 20px;">📷</span> TIRAR FOTO (PAINEL GENSET)';
+            info.textContent = `4) Fluxo ativo: ${textoEtapa(etapaFluxo)}.`;
+        }
 
-            const hasGensetPhoto = !!document.getElementById('gensetInput').files[0];
-            if (etapaFluxo === 'ric') {
+        function atualizarBloqueiosCampos() {
+            const liberado = !!tipoCargaSelecionado && !!cargaPulmaoSelecionado;
+            [
+                'dataRetirada', 'armador', 'placa', 'cidade',
+                'terminalColeta', 'containerInput', 'tara', 'maxGross'
+            ].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = !liberado;
+            });
+
+            const grupoCargaPulmao = document.getElementById('grupoCargaPulmao');
+            grupoCargaPulmao.style.display = tipoCargaSelecionado ? 'block' : 'none';
+        }
+
+        function aplicarBotoesAtivos() {
+            document.getElementById('btnResfriado').classList.remove('active');
+            document.getElementById('btnCongelado').classList.remove('active');
+            document.getElementById('btnCongeladoGenSet').classList.remove('active');
+
+            const mapa = {
+                'Resfriado': 'btnResfriado',
+                'Congelado': 'btnCongelado',
+                'Congelado com GenSet': 'btnCongeladoGenSet'
+            };
+
+            if (tipoCargaSelecionado && mapa[tipoCargaSelecionado]) {
+                document.getElementById(mapa[tipoCargaSelecionado]).classList.add('active');
+            }
+
+            document.getElementById('btnCarga').classList.remove('active');
+            document.getElementById('btnPulmao').classList.remove('active');
+
+            if (cargaPulmaoSelecionado === 'Carga') document.getElementById('btnCarga').classList.add('active');
+            if (cargaPulmaoSelecionado === 'Pulmão') document.getElementById('btnPulmao').classList.add('active');
+        }
+
+        function atualizarInterfaceEtapa() {
+            atualizarBloqueiosCampos();
+            atualizarMensagemEtapa();
+            renderGaleria();
+
+            const blocoRic = document.getElementById('blocoRic');
+            const blocoGenset = document.getElementById('genset-section');
+            const btnSalvar = document.getElementById('btnSalvar');
+            const btnProximo = document.getElementById('btnProximoPasso');
+            const btnRicCapture = document.getElementById('btnRicCapture');
+            const btnGensetCapture = document.getElementById('btnGensetCapture');
+            const statusRic = document.getElementById('statusRic');
+            const statusGenset = document.getElementById('statusGenset');
+            const ready = tipoCargaSelecionado && cargaPulmaoSelecionado && camposObrigatoriosPreenchidos();
+
+            if (!ready) {
+                blocoRic.style.display = 'none';
+                blocoGenset.style.display = 'none';
+                btnSalvar.disabled = true;
                 btnSalvar.innerText = 'SALVAR';
-            } else {
-                btnSalvar.innerText = hasGensetPhoto ? 'AVANÇAR E SALVAR' : 'SALVAR';
+                btnProximo.style.display = 'none';
+                return;
             }
 
-            if (preview && !hasGensetPhoto) {
-                preview.style.display = 'none';
+            if (etapaFluxo === 'ric') {
+                blocoRic.style.display = 'block';
+                blocoGenset.style.display = 'none';
+                btnRicCapture.classList.toggle('bloqueado', esperandoProximoPasso);
+                btnGensetCapture.classList.add('bloqueado');
+                statusRic.textContent = esperandoProximoPasso ? 'Foto salva. Clique em PRÓXIMO PASSO.' : textoEtapa('ric');
+                statusGenset.textContent = '';
+            } else {
+                blocoRic.style.display = 'none';
+                blocoGenset.style.display = 'block';
+                btnRicCapture.classList.add('bloqueado');
+                btnGensetCapture.classList.toggle('bloqueado', esperandoProximoPasso);
+                statusRic.textContent = '';
+                statusGenset.textContent = esperandoProximoPasso ? 'Foto salva. Clique em PRÓXIMO PASSO.' : textoEtapa(etapaFluxo);
             }
+
+            btnSalvar.disabled = !fotoAtualDataUrl || salvando;
+            btnSalvar.innerText = 'SALVAR';
+            btnProximo.style.display = esperandoProximoPasso && etapaFluxo !== 'genset3' ? 'block' : 'none';
         }
 
         function selecionarTipoCarga(tipo, btn) {
+            if (tipoCargaSelecionado && tipoCargaSelecionado !== tipo && (registroId || fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean))) {
+                if (!confirm('Você já tem um rascunho em andamento. Deseja iniciar um novo registro?')) {
+                    aplicarBotoesAtivos();
+                    atualizarInterfaceEtapa();
+                    return;
+                }
+                limparFluxoCompleto(false);
+            }
+
             document.getElementById('btnResfriado').classList.remove('active');
             document.getElementById('btnCongelado').classList.remove('active');
             document.getElementById('btnCongeladoGenSet').classList.remove('active');
             btn.classList.add('active');
+
             tipoCargaSelecionado = tipo;
-
-            document.getElementById('gensetInput').value = '';
-            document.getElementById('gensetPreview').src = '';
-            document.getElementById('gensetPreview').style.display = 'none';
-
             etapaFluxo = 'ric';
-            registroId = null;
-            fotoPendenteNome = null;
+            salvarRascunho();
             atualizarInterfaceEtapa();
         }
 
@@ -251,122 +637,123 @@
             document.getElementById('btnPulmao').classList.remove('active');
             btn.classList.add('active');
             cargaPulmaoSelecionado = valor;
+            salvarRascunho();
+            atualizarInterfaceEtapa();
         }
 
-        document.getElementById('cameraInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('preview').src = event.target.result;
-                    document.getElementById('preview').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        document.getElementById('gensetInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const btnSalvar = document.getElementById('btnSalvar');
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('gensetPreview').src = event.target.result;
-                    document.getElementById('gensetPreview').style.display = 'block';
-                    if (etapaFluxo !== 'ric') {
-                        btnSalvar.innerText = 'AVANÇAR E SALVAR';
-                    }
-                };
-                reader.readAsDataURL(file);
-            } else {
-                document.getElementById('gensetPreview').style.display = 'none';
-                if (etapaFluxo !== 'ric') btnSalvar.innerText = 'SALVAR';
-            }
-        });
-
-        function mostrarAlerta(mensagem, callback) {
-            document.getElementById('custom-alert-msg').textContent = mensagem;
-            document.getElementById('custom-alert').style.display = 'flex';
-            window._callbackAlerta = callback;
+        function preencherCamposRestaurados(campos) {
+            if (!campos) return;
+            document.getElementById('dataRetirada').value = campos.data_retirada || '';
+            document.getElementById('armador').value = campos.armador || '';
+            document.getElementById('placa').value = campos.placa || '';
+            document.getElementById('cidade').value = campos.cidade || '';
+            document.getElementById('terminalColeta').value = campos.terminalColeta || '';
+            document.getElementById('containerInput').value = campos.container || '';
+            document.getElementById('tara').value = campos.tara || '';
+            document.getElementById('maxGross').value = campos.maxGross || '';
         }
 
-        function fecharAlerta() {
-            document.getElementById('custom-alert').style.display = 'none';
-            if (typeof window._callbackAlerta === 'function') {
-                window._callbackAlerta();
-            }
-        }
-
-        function setSalvando(ativar) {
-            const btn = document.getElementById('btnSalvar');
-            if (ativar) {
-                btn.innerText = 'SALVANDO...';
-                btn.classList.add('btn-salvar-loading');
-                btn.disabled = true;
-                salvando = true;
-            } else {
-                btn.classList.remove('btn-salvar-loading');
-                btn.disabled = false;
-                salvando = false;
-                if (tipoUsaFluxoCompleto() && etapaFluxo !== 'ric' && document.getElementById('gensetInput').files[0]) {
-                    btn.innerText = 'AVANÇAR E SALVAR';
+        function restaurarPreviewAtual() {
+            if (fotoAtualDataUrl) {
+                if (etapaFluxo === 'ric') {
+                    const img = document.getElementById('preview');
+                    img.src = fotoAtualDataUrl;
+                    img.style.display = 'block';
+                    img.onclick = () => abrirModalFoto(fotoAtualDataUrl, 'RIC');
                 } else {
-                    btn.innerText = 'SALVAR';
+                    const img = document.getElementById('gensetPreview');
+                    img.src = fotoAtualDataUrl;
+                    img.style.display = 'block';
+                    img.onclick = () => abrirModalFoto(fotoAtualDataUrl, textoEtapa(etapaFluxo));
                 }
+            } else {
+                limparPreviewRic();
+                limparPreviewGenset();
             }
         }
 
-        async function uploadFoto(file, sufixo) {
-            const { data: { user } } = await clienteSupabase.auth.getUser();
-            const ext = (file.name && file.name.includes('.')) ? file.name.split('.').pop() : 'jpg';
-            const fileName = `${Date.now()}_${user.email}_${registroId || 'novo'}_${sufixo}.${ext}`.replace(/[^a-zA-Z0-9._@-]/g, '_');
+        document.getElementById('cameraInput').addEventListener('change', async function(e) {
+            if (etapaFluxo !== 'ric') return;
+            const file = e.target.files[0];
+            if (!file) return;
 
-            const { error } = await clienteSupabase.storage
-                .from('coletas-fotos')
-                .upload(fileName, file, { upsert: true });
+            fotoAtualDataUrl = await comprimirImagem(file);
+            esperandoProximoPasso = false;
+            salvarRascunho();
 
-            if (error) throw error;
-            return fileName;
-        }
+            const img = document.getElementById('preview');
+            img.src = fotoAtualDataUrl;
+            img.style.display = 'block';
+            img.onclick = () => abrirModalFoto(fotoAtualDataUrl, 'RIC');
+            atualizarInterfaceEtapa();
+        });
+
+        document.getElementById('gensetInput').addEventListener('change', async function(e) {
+            if (etapaFluxo === 'ric') return;
+            const file = e.target.files[0];
+            if (!file) return;
+
+            fotoAtualDataUrl = await comprimirImagem(file);
+            esperandoProximoPasso = false;
+            salvarRascunho();
+
+            const img = document.getElementById('gensetPreview');
+            img.src = fotoAtualDataUrl;
+            img.style.display = 'block';
+            img.onclick = () => abrirModalFoto(fotoAtualDataUrl, textoEtapa(etapaFluxo));
+            atualizarInterfaceEtapa();
+        });
+
+        [
+            'dataRetirada', 'armador', 'placa', 'cidade',
+            'terminalColeta', 'containerInput', 'tara', 'maxGross'
+        ].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', () => {
+                salvarRascunho();
+                atualizarInterfaceEtapa();
+            });
+            el.addEventListener('change', () => {
+                salvarRascunho();
+                atualizarInterfaceEtapa();
+            });
+        });
 
         async function salvarColeta() {
             if (salvando) return;
 
-            if (typeof clienteSupabase === 'undefined') {
-                mostrarAlerta("Erro: O sistema ainda está carregando.");
+            if (!clienteSupabase) {
+                mostrarAlerta('Erro: O sistema ainda está carregando.');
                 return;
             }
 
-            if (!tipoCargaSelecionado) return mostrarAlerta("Selecione o tipo de carga.");
-            if (!cargaPulmaoSelecionado) return mostrarAlerta("Selecione se é Carga ou Pulmão.");
-
-            const dataRetirada = document.getElementById('dataRetirada').value;
-            if (!dataRetirada) return mostrarAlerta("Por favor, preencha a Data da Retirada.");
+            if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
+            if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
+            if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
+            if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
 
             const { data: { user } } = await clienteSupabase.auth.getUser();
-            if (!user) return mostrarAlerta("Usuário não autenticado!");
+            if (!user) return mostrarAlerta('Usuário não autenticado!');
 
             try {
                 setSalvando(true);
 
-                const armador = document.getElementById('armador').value;
-                const placa = document.getElementById('placa').value;
-                const tara = document.getElementById('tara').value;
-                const maxGross = document.getElementById('maxGross').value;
-                const terminalColeta = document.getElementById('terminalColeta').value;
-                const cidade = document.getElementById('cidade').value;
-                const containerFinal = document.getElementById('containerInput').value.trim() || "N/A";
+                const campos = obterValoresCampos();
 
-                let localizacao = "Sem GPS";
+                let localizacao = 'Sem GPS';
                 try {
                     const pos = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 10000
+                        });
                     });
+
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
                     const data = await response.json();
-                    
+
                     if (data && data.address) {
                         const addr = data.address;
                         const rua = addr.road || '';
@@ -379,8 +766,8 @@
                         localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
                     }
                 } catch (e) {
-                    console.warn("GPS bloqueado ou falhou:", e);
-                    localizacao = "GPS Bloqueado";
+                    console.warn('GPS bloqueado ou falhou:', e);
+                    localizacao = 'GPS Bloqueado';
                 }
 
                 const { data: userData } = await clienteSupabase
@@ -389,27 +776,25 @@
                     .eq('email', user.email)
                     .single();
 
-                const fileInput = document.getElementById('cameraInput');
-                if (!fileInput.files[0]) return mostrarAlerta("Tire a foto do recibo (RIC)!");
+                const transportadora = userData ? userData.transportadora : 'N/A';
 
-                // ETAPA 1: RIC -> cria registro com AG. CARREGAMENTO
                 if (etapaFluxo === 'ric') {
-                    const fileNameRIC = await uploadFoto(fileInput.files[0], 'ric');
+                    const fileNameRIC = await uploadFoto(fotoAtualDataUrl, 'ric');
 
                     const insertObj = {
                         email_usuario: user.email,
-                        data_retirada: dataRetirada,
-                        armador: armador,
-                        container: containerFinal,
-                        placa: placa,
-                        tara: tara,
-                        max_gross: maxGross,
+                        data_retirada: campos.data_retirada,
+                        armador: campos.armador,
+                        container: campos.container || 'N/A',
+                        placa: campos.placa,
+                        tara: campos.tara,
+                        max_gross: campos.maxGross,
                         carga_pulmao: cargaPulmaoSelecionado,
-                        terminal_coleta: terminalColeta,
-                        cidade: cidade,
+                        terminal_coleta: campos.terminalColeta,
+                        cidade: campos.cidade,
                         foto_url: fileNameRIC,
                         localizacao: localizacao,
-                        transportadora: userData ? userData.transportadora : "N/A",
+                        transportadora: transportadora,
                         status: 'ag. carregamento',
                         finalizado: false,
                         tipo_carga: tipoCargaSelecionado,
@@ -420,94 +805,97 @@
                     if (dbError) throw dbError;
 
                     registroId = inserted.id;
+                    fotosSalvas.ric = { nome: fileNameRIC, url: obterUrlFoto(fileNameRIC) };
+                    esperandoProximoPasso = true;
+                    salvarRascunho();
+                    atualizarInterfaceEtapa();
 
-                    if (tipoUsaFluxoCompleto()) {
-                        etapaFluxo = 'painel_ag';
-                        document.getElementById('gensetInput').value = '';
-                        document.getElementById('gensetPreview').src = '';
-                        document.getElementById('gensetPreview').style.display = 'none';
-                        atualizarInterfaceEtapa();
-                        setSalvando(false);
-                        return;
-                    }
-
-                    setSalvando(false);
-                    mostrarAlerta("Registro salvo com sucesso!", function() {
-                        window.location.href = 'index.html';
-                    });
+                    mostrarAlerta('RIC salvo com sucesso. Clique em PRÓXIMO PASSO para seguir.');
                     return;
                 }
-
-                const gensetInput = document.getElementById('gensetInput');
-                if (!gensetInput.files[0]) return mostrarAlerta("Tire a foto do painel do genset.");
 
                 if (!registroId) {
-                    return mostrarAlerta("Erro: registro não encontrado. Salve a foto do RIC novamente.");
+                    return mostrarAlerta('Erro: registro não encontrado. Salve o RIC novamente.');
                 }
 
-                // ETAPA 2: painel_ag -> atualiza para LIBERADO
-                if (etapaFluxo === 'painel_ag') {
-                    const fileName = await uploadFoto(gensetInput.files[0], 'genset');
-                    const { error } = await clienteSupabase
-                        .from('coletas')
-                        .update({ genset: fileName, status: 'liberado', finalizado: false })
-                        .eq('id', registroId);
+                if (etapaFluxo === 'genset1') {
+                    const fileName = await uploadFoto(fotoAtualDataUrl, 'genset_1');
+                    const { error } = await clienteSupabase.from('coletas').update({
+                        genset: fileName,
+                        status: 'ag. carregamento',
+                        finalizado: false
+                    }).eq('id', registroId);
+
                     if (error) throw error;
 
-                    etapaFluxo = 'painel_lib';
-                    document.getElementById('gensetInput').value = '';
-                    document.getElementById('gensetPreview').src = '';
-                    document.getElementById('gensetPreview').style.display = 'none';
+                    fotosSalvas.genset1 = { nome: fileName, url: obterUrlFoto(fileName) };
+                    esperandoProximoPasso = true;
+                    salvarRascunho();
                     atualizarInterfaceEtapa();
-                    setSalvando(false);
+
+                    mostrarAlerta('Foto salva. Status mantido em AG. CARREGAMENTO.');
                     return;
                 }
 
-                // ETAPA 3: painel_lib -> atualiza para DEPOSITADO
-                if (etapaFluxo === 'painel_lib') {
-                    const fileName = await uploadFoto(gensetInput.files[0], 'liberado');
-                    const { error } = await clienteSupabase
-                        .from('coletas')
-                        .update({ liberado: fileName, status: 'depositado', finalizado: false })
-                        .eq('id', registroId);
+                if (etapaFluxo === 'genset2') {
+                    const fileName = await uploadFoto(fotoAtualDataUrl, 'genset_2');
+                    const { error } = await clienteSupabase.from('coletas').update({
+                        liberado: fileName,
+                        status: 'liberado',
+                        finalizado: false
+                    }).eq('id', registroId);
+
                     if (error) throw error;
 
-                    etapaFluxo = 'painel_dep';
-                    document.getElementById('gensetInput').value = '';
-                    document.getElementById('gensetPreview').src = '';
-                    document.getElementById('gensetPreview').style.display = 'none';
+                    fotosSalvas.genset2 = { nome: fileName, url: obterUrlFoto(fileName) };
+                    esperandoProximoPasso = true;
+                    salvarRascunho();
                     atualizarInterfaceEtapa();
-                    setSalvando(false);
+
+                    mostrarAlerta('Foto salva. Status alterado para LIBERADO.');
                     return;
                 }
 
-                // ETAPA 4: painel_dep -> abre modal de data e finaliza ao confirmar
-                if (etapaFluxo === 'painel_dep') {
-                    const fileName = await uploadFoto(gensetInput.files[0], 'depositado');
+                if (etapaFluxo === 'genset3') {
+                    const fileName = await uploadFoto(fotoAtualDataUrl, 'genset_3');
+                    const { error } = await clienteSupabase.from('coletas').update({
+                        depositado: fileName
+                    }).eq('id', registroId);
+
+                    if (error) throw error;
+
+                    fotosSalvas.genset3 = { nome: fileName, url: obterUrlFoto(fileName) };
                     fotoPendenteNome = fileName;
-
-                    document.getElementById('gensetInput').value = '';
-                    document.getElementById('gensetPreview').src = '';
-                    document.getElementById('gensetPreview').style.display = 'none';
+                    salvarRascunho();
                     atualizarInterfaceEtapa();
-
-                    document.getElementById('input-data-deposito').value = new Date().toISOString().split('T')[0];
-                    document.getElementById('modal-data-deposito').style.display = 'flex';
-                    setSalvando(false);
+                    abrirModalDeposito();
                     return;
                 }
-
-                setSalvando(false);
             } catch (err) {
                 console.error(err);
+                mostrarAlerta('Erro ao salvar: ' + err.message);
+            } finally {
                 setSalvando(false);
-                mostrarAlerta("Erro ao salvar: " + err.message);
-                document.getElementById('status').innerText = 'Erro ao salvar.';
             }
         }
 
-        function fecharModalDeposito() {
-            document.getElementById('modal-data-deposito').style.display = 'none';
+        function irProximoPasso() {
+            if (!esperandoProximoPasso) return;
+
+            const prox = proximaEtapa(etapaFluxo);
+            if (!prox) return;
+
+            etapaFluxo = prox;
+            fotoAtualDataUrl = '';
+            esperandoProximoPasso = false;
+            fotoPendenteNome = '';
+
+            document.getElementById('cameraInput').value = '';
+            document.getElementById('gensetInput').value = '';
+            limparPreviewRic();
+            limparPreviewGenset();
+            salvarRascunho();
+            atualizarInterfaceEtapa();
         }
 
         async function confirmarDataDeposito() {
@@ -519,24 +907,155 @@
                 const { error } = await clienteSupabase.from('coletas').update({
                     status: 'depositado',
                     finalizado: true,
-                    data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString(),
-                    depositado: fotoPendenteNome
+                    data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString()
                 }).eq('id', registroId);
 
                 if (error) throw error;
 
                 fecharModalDeposito();
-                etapaFluxo = 'final';
-                mostrarAlerta("Registro salvo com sucesso!", function() {
-                    window.location.href = 'index.html';
+                mostrarAlerta('Registro finalizado com sucesso. Pronto para um novo registro.', function () {
+                    limparFluxoCompleto(false);
                 });
             } catch (err) {
                 console.error(err);
-                mostrarAlerta("Erro ao salvar depósito: " + err.message);
+                mostrarAlerta('Erro ao salvar depósito: ' + err.message);
             }
         }
 
-        atualizarInterfaceEtapa();
+        function voltarParaInicio() {
+            limparFluxoCompleto(false);
+            window.location.href = 'index.html';
+        }
+
+        function limparFluxoCompleto(manterRascunho) {
+            tipoCargaSelecionado = '';
+            cargaPulmaoSelecionado = '';
+            etapaFluxo = 'ric';
+            registroId = null;
+            fotoAtualDataUrl = '';
+            esperandoProximoPasso = false;
+            fotoPendenteNome = '';
+            modalDepositoAberto = false;
+            fotosSalvas = { ric: null, genset1: null, genset2: null, genset3: null };
+
+            document.getElementById('btnResfriado').classList.remove('active');
+            document.getElementById('btnCongelado').classList.remove('active');
+            document.getElementById('btnCongeladoGenSet').classList.remove('active');
+            document.getElementById('btnCarga').classList.remove('active');
+            document.getElementById('btnPulmao').classList.remove('active');
+
+            document.getElementById('dataRetirada').value = '';
+            document.getElementById('armador').value = '';
+            document.getElementById('placa').value = '';
+            document.getElementById('cidade').value = '';
+            document.getElementById('terminalColeta').value = '';
+            document.getElementById('containerInput').value = '';
+            document.getElementById('tara').value = '';
+            document.getElementById('maxGross').value = '';
+
+            document.getElementById('cameraInput').value = '';
+            document.getElementById('gensetInput').value = '';
+            limparPreviewRic();
+            limparPreviewGenset();
+
+            document.getElementById('grupoCargaPulmao').style.display = 'none';
+            document.getElementById('blocoRic').style.display = 'none';
+            document.getElementById('genset-section').style.display = 'none';
+            document.getElementById('galeriaFotos').innerHTML = '';
+            document.getElementById('galeriaFotos').style.display = 'none';
+
+            document.getElementById('btnProximoPasso').style.display = 'none';
+            document.getElementById('btnSalvar').disabled = true;
+            document.getElementById('btnSalvar').innerText = 'SALVAR';
+
+            if (!manterRascunho) limparRascunho();
+            atualizarMensagemEtapa();
+        }
+
+        async function restaurarRascunho() {
+            const raw = localStorage.getItem(DRAFT_KEY);
+            if (!raw) {
+                atualizarInterfaceEtapa();
+                return;
+            }
+
+            try {
+                const draft = JSON.parse(raw);
+                tipoCargaSelecionado = draft.tipoCargaSelecionado || '';
+                cargaPulmaoSelecionado = draft.cargaPulmaoSelecionado || '';
+                etapaFluxo = draft.etapaFluxo || 'ric';
+                registroId = draft.registroId || null;
+                fotoAtualDataUrl = draft.fotoAtualDataUrl || '';
+                esperandoProximoPasso = !!draft.esperandoProximoPasso;
+                fotoPendenteNome = draft.fotoPendenteNome || '';
+                modalDepositoAberto = !!draft.modalDepositoAberto;
+                fotosSalvas = draft.fotosSalvas || { ric: null, genset1: null, genset2: null, genset3: null };
+
+                if (draft.campos) preencherCamposRestaurados(draft.campos);
+
+                if (tipoCargaSelecionado) {
+                    const map = {
+                        'Resfriado': 'btnResfriado',
+                        'Congelado com GenSet': 'btnCongeladoGenSet',
+                        'Congelado': 'btnCongelado'
+                    };
+                    const id = map[tipoCargaSelecionado];
+                    if (id) document.getElementById(id).classList.add('active');
+                }
+
+                if (cargaPulmaoSelecionado) {
+                    const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
+                    document.getElementById(id).classList.add('active');
+                }
+
+                if (draft.modalDepositoAberto && fotoPendenteNome) {
+                    abrirModalDeposito();
+                }
+
+                atualizarInterfaceEtapa();
+                restaurarPreviewAtual();
+                renderGaleria();
+            } catch (e) {
+                console.warn('Falha ao restaurar rascunho:', e);
+                atualizarInterfaceEtapa();
+            }
+        }
+
+        async function verificarAcesso() {
+            if (!clienteSupabase) return false;
+            const { data: { session } } = await clienteSupabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        document.getElementById('modal-foto').addEventListener('click', function(e) {
+            if (e.target === this) fecharModalFoto();
+        });
+
+        document.getElementById('modal-data-deposito').addEventListener('click', function(e) {
+            if (e.target === this) fecharModalDeposito();
+        });
+
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharModalFoto();
+                fecharModalDeposito();
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            salvarRascunho();
+        });
+
+        window.addEventListener('load', async () => {
+            if (await verificarAcesso()) {
+                await restaurarRascunho();
+                atualizarInterfaceEtapa();
+            }
+        });
     </script>
 </body>
 </html>

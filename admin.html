@@ -8,24 +8,10 @@
     <title>Gerenciamento | ColetaWeb</title>
     <style>
         @media (max-width: 768px) {
-            body {
-                padding: 10px !important;
-            }
-
-            .card {
-                padding: 15px !important;
-                border-radius: 18px !important;
-            }
-
-            .card > h2 {
-                font-size: 1.1rem !important;
-                text-align: center !important;
-            }
-
-            .card > div[style*="display: flex; gap: 10px; flex-wrap: wrap;"] {
-                flex-direction: column !important;
-            }
-
+            body { padding: 10px !important; }
+            .card { padding: 15px !important; border-radius: 18px !important; }
+            .card > h2 { font-size: 1.1rem !important; text-align: center !important; }
+            .card > div[style*="display: flex; gap: 10px; flex-wrap: wrap;"] { flex-direction: column !important; }
             .card input,
             .card select,
             .card button {
@@ -33,37 +19,24 @@
                 min-height: 46px;
                 font-size: 13px !important;
             }
-
             table {
                 display: block;
                 width: 100%;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
-
             th, td {
                 font-size: 11px !important;
                 padding: 8px !important;
                 white-space: nowrap;
             }
-
-            .btn-main {
-                width: 100% !important;
-            }
+            .btn-main { width: 100% !important; }
         }
 
         @media (max-width: 480px) {
-            body {
-                padding: 8px !important;
-            }
-
-            .card {
-                padding: 12px !important;
-            }
-
-            .card > h2 {
-                font-size: 1rem !important;
-            }
+            body { padding: 8px !important; }
+            .card { padding: 12px !important; }
+            .card > h2 { font-size: 1rem !important; }
         }
     </style>
 </head>
@@ -71,13 +44,12 @@
 
     <div class="card">
         <h2 style="color: var(--navy); margin-bottom: 20px;">GERENCIAMENTO DE USUÁRIOS</h2>
-        
-        <!-- Formulário para Novo Usuário -->
+
         <div style="margin-bottom: 30px; padding: 15px; border: 1px solid var(--gold); border-radius: 10px; background: #fafafa;">
             <h3 style="color: var(--navy); margin-bottom: 15px; font-size: 14px;">Adicionar novo usuário (Cadastre antes em Authentication)</h3>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <input type="email" id="novoEmail" placeholder="email@minervafoods.com" style="padding: 8px; width: 220px; border: 1px solid #ccc; border-radius: 5px;">
-                
+
                 <select id="novoPerfil" style="padding: 8px;">
                     <option value="user">User</option>
                     <option value="administrador">Administrador</option>
@@ -99,50 +71,58 @@
                     <th style="padding: 10px; text-align: left;">Perfil</th>
                 </tr>
             </thead>
-            <tbody id="user-table-body">
-                <!-- Usuários carregados via JS -->
-            </tbody>
+            <tbody id="user-table-body"></tbody>
         </table>
+
         <button class="btn-main" style="background: var(--grey);" onclick="window.location.href='index.html'">VOLTAR</button>
     </div>
 
     <script src="script.js"></script>
     <script>
         async function carregarUsuarios() {
-            if (typeof clienteSupabase === 'undefined') { setTimeout(carregarUsuarios, 500); return; }
+            if (typeof clienteSupabase === 'undefined' || !clienteSupabase) {
+                setTimeout(carregarUsuarios, 500);
+                return;
+            }
 
             const { data: { session } } = await clienteSupabase.auth.getSession();
             if (!session) { window.location.href = 'login.html'; return; }
 
             const { data: userData } = await clienteSupabase
                 .from('usuarios')
-                .select('perfil')
+                .select('perfil, status')
                 .eq('email', session.user.email)
                 .single();
 
-            if (!userData || (userData.perfil !== 'master' && userData.perfil !== 'administrador')) {
-                alert("Acesso Negado: Área restrita.");
+            const perfilAtual = userData ? (userData.perfil || '').trim().toLowerCase() : '';
+            const statusAtual = userData ? (userData.status || '').trim().toLowerCase() : '';
+
+            const isMaster = perfilAtual === 'master' || perfilAtual === 'mestre';
+            const isAdminAprovado = perfilAtual === 'administrador' && statusAtual === 'aprovado';
+
+            if (!isMaster && !isAdminAprovado) {
+                alert('Acesso negado: área restrita.');
                 window.location.href = 'index.html';
                 return;
             }
 
-            const { data, error } = await clienteSupabase.from('usuarios').select('*');
+            const { data, error } = await clienteSupabase.from('usuarios').select('*').order('email', { ascending: true });
             if (error) { console.error(error); return; }
 
             const tbody = document.getElementById('user-table-body');
             tbody.innerHTML = '';
-            
+
             data.forEach(user => {
                 let perfilTd = user.perfil;
-                
-                if (userData.perfil === 'master' && user.perfil !== 'master') {
+
+                if (isMaster && user.perfil !== 'master') {
                     perfilTd = `
                         <select onchange="atualizarCampo('${user.email}', 'perfil', this.value)" style="padding: 5px;">
                             <option value="user" ${user.perfil === 'user' ? 'selected' : ''}>User</option>
                             <option value="administrador" ${user.perfil === 'administrador' ? 'selected' : ''}>Administrador</option>
                         </select>`;
                 }
-                
+
                 tbody.innerHTML += `
                     <tr>
                         <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.email}</td>
@@ -154,41 +134,48 @@
         }
 
         async function criarUsuario() {
-            const email = document.getElementById('novoEmail').value;
+            const email = document.getElementById('novoEmail').value.trim();
             const perfil = document.getElementById('novoPerfil').value;
             const transportadora = document.getElementById('novaTransportadora').value;
 
-            if(!email) return alert("Digite um e-mail");
-            if(!transportadora) return alert("Selecione uma transportadora");
-            
-            const { error } = await clienteSupabase.from('usuarios').insert([{ 
-                email: email, 
-                perfil: perfil, 
+            if (!email) return alert('Digite um e-mail');
+            if (!transportadora) return alert('Selecione uma transportadora');
+
+            const { error } = await clienteSupabase.from('usuarios').insert([{
+                email: email,
+                perfil: perfil,
                 transportadora: transportadora,
-                status: 'aprovado' 
+                status: 'aprovado'
             }]);
-            
-            if (error) alert("Erro ao criar: " + error.message);
-            else { alert("Usuário vinculado com sucesso no banco!"); document.getElementById('novoEmail').value = ''; carregarUsuarios(); }
+
+            if (error) alert('Erro ao criar: ' + error.message);
+            else {
+                alert('Usuário vinculado com sucesso no banco!');
+                document.getElementById('novoEmail').value = '';
+                carregarUsuarios();
+            }
         }
 
         async function atualizarCampo(email, campo, valor) {
             const updateObj = {};
             updateObj[campo] = valor;
-            
+
             const { error } = await clienteSupabase
                 .from('usuarios')
                 .update(updateObj)
                 .eq('email', email);
-            
-            if (error) alert("Erro ao atualizar: " + error.message);
-            else { alert("Atualizado com sucesso!"); carregarUsuarios(); }
+
+            if (error) alert('Erro ao atualizar: ' + error.message);
+            else {
+                alert('Atualizado com sucesso!');
+                carregarUsuarios();
+            }
         }
 
-        window.onload = async () => {
+        window.addEventListener('load', async () => {
             await carregarUsuarios();
             await carregarTransportadoras();
-        };
+        });
     </script>
 </body>
 </html>
