@@ -1,1435 +1,1392 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processos - Container | ColetaWeb</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Processos - Container | ColetaWeb</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-        body {
-            background: var(--bg);
-            padding: 20px 10px;
-            color: var(--navy);
-        }
+    body {
+      background: var(--bg);
+      padding: 20px 10px;
+      color: var(--navy);
+    }
 
-        .header-card {
-            background: var(--white);
-            border: 1px solid var(--gold);
-            border-radius: 25px;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
+    .header-card {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 25px;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
 
-        .logo-minerva .m { color: var(--navy); font-weight: 800; }
-        .logo-minerva .f { color: var(--red); font-weight: 800; }
+    .logo-minerva .m { color: var(--navy); font-weight: 800; }
+    .logo-minerva .f { color: var(--red); font-weight: 800; }
 
-        .header-title {
-            font-weight: 800;
-            font-size: 17px;
-            text-transform: uppercase;
-            color: var(--navy);
-        }
+    .header-title {
+      font-weight: 800;
+      font-size: 17px;
+      text-transform: uppercase;
+      color: var(--navy);
+    }
 
-        .filter-bar {
-            background: var(--white);
-            border: 1px solid var(--gold);
-            border-radius: 25px;
-            padding: 10px 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-        }
+    .filter-bar {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 25px;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
 
-        .filter-row {
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-            flex-wrap: nowrap;
-        }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      flex-wrap: nowrap;
+    }
 
-        .filter-group {
-            flex: 1 1 0%;
-            min-width: 80px;
-            display: flex;
-            flex-direction: column;
-        }
+    .filter-group {
+      flex: 1 1 0%;
+      min-width: 80px;
+      display: flex;
+      flex-direction: column;
+    }
 
-        .filter-group label {
-            font-size: 10px;
-            font-weight: 800;
-            color: var(--gold);
-            text-transform: uppercase;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            text-align: center;
-        }
+    .filter-group label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      text-align: center;
+    }
 
-        .filter-group input,
-        .filter-group select {
-            border: none;
-            border-bottom: 1px solid var(--gold);
-            padding: 4px 0;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--navy);
-            background: transparent;
-            outline: none;
-            width: 100%;
-        }
+    .filter-group input,
+    .filter-group select {
+      border: none;
+      border-bottom: 1px solid var(--gold);
+      padding: 4px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      background: transparent;
+      outline: none;
+      width: 100%;
+    }
 
-        .filter-group input::placeholder {
-            color: #aaa;
-        }
+    .filter-group input::placeholder { color: #aaa; }
 
-        .btn-group {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+    .btn-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
 
-        .btn-filtrar, .btn-limpar, .btn-voltar, .btn-excel-small {
-            padding: 6px 14px;
-            border-radius: 99px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-size: 10px;
-            border: none;
-            white-space: nowrap;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .btn-filtrar, .btn-limpar, .btn-voltar, .btn-excel-small {
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-size: 10px;
+      border: none;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .btn-filtrar { background: var(--navy); color: white; }
-        .btn-limpar { background: transparent; border: 1px solid var(--navy); color: var(--navy); }
-        .btn-voltar { background: #7a8a95; color: white; }
-        .btn-excel-small { background: #5a6c75; color: white; }
+    .btn-filtrar { background: var(--navy); color: white; }
+    .btn-limpar { background: transparent; border: 1px solid var(--navy); color: var(--navy); }
+    .btn-voltar { background: #7a8a95; color: white; }
+    .btn-excel-small { background: #5a6c75; color: white; }
 
-        .table-container {
-            background: var(--white);
-            border: 1px solid var(--gold);
-            border-radius: 20px;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
+    .table-container {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
 
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: 12px;
-            margin-top: 10px;
-        }
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 12px;
-        }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12px;
+    }
 
-        th {
-            background: var(--navy);
-            color: white;
-            padding: 10px 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 11px;
-            white-space: nowrap;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
+    th {
+      background: var(--navy);
+      color: white;
+      padding: 10px 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
 
-        th:first-child { border-radius: 12px 0 0 0; }
-        th:last-child { border-radius: 0 12px 0 0; }
+    th:first-child { border-radius: 12px 0 0 0; }
+    th:last-child { border-radius: 0 12px 0 0; }
 
-        td {
-            padding: 8px 6px;
-            border-bottom: 1px solid #f2f2f2;
-            color: var(--navy);
-            text-align: center;
-            background: var(--white);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            vertical-align: middle;
-        }
+    td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #f2f2f2;
+      color: var(--navy);
+      text-align: center;
+      background: var(--white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
 
-        tr:nth-child(even) td {
-            background-color: #f9f9f9;
-        }
+    tr:nth-child(even) td { background-color: #f9f9f9; }
 
-        td.col-nowrap { white-space: nowrap; }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #1e2f3a;
+      background: transparent;
+      white-space: nowrap;
+    }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 14px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #1e2f3a;
-            background: transparent;
-            white-space: nowrap;
-        }
+    .sem-dados {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+      font-weight: 700;
+    }
 
-        .sem-dados {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-            font-weight: 700;
-        }
+    .vencido-sim { color: var(--red) !important; }
+    .vencido-nao { color: #15803d !important; }
 
-        .vencido-sim {
-            color: var(--red) !important;
-        }
+    .badge-tipo {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
 
-        .vencido-nao {
-            color: #15803d !important;
-        }
+    .badge-resfriado { background: #d4edff; color: #004085; }
+    .badge-congelado { background: #d1ecf1; color: #0c5460; }
+    .badge-congelado-genset { background: #f3e8ff; color: #6b21a8; }
 
-        .badge-tipo {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 99px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
+    .loc-link {
+      color: var(--navy);
+      cursor: pointer;
+      text-decoration: underline;
+      font-weight: 600;
+      font-size: 12px;
+      white-space: nowrap;
+    }
 
-        .badge-resfriado { background: #d4edff; color: #004085; }
-        .badge-congelado { background: #d1ecf1; color: #0c5460; }
-        .badge-congelado-genset { background: #f3e8ff; color: #6b21a8; }
+    .chip {
+      background: var(--red);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-size: 8px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
 
-        .loc-link {
-            color: var(--navy);
-            cursor: pointer;
-            text-decoration: underline;
-            font-weight: 600;
-            font-size: 12px;
-            white-space: nowrap;
-        }
+    #foto-modal, #mapa-modal, #modal-data-deposito {
+      display: none;
+      position: fixed;
+      z-index: 3000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
 
-        .chip {
-            background: var(--red);
-            color: white;
-            padding: 2px 10px;
-            border-radius: 99px;
-            font-size: 8px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
+    .foto-box {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: min(96vw, 1200px);
+      height: min(92vh, 900px);
+      padding: 14px;
+      background: transparent;
+      box-shadow: none;
+      overflow: visible;
+    }
 
-        #foto-modal, #mapa-modal, #modal-data-deposito {
-            display: none;
-            position: fixed;
-            z-index: 3000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+    .foto-stage {
+      position: relative;
+      width: fit-content;
+      height: fit-content;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      background: transparent;
+      border-radius: 12px;
+      touch-action: none;
+      cursor: grab;
+    }
 
-        .foto-box {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: min(96vw, 1200px);
-            height: min(92vh, 900px);
-            padding: 14px;
-            background: transparent;
-            box-shadow: none;
-            overflow: visible;
-        }
+    .foto-stage:active { cursor: grabbing; }
 
-        .foto-stage {
-            position: relative;
-            width: fit-content;
-            height: fit-content;
-            max-width: 100%;
-            max-height: 100%;
-            overflow: hidden;
-            background: transparent;
-            border-radius: 12px;
-            touch-action: none;
-            cursor: grab;
-        }
+    #foto-ampliada {
+      display: block;
+      max-width: 92vw;
+      max-height: 82vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      object-position: center center;
+      user-select: none;
+      -webkit-user-drag: none;
+      transform-origin: center center;
+      will-change: transform;
+      pointer-events: none;
+      border-radius: 12px;
+      background: transparent;
+      image-orientation: from-image;
+    }
 
-        .foto-stage:active {
-            cursor: grabbing;
-        }
+    .foto-titulo {
+      text-align: center;
+      font-weight: 800;
+      color: var(--navy);
+      font-size: 13px;
+    }
 
-        #foto-ampliada {
-            display: block;
-            max-width: 92vw;
-            max-height: 82vh;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            object-position: center center;
-            user-select: none;
-            -webkit-user-drag: none;
-            transform-origin: center center;
-            will-change: transform;
-            pointer-events: none;
-            border-radius: 12px;
-            background: transparent;
-            image-orientation: from-image;
-        }
+    .mapa-container {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      width: 90%;
+      max-width: 800px;
+      height: 80vh;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
 
-        .foto-titulo {
-            text-align: center;
-            font-weight: 800;
-            color: var(--navy);
-            font-size: 13px;
-        }
+    .mapa-container iframe {
+      width: 100%;
+      height: calc(100% - 40px);
+      border: none;
+      border-radius: 10px;
+    }
 
-        .mapa-container {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            width: 90%;
-            max-width: 800px;
-            height: 80vh;
-            position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
+    .fechar-mapa, .fechar-foto {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 34px;
+      color: var(--navy);
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 10;
+      line-height: 1;
+    }
 
-        .mapa-container iframe {
-            width: 100%;
-            height: calc(100% - 40px);
-            border: none;
-            border-radius: 10px;
-        }
+    .modal-deposito-box {
+      background: white;
+      padding: 30px 35px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      text-align: center;
+      border: 1px solid var(--gold);
+    }
 
-        .fechar-mapa, .fechar-foto {
-            position: absolute;
-            top: 10px;
-            right: 14px;
-            font-size: 34px;
-            color: var(--navy);
-            cursor: pointer;
-            font-weight: bold;
-            z-index: 10;
-            line-height: 1;
-        }
+    .modal-deposito-box p {
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: var(--navy);
+      font-size: 18px;
+    }
 
-        .modal-deposito-box {
-            background: white;
-            padding: 30px 35px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            text-align: center;
-            border: 1px solid var(--gold);
-        }
+    .modal-deposito-box input[type="date"] {
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 1px solid var(--navy);
+      font-weight: 600;
+      font-size: 16px;
+      text-align: center;
+      outline: none;
+    }
 
-        .modal-deposito-box p {
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--navy);
-            font-size: 18px;
-        }
+    .modal-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
 
-        .modal-deposito-box input[type="date"] {
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 1px solid var(--navy);
-            font-weight: 600;
-            font-size: 16px;
-            text-align: center;
-            outline: none;
-        }
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.8);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
 
-        .modal-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--gold);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
 
-        #loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.8);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--gold);
-            border-top-color: var(--navy);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+    @media (max-width: 768px) {
+      body { padding: 8px !important; }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+      .header-card {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 15px !important;
+        border-radius: 18px !important;
+      }
 
-        @media (max-width: 768px) {
-            body { padding: 8px !important; }
+      .header-title { font-size: 12px !important; }
 
-            .header-card {
-                flex-direction: column !important;
-                gap: 10px !important;
-                align-items: center !important;
-                text-align: center !important;
-                padding: 15px !important;
-                border-radius: 18px !important;
-            }
+      .filter-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 12px !important;
+        border-radius: 18px !important;
+      }
 
-            .header-title { font-size: 12px !important; }
+      .filter-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+      }
 
-            .filter-bar {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                padding: 12px !important;
-                border-radius: 18px !important;
-            }
+      .filter-group {
+        min-width: 100% !important;
+        width: 100% !important;
+      }
 
-            .filter-row {
-                flex-direction: column !important;
-                gap: 10px !important;
-            }
+      .btn-filtrar,
+      .btn-limpar,
+      .btn-voltar,
+      .btn-excel-small {
+        width: 100% !important;
+        align-self: stretch !important;
+        min-height: 44px !important;
+        font-size: 11px !important;
+      }
 
-            .filter-group {
-                min-width: 100% !important;
-                width: 100% !important;
-            }
+      .table-container {
+        padding: 10px !important;
+        border-radius: 18px !important;
+      }
 
-            .btn-filtrar,
-            .btn-limpar,
-            .btn-voltar,
-            .btn-excel-small {
-                width: 100% !important;
-                align-self: stretch !important;
-                min-height: 44px !important;
-                font-size: 11px !important;
-            }
+      .table-wrapper {
+        max-height: 60vh !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
 
-            .table-container {
-                padding: 10px !important;
-                border-radius: 18px !important;
-            }
+      table {
+        min-width: 1400px !important;
+      }
 
-            .table-wrapper {
-                max-height: 60vh !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            table {
-                min-width: 1400px !important;
-            }
-
-            th, td {
-                padding: 10px 14px !important;
-            }
-
-            .mapa-container,
-            .modal-deposito-box {
-                width: 95% !important;
-                max-width: 95% !important;
-                padding: 20px !important;
-            }
-
-            .foto-box {
-                width: 96vw !important;
-                height: 88vh !important;
-            }
-
-            #foto-ampliada {
-                max-width: 92vw !important;
-                max-height: 78vh !important;
-            }
-        }
-    </style>
+      th, td {
+        padding: 10px 14px !important;
+      }
+    }
+  </style>
 </head>
 <body>
 <div id="loading-overlay"><div class="spinner"></div></div>
 
 <header class="header-card">
-    <div class="logo-minerva"><span class="m">minerva</span><span class="f">foods</span></div>
-    <div class="header-title">Processos - Container</div>
-    <div></div>
+  <div class="logo-minerva"><span class="m">minerva</span><span class="f">foods</span></div>
+  <div class="header-title">Processos - Container</div>
+  <div></div>
 </header>
 
 <section class="filter-bar">
-    <div class="filter-row">
-        <div class="filter-group">
-            <label>Data Registro</label>
-            <input type="date" id="filtroDataInicio">
-        </div>
-        <div class="filter-group">
-            <label>até</label>
-            <input type="date" id="filtroDataFim">
-        </div>
-        <div class="filter-group">
-            <label>Data Retirada</label>
-            <input type="date" id="filtroDataRetirada">
-        </div>
-        <div class="filter-group">
-            <label>Armador</label>
-            <input type="text" id="filtroArmador" placeholder="Nome do armador" list="listaArmador">
-            <datalist id="listaArmador"></datalist>
-        </div>
-        <div class="filter-group">
-            <label>Container</label>
-            <input type="text" id="filtroContainer" placeholder="Número" list="listaContainer">
-            <datalist id="listaContainer"></datalist>
-        </div>
-        <div class="filter-group">
-            <label>Placa</label>
-            <input type="text" id="filtroPlaca" placeholder="Placa" list="listaPlaca">
-            <datalist id="listaPlaca"></datalist>
-        </div>
-        <div class="filter-group">
-            <label>Carga / Pulmão</label>
-            <select id="filtroCargaPulmao">
-                <option value="">Todos</option>
-                <option value="Carga">Carga</option>
-                <option value="Pulmão">Pulmão</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>Tipo de Carga</label>
-            <select id="filtroTipoCarga">
-                <option value="">Todos</option>
-                <option value="Resfriado">Resfriado</option>
-                <option value="Congelado">Congelado</option>
-                <option value="Congelado com GenSet">Congelado com GenSet</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>Transportadora</label>
-            <input type="text" id="filtroTransportadora" placeholder="Transportadora" list="listaTransportadora">
-            <datalist id="listaTransportadora"></datalist>
-        </div>
-        <div class="filter-group">
-            <label>Status</label>
-            <select id="filtroStatus">
-                <option value="">Todos</option>
-                <option value="ag. carregamento">AG. CARREGAMENTO</option>
-                <option value="liberado">LIBERADO</option>
-                <option value="depositado">DEPOSITADO</option>
-            </select>
-        </div>
+  <div class="filter-row">
+    <div class="filter-group">
+      <label>Data Registro</label>
+      <input type="date" id="filtroDataInicio">
     </div>
+    <div class="filter-group">
+      <label>até</label>
+      <input type="date" id="filtroDataFim">
+    </div>
+    <div class="filter-group">
+      <label>Data Retirada</label>
+      <input type="date" id="filtroDataRetirada">
+    </div>
+    <div class="filter-group">
+      <label>Armador</label>
+      <input type="text" id="filtroArmador" placeholder="Nome do armador" list="listaArmador">
+      <datalist id="listaArmador"></datalist>
+    </div>
+    <div class="filter-group">
+      <label>Container</label>
+      <input type="text" id="filtroContainer" placeholder="Número" list="listaContainer">
+      <datalist id="listaContainer"></datalist>
+    </div>
+    <div class="filter-group">
+      <label>Placa</label>
+      <input type="text" id="filtroPlaca" placeholder="Placa" list="listaPlaca">
+      <datalist id="listaPlaca"></datalist>
+    </div>
+    <div class="filter-group">
+      <label>Carga / Pulmão</label>
+      <select id="filtroCargaPulmao">
+        <option value="">Todos</option>
+        <option value="Carga">Carga</option>
+        <option value="Pulmão">Pulmão</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Tipo de Carga</label>
+      <select id="filtroTipoCarga">
+        <option value="">Todos</option>
+        <option value="Resfriado">Resfriado</option>
+        <option value="Congelado">Congelado</option>
+        <option value="Congelado com GenSet">Congelado com GenSet</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Transportadora</label>
+      <input type="text" id="filtroTransportadora" placeholder="Transportadora" list="listaTransportadora">
+      <datalist id="listaTransportadora"></datalist>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="filtroStatus">
+        <option value="">Todos</option>
+        <option value="ag. carregamento">AG. CARREGAMENTO</option>
+        <option value="liberado">LIBERADO</option>
+        <option value="depositado">DEPOSITADO</option>
+      </select>
+    </div>
+  </div>
 
-    <div class="btn-group">
-        <button class="btn-filtrar" onclick="aplicarFiltros()">Filtrar</button>
-        <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
-        <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
-        <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
-    </div>
+  <div class="btn-group">
+    <button class="btn-filtrar" onclick="aplicarFiltros()">Filtrar</button>
+    <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
+    <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
+    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
+  </div>
 </section>
 
 <div id="chips-area" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px; min-height:18px;"></div>
 
 <div class="table-container">
-    <div class="table-wrapper">
-        <table>
-            <colgroup>
-                <col style="width:8%">
-                <col style="width:10%">
-                <col style="width:10%">
-                <col style="width:11%">
-                <col style="width:10%">
-                <col style="width:8%">
-                <col style="width:8%">
-                <col style="width:10%">
-                <col style="width:7%">
-                <col style="width:7%">
-                <col style="width:6%">
-                <col style="width:9%">
-                <col style="width:6%">
-                <col style="width:8%">
-                <col style="width:8%">
-                <col style="width:8%">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th>Retirada</th>
-                    <th>Container</th>
-                    <th>Status</th>
-                    <th>Armador</th>
-                    <th>Transp.</th>
-                    <th>Placa</th>
-                    <th>Carga/Pulmão</th>
-                    <th>Tipo de Carga</th>
-                    <th>FT Total</th>
-                    <th>Dias Rest.</th>
-                    <th>Vencido?</th>
-                    <th>Localização</th>
-                    <th>RIC</th>
-                    <th>AG. CARREGAMENTO</th>
-                    <th>LIBERADO</th>
-                    <th>DEPOSITADO</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
+  <div class="table-wrapper">
+    <table>
+      <colgroup>
+        <col style="width:10%">
+        <col style="width:8%">
+        <col style="width:10%">
+        <col style="width:11%">
+        <col style="width:10%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:10%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:6%">
+        <col style="width:9%">
+        <col style="width:6%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:8%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Retirada</th>
+          <th>Container</th>
+          <th>Armador</th>
+          <th>Transp.</th>
+          <th>Placa</th>
+          <th>Carga/Pulmão</th>
+          <th>Tipo de Carga</th>
+          <th>FT Total</th>
+          <th>Dias Rest.</th>
+          <th>Vencido?</th>
+          <th>Localização</th>
+          <th>RIC</th>
+          <th>AG. CARREGAMENTO</th>
+          <th>LIBERADO</th>
+          <th>DEPOSITADO</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="foto-modal">
-    <div class="foto-box">
-        <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
-        <div id="container-img" class="foto-stage">
-            <img id="foto-ampliada" alt="Foto ampliada">
-        </div>
-        <div id="foto-titulo" class="foto-titulo"></div>
+  <div class="foto-box">
+    <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
+    <div id="container-img" class="foto-stage">
+      <img id="foto-ampliada" alt="Foto ampliada">
     </div>
+    <div id="foto-titulo" class="foto-titulo"></div>
+  </div>
 </div>
 
 <div id="mapa-modal">
-    <div class="mapa-container">
-        <span class="fechar-mapa" onclick="fecharMapa()">&times;</span>
-        <iframe id="mapa-iframe"></iframe>
-    </div>
+  <div class="mapa-container">
+    <span class="fechar-mapa" onclick="fecharMapa()">&times;</span>
+    <iframe id="mapa-iframe"></iframe>
+  </div>
 </div>
 
 <div id="modal-data-deposito">
-    <div class="modal-deposito-box">
-        <p>Selecione a data do depósito</p>
-        <input type="date" id="input-data-deposito">
-        <div class="modal-actions">
-            <button class="btn-limpar" onclick="fecharModalDeposito()">Cancelar</button>
-            <button class="btn-filtrar" onclick="confirmarDataDeposito()">Confirmar</button>
-        </div>
+  <div class="modal-deposito-box">
+    <p>Selecione a data do depósito</p>
+    <input type="date" id="input-data-deposito">
+    <div class="modal-actions">
+      <button class="btn-limpar" onclick="fecharModalDeposito()">Cancelar</button>
+      <button class="btn-filtrar" onclick="confirmarDataDeposito()">Confirmar</button>
     </div>
+  </div>
 </div>
 
 <script src="script.js"></script>
 <script>
-    const FREE_TIME_RULES = {
-        "PIL": { dias: 30, custo: 100 },
-        "HAPAG LLOYD": { dias: 30, custo: 297 },
-        "HAPAG": { dias: 30, custo: 297 },
-        "ONE": { dias: 30, custo: 100 },
-        "ALPHA SHIPPING": { dias: 30, custo: 100 },
-        "ALPHA": { dias: 30, custo: 100 },
-        "CMA CGM": { dias: 25, custo: 175 },
-        "CMA": { dias: 25, custo: 175 },
-        "YANG MING": { dias: 35, custo: 100 },
-        "HMM": { dias: 42, custo: 100 },
-        "MAERSK": { dias: 24, custo: 160 },
-        "MSC": { dias: 30, custo: 130 },
-        "COSCO": { dias: 35, custo: 100 },
-        "EVERGREEN": { dias: 35, custo: 80 },
-        "ZIM": { dias: 30, custo: 141 },
-        "INTERTRANS - COSCO": { dias: 21, custo: 250 },
-        "INTERTRANS - CMA CGM": { dias: 21, custo: 335 },
-        "INTERTRANS - HMM": { dias: 21, custo: 360 },
-        "INTERTRANS - YANG MING": { dias: 21, custo: 300 },
-        "BR-X CARGO": { dias: 14, custo: 353 }
+  const FREE_TIME_RULES = {
+    "PIL": { dias: 30, custo: 100 },
+    "HAPAG LLOYD": { dias: 30, custo: 297 },
+    "HAPAG": { dias: 30, custo: 297 },
+    "ONE": { dias: 30, custo: 100 },
+    "ALPHA SHIPPING": { dias: 30, custo: 100 },
+    "ALPHA": { dias: 30, custo: 100 },
+    "CMA CGM": { dias: 25, custo: 175 },
+    "CMA": { dias: 25, custo: 175 },
+    "YANG MING": { dias: 35, custo: 100 },
+    "HMM": { dias: 42, custo: 100 },
+    "MAERSK": { dias: 24, custo: 160 },
+    "MSC": { dias: 30, custo: 130 },
+    "COSCO": { dias: 35, custo: 100 },
+    "EVERGREEN": { dias: 35, custo: 80 },
+    "ZIM": { dias: 30, custo: 141 },
+    "INTERTRANS - COSCO": { dias: 21, custo: 250 },
+    "INTERTRANS - CMA CGM": { dias: 21, custo: 335 },
+    "INTERTRANS - HMM": { dias: 21, custo: 360 },
+    "INTERTRANS - YANG MING": { dias: 21, custo: 300 },
+    "BR-X CARGO": { dias: 14, custo: 353 }
+  };
+
+  const STATUS_FLUXO = ['ag. carregamento', 'liberado', 'depositado'];
+  const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
+  const freeTimeCache = new Map();
+
+  let dadosCompletos = [];
+  let filtroStatusAtivo = null;
+  let filtroFreeTimeAtivo = null;
+  let filtroAtrasoAtivo = null;
+  let filtroTransportadoraAtiva = null;
+  let refreshInterval = null;
+
+  let fotoZoom = 1;
+  let fotoPanX = 0;
+  let fotoPanY = 0;
+  let fotoIsDragging = false;
+  let fotoDragStartX = 0;
+  let fotoDragStartY = 0;
+  let fotoStartPanX = 0;
+  let fotoStartPanY = 0;
+  let fotoTouchLastDist = null;
+  let fotoTouchStartZoom = 1;
+
+  function getFreeTimeRuleCached(armador) {
+    if (!armador) return null;
+    const nome = armador.trim().toUpperCase();
+    if (freeTimeCache.has(nome)) return freeTimeCache.get(nome);
+
+    for (const [key, value] of Object.entries(FREE_TIME_RULES)) {
+      if (nome === key.toUpperCase() || nome.includes(key.toUpperCase()) || key.toUpperCase().includes(nome)) {
+        freeTimeCache.set(nome, value);
+        return value;
+      }
+    }
+    freeTimeCache.set(nome, null);
+    return null;
+  }
+
+  function normalizarStatus(status) {
+    const s = (status || '').toString().trim().toLowerCase();
+    if (s === 'ag. locação' || s === 'ag. locacao' || s === 'ag. carregamento') return 'ag. carregamento';
+    if (s === 'liberada') return 'liberado';
+    if (s === 'depositado') return 'depositado';
+    return s;
+  }
+
+  function getStatusColor(status) {
+    const colors = {
+      'ag. carregamento': '#FDE68A',
+      'liberado': '#DBEAFE',
+      'depositado': '#D1FAE5'
+    };
+    return colors[normalizarStatus(status)] || '#F3F4F6';
+  }
+
+  function showLoading() {
+    const el = document.getElementById('loading-overlay');
+    if (el) el.style.display = 'flex';
+  }
+
+  function hideLoading() {
+    const el = document.getElementById('loading-overlay');
+    if (el) el.style.display = 'none';
+  }
+
+  function getValue(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+  }
+
+  async function verificarAcesso() {
+    try {
+      if (!clienteSupabase) return false;
+
+      const { data: { user } } = await clienteSupabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return false;
+      }
+
+      const { data: userData } = await clienteSupabase
+        .from('usuarios')
+        .select('perfil, status, transportadora')
+        .eq('email', user.email)
+        .single();
+
+      if (!userData) {
+        window.location.href = 'index.html';
+        return false;
+      }
+
+      const perfil = (userData.perfil || '').trim().toLowerCase();
+      const status = (userData.status || '').trim().toLowerCase();
+      const transportadora = (userData.transportadora || '').trim();
+
+      const ehMaster = perfil === 'master' || perfil === 'mestre';
+      const ehAdmin = ehMaster || (perfil === 'administrador' && (status === 'aprovado' || status === ''));
+      const ehTransportadora = !!transportadora;
+
+      if (!ehAdmin && !ehTransportadora) {
+        alert('Acesso negado.');
+        window.location.href = 'index.html';
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Erro em verificarAcesso:', error);
+      alert('Erro ao verificar acesso.');
+      return false;
+    }
+  }
+
+  function formatarDataISO(iso) {
+    if (!iso) return 'N/A';
+    const date = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
+    if (isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString('pt-BR');
+  }
+
+  function calcularDiasRestantes(dataRetirada, diasFreeTime) {
+    if (!dataRetirada || !diasFreeTime) return null;
+    const retirada = new Date(dataRetirada + 'T00:00:00');
+    const agora = new Date();
+    const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
+    return Math.ceil(diff / 86400000);
+  }
+
+  function getTipoBadgeClass(tipo) {
+    const t = (tipo || '').toString().trim().toLowerCase();
+    if (t === 'resfriado') return 'badge-resfriado';
+    if (t === 'congelado com genset') return 'badge-congelado-genset';
+    if (t === 'congelado') return 'badge-congelado';
+    return 'badge-congelado';
+  }
+
+  function getValue(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+  }
+
+  function obterFiltroAtual() {
+    return {
+      dataInicio: getValue('filtroDataInicio'),
+      dataFim: getValue('filtroDataFim'),
+      dataRetirada: getValue('filtroDataRetirada'),
+      armador: getValue('filtroArmador').trim().toLowerCase(),
+      container: getValue('filtroContainer').trim().toLowerCase(),
+      placa: getValue('filtroPlaca').trim().toLowerCase(),
+      cargaPulmao: getValue('filtroCargaPulmao'),
+      tipoCarga: getValue('filtroTipoCarga'),
+      transportadora: getValue('filtroTransportadora').trim().toLowerCase(),
+      status: getValue('filtroStatus')
+    };
+  }
+
+  function matchFilters(d, filtros, ignoreKey = null) {
+    const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
+
+    if (ignoreKey !== 'container' && filtros.container && !(d.container || '').toLowerCase().includes(filtros.container)) return false;
+    if (ignoreKey !== 'armador' && filtros.armador && !(d.armador || '').toLowerCase().includes(filtros.armador)) return false;
+    if (ignoreKey !== 'placa' && filtros.placa && !(d.placa || '').toLowerCase().includes(filtros.placa)) return false;
+    if (ignoreKey !== 'status' && filtros.status && statusNorm !== filtros.status) return false;
+    if (ignoreKey !== 'dataRetirada' && filtros.dataRetirada && d.data_retirada !== filtros.dataRetirada) return false;
+    if (ignoreKey !== 'transportadora' && filtros.transportadora && !(d.transportadora || '').toLowerCase().includes(filtros.transportadora)) return false;
+    if (ignoreKey !== 'tipoCarga' && filtros.tipoCarga && (d.tipo_carga || '') !== filtros.tipoCarga) return false;
+    if (ignoreKey !== 'cargaPulmao' && filtros.cargaPulmao && d.carga_pulmao !== filtros.cargaPulmao) return false;
+
+    if (filtros.dataInicio || filtros.dataFim) {
+      const created = d.created_at ? new Date(d.created_at) : null;
+      if (!created) return false;
+
+      if (filtros.dataInicio && ignoreKey !== 'dataInicio') {
+        const ini = new Date(filtros.dataInicio + 'T00:00:00');
+        if (created < ini) return false;
+      }
+      if (filtros.dataFim && ignoreKey !== 'dataFim') {
+        const fim = new Date(filtros.dataFim + 'T23:59:59');
+        if (created > fim) return false;
+      }
+    }
+
+    if (filtroStatusAtivo && ignoreKey !== 'status' && statusNorm !== filtroStatusAtivo) return false;
+
+    if (filtroFreeTimeAtivo) {
+      const rule = getFreeTimeRuleCached(d.armador);
+      if (!rule || !d.data_retirada) return false;
+      const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+      if (rest === null) return false;
+      const pct = ((rule.dias - rest) / rule.dias) * 100;
+      const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
+      if (faixa !== filtroFreeTimeAtivo) return false;
+    }
+
+    if (filtroAtrasoAtivo) {
+      const isDepositado = statusNorm === 'depositado' || d.finalizado;
+      if (!isDepositado) return false;
+      const rule = getFreeTimeRuleCached(d.armador);
+      if (!rule || !d.data_retirada) return false;
+      const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+      const emAtraso = rest !== null && rest < 0;
+      if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
+      if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
+    }
+
+    if (filtroTransportadoraAtiva && ignoreKey !== 'transportadora' && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
+
+    return true;
+  }
+
+  function obterDadosFiltrados(ignoreKey = null) {
+    const filtros = obterFiltroAtual();
+    return dadosCompletos.filter(d => matchFilters(d, filtros, ignoreKey));
+  }
+
+  function atualizarDatalist(id, values) {
+    const datalist = document.getElementById(id);
+    if (!datalist) return;
+    datalist.innerHTML = '';
+    Array.from(new Set(values.filter(Boolean)))
+      .sort((a, b) => String(a).localeCompare(String(b)))
+      .forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        datalist.appendChild(opt);
+      });
+  }
+
+  function atualizarSelectDinamico(id, values, allLabel, selectedValue) {
+    const select = document.getElementById(id);
+    if (!select) return;
+
+    const unique = Array.from(new Set(values.filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)));
+    const current = selectedValue || '';
+
+    select.innerHTML = `<option value="">${allLabel}</option>`;
+    unique.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      if (v === current) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+    if (current && !unique.includes(current)) {
+      const opt = document.createElement('option');
+      opt.value = current;
+      opt.textContent = current;
+      opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+
+  function atualizarChips() {
+    const chipArea = document.getElementById('chips-area');
+    if (!chipArea) return;
+    chipArea.innerHTML = '';
+    const chips = [];
+    if (filtroStatusAtivo) chips.push({ label: filtroStatusAtivo.toUpperCase(), key: 'status' });
+    if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
+    if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
+    if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
+
+    chips.forEach(c => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = `${c.label} <span>&times;</span>`;
+      chip.onclick = () => {
+        if (c.key === 'status') filtroStatusAtivo = null;
+        else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
+        else if (c.key === 'atraso') filtroAtrasoAtivo = null;
+        else if (c.key === 'transp') filtroTransportadoraAtiva = null;
+        atualizarTudo();
+      };
+      chipArea.appendChild(chip);
+    });
+  }
+
+  function atualizarFiltrosDinamicos() {
+    const filtros = obterFiltroAtual();
+
+    const baseArmador = dadosCompletos.filter(d => matchFilters(d, filtros, 'armador'));
+    const baseContainer = dadosCompletos.filter(d => matchFilters(d, filtros, 'container'));
+    const basePlaca = dadosCompletos.filter(d => matchFilters(d, filtros, 'placa'));
+    const baseTransp = dadosCompletos.filter(d => matchFilters(d, filtros, 'transportadora'));
+    const baseCargaPulmao = dadosCompletos.filter(d => matchFilters(d, filtros, 'cargaPulmao'));
+    const baseTipoCarga = dadosCompletos.filter(d => matchFilters(d, filtros, 'tipoCarga'));
+    const baseStatus = dadosCompletos.filter(d => matchFilters(d, filtros, 'status'));
+
+    atualizarDatalist('listaArmador', baseArmador.map(d => d.armador || ''));
+    atualizarDatalist('listaContainer', baseContainer.map(d => d.container || ''));
+    atualizarDatalist('listaPlaca', basePlaca.map(d => d.placa || ''));
+    atualizarDatalist('listaTransportadora', baseTransp.map(d => d.transportadora || ''));
+
+    atualizarSelectDinamico('filtroCargaPulmao', baseCargaPulmao.map(d => d.carga_pulmao || ''), 'Todos', filtros.cargaPulmao);
+    atualizarSelectDinamico('filtroTipoCarga', baseTipoCarga.map(d => d.tipo_carga || ''), 'Todos', filtros.tipoCarga);
+
+    const statusSelect = document.getElementById('filtroStatus');
+    if (statusSelect) {
+      const statusUnique = Array.from(new Set(baseStatus.map(d => normalizarStatus(d.status || 'ag. carregamento')))).filter(Boolean);
+      const current = filtros.status || '';
+      statusSelect.innerHTML = `<option value="">Todos</option>`;
+      ['ag. carregamento', 'liberado', 'depositado'].forEach(s => {
+        if (statusUnique.includes(s) || current === s) {
+          const opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s.toUpperCase();
+          if (current === s) opt.selected = true;
+          statusSelect.appendChild(opt);
+        }
+      });
+      if (current && !statusUnique.includes(current)) {
+        const opt = document.createElement('option');
+        opt.value = current;
+        opt.textContent = current.toUpperCase();
+        opt.selected = true;
+        statusSelect.appendChild(opt);
+      }
+    }
+  }
+
+  function fotoLink(url, titulo) {
+    return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline; white-space:nowrap;" onclick='abrirFoto(${JSON.stringify(url)}, ${JSON.stringify(titulo)})'>${titulo}</span>` : '-';
+  }
+
+  async function carregarProcessos() {
+    try {
+      if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
+
+      const { data: { user } } = await clienteSupabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const { data: userData } = await clienteSupabase
+        .from('usuarios')
+        .select('perfil, transportadora')
+        .eq('email', user.email)
+        .single();
+
+      const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
+      const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
+
+      let query = clienteSupabase.from('coletas').select('*');
+      if (!ehAdmin && userData?.transportadora) {
+        query = query.eq('transportadora', userData.transportadora);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+      if (error) throw error;
+
+      dadosCompletos = data || [];
+      atualizarTudo();
+    } catch (error) {
+      console.error('Erro ao carregar processos:', error);
+      alert('Erro ao carregar processos: ' + (error?.message || error));
+    }
+  }
+
+  function renderGraficos() { return; }
+
+  function renderTabela(dados) {
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+
+    if (dados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="16" class="sem-dados">Nenhum container encontrado.</td></tr>';
+      return;
+    }
+
+    dados.forEach(d => {
+      const rule = getFreeTimeRuleCached(d.armador);
+      const diasTotal = rule ? rule.dias : '-';
+      const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+      const vencido = diasRest !== null && diasRest < 0;
+      const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
+      const statusText = statusNorm.toUpperCase();
+      const statusColor = getStatusColor(statusNorm);
+
+      const fotoUrl = d.foto_url ? `${STORAGE_BASE}${d.foto_url}` : null;
+      const fotoGenset1Url = d.genset ? `${STORAGE_BASE}${d.genset}` : null;
+      const fotoGenset2Url = d.liberado ? `${STORAGE_BASE}${d.liberado}` : null;
+      const fotoGenset3Url = d.depositado ? `${STORAGE_BASE}${d.depositado}` : null;
+
+      const loc = d.localizacao || 'N/A';
+      const localizacaoHtml = (loc !== 'N/A' && loc !== 'GPS Bloqueado' && loc !== 'Sem GPS')
+        ? `<span class="loc-link" onclick="abrirMapa('${encodeURIComponent(loc)}')">📍 Local</span>`
+        : loc;
+
+      const tipoCarga = d.tipo_carga || 'N/A';
+      const tipoBadgeClass = getTipoBadgeClass(tipoCarga);
+
+      tbody.innerHTML += `
+        <tr>
+          <td class="col-nowrap">
+            <span class="status-badge" style="background-color:${statusColor};">${statusText}</span>
+          </td>
+          <td class="col-nowrap">${d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A'}</td>
+          <td>${d.container || 'N/A'}</td>
+          <td>${d.armador || 'N/A'}</td>
+          <td>${d.transportadora || 'N/A'}</td>
+          <td>${d.placa || 'N/A'}</td>
+          <td><span class="badge-tipo ${d.carga_pulmao === 'Carga' ? 'badge-resfriado' : 'badge-congelado'}">${d.carga_pulmao || 'N/A'}</span></td>
+          <td><span class="badge-tipo ${tipoBadgeClass}">${tipoCarga}</span></td>
+          <td>${diasTotal}</td>
+          <td>${diasRest !== null ? diasRest : '-'}</td>
+          <td class="${vencido ? 'vencido-sim' : 'vencido-nao'}">${vencido ? 'SIM' : 'NÃO'}</td>
+          <td>${localizacaoHtml}</td>
+          <td>${fotoLink(fotoUrl, 'RIC')}</td>
+          <td>${fotoLink(fotoGenset1Url, 'AG. CARREGAMENTO')}</td>
+          <td>${fotoLink(fotoGenset2Url, 'LIBERADO')}</td>
+          <td>${fotoLink(fotoGenset3Url, 'DEPOSITADO')}</td>
+        </tr>
+      `;
+    });
+  }
+
+  function atualizarTudo() {
+    const dados = obterDadosFiltrados();
+    atualizarChips();
+    atualizarFiltrosDinamicos();
+    renderGraficos(dados);
+    renderTabela(dados);
+  }
+
+  function aplicarFiltros() {
+    atualizarTudo();
+  }
+
+  function limparFiltros() {
+    document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+    filtroStatusAtivo = null;
+    filtroFreeTimeAtivo = null;
+    filtroAtrasoAtivo = null;
+    filtroTransportadoraAtiva = null;
+    atualizarTudo();
+  }
+
+  function exportarExcel() {
+    try {
+      const dados = obterDadosFiltrados();
+      if (dados.length === 0) {
+        alert('Nenhum dado para exportar.');
+        return;
+      }
+
+      const exportData = dados.map(d => {
+        const rule = getFreeTimeRuleCached(d.armador);
+        const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+        const vencido = diasRest !== null && diasRest < 0;
+
+        return {
+          Status: normalizarStatus(d.status).toUpperCase(),
+          Retirada: d.data_retirada ? formatarDataISO(d.data_retirada) : '',
+          Container: d.container || '',
+          Armador: d.armador || '',
+          Transportadora: d.transportadora || '',
+          Placa: d.placa || '',
+          'Carga/Pulmão': d.carga_pulmao || '',
+          'Tipo de Carga': d.tipo_carga || '',
+          'FT Total': rule ? rule.dias : '',
+          'Dias Rest': diasRest,
+          Vencido: vencido ? 'SIM' : 'NÃO',
+          Localização: d.localizacao || '',
+          RIC: d.foto_url || '',
+          'AG. CARREGAMENTO': d.genset || '',
+          LIBERADO: d.liberado || '',
+          DEPOSITADO: d.depositado || ''
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Containers');
+      XLSX.writeFile(wb, 'Processos_Container.xlsx');
+    } catch (error) {
+      console.error('Erro ao exportar Excel:', error);
+      alert('Ocorreu um erro ao gerar o arquivo Excel.');
+    }
+  }
+
+  function aplicarTransformFoto() {
+    const img = document.getElementById('foto-ampliada');
+    if (!img) return;
+    img.style.transform = `translate(${fotoPanX}px, ${fotoPanY}px) scale(${fotoZoom})`;
+  }
+
+  function ajustarFotoParaTela() {
+    const img = document.getElementById('foto-ampliada');
+    const stage = document.getElementById('container-img');
+    if (!img || !stage || !img.naturalWidth || !img.naturalHeight) return;
+
+    const maxW = Math.floor(window.innerWidth * 0.92);
+    const maxH = Math.floor(window.innerHeight * 0.82);
+    const ratio = img.naturalWidth / img.naturalHeight;
+
+    let w = maxW;
+    let h = Math.floor(w / ratio);
+
+    if (h > maxH) {
+      h = maxH;
+      w = Math.floor(h * ratio);
+    }
+
+    w = Math.max(180, w);
+    h = Math.max(180, h);
+
+    stage.style.width = w + 'px';
+    stage.style.height = h + 'px';
+
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    aplicarTransformFoto();
+  }
+
+  function resetarZoomFoto() {
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    aplicarTransformFoto();
+  }
+
+  function zoomFoto(delta) {
+    const novoZoom = Math.max(1, Math.min(5, fotoZoom + delta));
+    fotoZoom = novoZoom;
+    if (fotoZoom === 1) {
+      fotoPanX = 0;
+      fotoPanY = 0;
+    }
+    aplicarTransformFoto();
+  }
+
+  function iniciarDragFoto(e) {
+    if (fotoZoom <= 1) return;
+    fotoIsDragging = true;
+    fotoDragStartX = e.clientX;
+    fotoDragStartY = e.clientY;
+    fotoStartPanX = fotoPanX;
+    fotoStartPanY = fotoPanY;
+    e.preventDefault();
+  }
+
+  function moverDragFoto(e) {
+    if (!fotoIsDragging) return;
+    fotoPanX = fotoStartPanX + (e.clientX - fotoDragStartX);
+    fotoPanY = fotoStartPanY + (e.clientY - fotoDragStartY);
+    aplicarTransformFoto();
+  }
+
+  function finalizarDragFoto() {
+    fotoIsDragging = false;
+  }
+
+  function getDistanceTouch(t1, t2) {
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function iniciarPinchFoto(e) {
+    if (e.touches.length === 2) {
+      fotoTouchLastDist = getDistanceTouch(e.touches[0], e.touches[1]);
+      fotoTouchStartZoom = fotoZoom;
+    }
+  }
+
+  function moverPinchFoto(e) {
+    if (e.touches.length === 2 && fotoTouchLastDist) {
+      const newDist = getDistanceTouch(e.touches[0], e.touches[1]);
+      const ratio = newDist / fotoTouchLastDist;
+      fotoZoom = Math.max(1, Math.min(5, fotoTouchStartZoom * ratio));
+      if (fotoZoom === 1) {
+        fotoPanX = 0;
+        fotoPanY = 0;
+      }
+      aplicarTransformFoto();
+      e.preventDefault();
+    }
+  }
+
+  function finalizarPinchFoto() {
+    fotoTouchLastDist = null;
+  }
+
+  function abrirFoto(url, titulo) {
+    const img = document.getElementById('foto-ampliada');
+    const modal = document.getElementById('foto-modal');
+    const title = document.getElementById('foto-titulo');
+    const stage = document.getElementById('container-img');
+    if (!img || !modal || !title || !stage) return;
+
+    modal.style.display = 'flex';
+    title.textContent = titulo || '';
+
+    img.onload = () => {
+      requestAnimationFrame(() => ajustarFotoParaTela());
     };
 
-    const STATUS_FLUXO = ['ag. carregamento', 'liberado', 'depositado'];
-    const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
+    img.src = url;
 
-    const freeTimeCache = new Map();
-    let dadosCompletos = [];
-    let filtroStatusAtivo = null;
-    let filtroFreeTimeAtivo = null;
-    let filtroAtrasoAtivo = null;
-    let filtroTransportadoraAtiva = null;
-    let refreshInterval = null;
+    setTimeout(() => {
+      if (img.complete) ajustarFotoParaTela();
+    }, 120);
+  }
 
-    let fotoZoom = 1;
-    let fotoPanX = 0;
-    let fotoPanY = 0;
-    let fotoIsDragging = false;
-    let fotoDragStartX = 0;
-    let fotoDragStartY = 0;
-    let fotoStartPanX = 0;
-    let fotoStartPanY = 0;
-    let fotoTouchLastDist = null;
-    let fotoTouchStartZoom = 1;
-
-    function getFreeTimeRuleCached(armador) {
-        if (!armador) return null;
-        const nome = armador.trim().toUpperCase();
-        if (freeTimeCache.has(nome)) return freeTimeCache.get(nome);
-        for (const [key, value] of Object.entries(FREE_TIME_RULES)) {
-            if (nome === key.toUpperCase() || nome.includes(key.toUpperCase()) || key.toUpperCase().includes(nome)) {
-                freeTimeCache.set(nome, value);
-                return value;
-            }
-        }
-        freeTimeCache.set(nome, null);
-        return null;
+  function fecharFoto() {
+    const modal = document.getElementById('foto-modal');
+    if (modal) modal.style.display = 'none';
+    resetarZoomFoto();
+    const img = document.getElementById('foto-ampliada');
+    if (img) {
+      img.src = '';
+      img.onload = null;
     }
+  }
 
-    function normalizarStatus(status) {
-        const s = (status || '').toString().trim().toLowerCase();
-        if (s === 'ag. locação' || s === 'ag. locacao' || s === 'ag. carregamento') return 'ag. carregamento';
-        if (s === 'liberada') return 'liberado';
-        if (s === 'depositado') return 'depositado';
-        return s;
+  function abrirMapa(query) {
+    const iframe = document.getElementById('mapa-iframe');
+    const modal = document.getElementById('mapa-modal');
+    if (!iframe || !modal) return;
+    iframe.src = `https://www.google.com/maps?q=${query}&output=embed`;
+    modal.style.display = 'flex';
+  }
+
+  function fecharMapa() {
+    const modal = document.getElementById('mapa-modal');
+    const iframe = document.getElementById('mapa-iframe');
+    if (modal) modal.style.display = 'none';
+    if (iframe) iframe.src = '';
+  }
+
+  function fecharModalDeposito() {
+    const modal = document.getElementById('modal-data-deposito');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function confirmarDataDeposito() {
+    fecharModalDeposito();
+  }
+
+  window.addEventListener('click', function(e) {
+    if (e.target === document.getElementById('foto-modal')) fecharFoto();
+    if (e.target === document.getElementById('mapa-modal')) fecharMapa();
+    if (e.target === document.getElementById('modal-data-deposito')) fecharModalDeposito();
+  });
+
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      fecharFoto();
+      fecharMapa();
+      fecharModalDeposito();
     }
-
-    function getStatusColor(status) {
-        const colors = {
-            'ag. carregamento': '#FDE68A',
-            'liberado': '#DBEAFE',
-            'depositado': '#D1FAE5'
-        };
-        return colors[normalizarStatus(status)] || '#F3F4F6';
-    }
-
-    function showLoading() {
-        const el = document.getElementById('loading-overlay');
-        if (el) el.style.display = 'flex';
-    }
-
-    function hideLoading() {
-        const el = document.getElementById('loading-overlay');
-        if (el) el.style.display = 'none';
-    }
-
-    function getValue(id) {
-        const el = document.getElementById(id);
-        return el ? el.value : '';
-    }
-
-    async function verificarAcesso() {
-        try {
-            if (!clienteSupabase) return false;
-
-            const { data: { user } } = await clienteSupabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'login.html';
-                return false;
-            }
-
-            const { data: userData } = await clienteSupabase
-                .from('usuarios')
-                .select('perfil, status, transportadora')
-                .eq('email', user.email)
-                .single();
-
-            if (!userData) {
-                window.location.href = 'index.html';
-                return false;
-            }
-
-            const perfil = (userData.perfil || '').trim().toLowerCase();
-            const status = (userData.status || '').trim().toLowerCase();
-            const transportadora = (userData.transportadora || '').trim();
-
-            const ehMaster = perfil === 'master' || perfil === 'mestre';
-            const ehAdmin = ehMaster || (perfil === 'administrador' && (status === 'aprovado' || status === ''));
-            const ehTransportadora = !!transportadora;
-
-            if (!ehAdmin && !ehTransportadora) {
-                alert('Acesso negado.');
-                window.location.href = 'index.html';
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Erro em verificarAcesso:', error);
-            alert('Erro ao verificar acesso.');
-            return false;
-        }
-    }
-
-    function formatarDataISO(iso) {
-        if (!iso) return 'N/A';
-        const date = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
-        if (isNaN(date.getTime())) return 'N/A';
-        return date.toLocaleDateString('pt-BR');
-    }
-
-    function calcularDiasRestantes(dataRetirada, diasFreeTime) {
-        if (!dataRetirada || !diasFreeTime) return null;
-        const retirada = new Date(dataRetirada + 'T00:00:00');
-        const agora = new Date();
-        const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
-        return Math.ceil(diff / 86400000);
-    }
-
-    function getTipoBadgeClass(tipo) {
-        const t = (tipo || '').toString().trim().toLowerCase();
-        if (t === 'resfriado') return 'badge-resfriado';
-        if (t === 'congelado com genset') return 'badge-congelado-genset';
-        if (t === 'congelado') return 'badge-congelado';
-        return 'badge-congelado';
-    }
-
-    function getValue(id) {
-        const el = document.getElementById(id);
-        return el ? el.value : '';
-    }
-
-    function obterFiltroAtual() {
-        return {
-            dataInicio: getValue('filtroDataInicio'),
-            dataFim: getValue('filtroDataFim'),
-            dataRetirada: getValue('filtroDataRetirada'),
-            armador: getValue('filtroArmador').trim().toLowerCase(),
-            container: getValue('filtroContainer').trim().toLowerCase(),
-            placa: getValue('filtroPlaca').trim().toLowerCase(),
-            cargaPulmao: getValue('filtroCargaPulmao'),
-            tipoCarga: getValue('filtroTipoCarga'),
-            transportadora: getValue('filtroTransportadora').trim().toLowerCase(),
-            status: getValue('filtroStatus')
-        };
-    }
-
-    function matchFilters(d, filtros, ignoreKey = null) {
-        const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
-
-        if (ignoreKey !== 'container' && filtros.container && !(d.container || '').toLowerCase().includes(filtros.container)) return false;
-        if (ignoreKey !== 'armador' && filtros.armador && !(d.armador || '').toLowerCase().includes(filtros.armador)) return false;
-        if (ignoreKey !== 'placa' && filtros.placa && !(d.placa || '').toLowerCase().includes(filtros.placa)) return false;
-        if (ignoreKey !== 'status' && filtros.status && statusNorm !== filtros.status) return false;
-        if (ignoreKey !== 'dataRetirada' && filtros.dataRetirada && d.data_retirada !== filtros.dataRetirada) return false;
-        if (ignoreKey !== 'transportadora' && filtros.transportadora && !(d.transportadora || '').toLowerCase().includes(filtros.transportadora)) return false;
-        if (ignoreKey !== 'tipoCarga' && filtros.tipoCarga && (d.tipo_carga || '') !== filtros.tipoCarga) return false;
-        if (ignoreKey !== 'cargaPulmao' && filtros.cargaPulmao && d.carga_pulmao !== filtros.cargaPulmao) return false;
-
-        if (ignoreKey !== 'dataInicio' || ignoreKey !== 'dataFim') {
-            if (filtros.dataInicio || filtros.dataFim) {
-                const created = d.created_at ? new Date(d.created_at) : null;
-                if (!created) return false;
-
-                if (filtros.dataInicio && ignoreKey !== 'dataInicio') {
-                    const ini = new Date(filtros.dataInicio + 'T00:00:00');
-                    if (created < ini) return false;
-                }
-                if (filtros.dataFim && ignoreKey !== 'dataFim') {
-                    const fim = new Date(filtros.dataFim + 'T23:59:59');
-                    if (created > fim) return false;
-                }
-            }
-        }
-
-        if (filtroStatusAtivo && ignoreKey !== 'status' && statusNorm !== filtroStatusAtivo) return false;
-
-        if (filtroFreeTimeAtivo) {
-            const rule = getFreeTimeRuleCached(d.armador);
-            if (!rule || !d.data_retirada) return false;
-            const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-            if (rest === null) return false;
-            const pct = ((rule.dias - rest) / rule.dias) * 100;
-            const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
-            if (faixa !== filtroFreeTimeAtivo) return false;
-        }
-
-        if (filtroAtrasoAtivo) {
-            const isDepositado = statusNorm === 'depositado' || d.finalizado;
-            if (!isDepositado) return false;
-            const rule = getFreeTimeRuleCached(d.armador);
-            if (!rule || !d.data_retirada) return false;
-            const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-            const emAtraso = rest !== null && rest < 0;
-            if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
-            if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
-        }
-
-        if (filtroTransportadoraAtiva && ignoreKey !== 'transportadora' && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
-
-        return true;
-    }
-
-    function obterDadosFiltrados(ignoreKey = null) {
-        const filtros = obterFiltroAtual();
-        return dadosCompletos.filter(d => matchFilters(d, filtros, ignoreKey));
-    }
-
-    function atualizarChips() {
-        const chipArea = document.getElementById('chips-area');
-        if (!chipArea) return;
-
-        chipArea.innerHTML = '';
-        const chips = [];
-        if (filtroStatusAtivo) chips.push({ label: filtroStatusAtivo.toUpperCase(), key: 'status' });
-        if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
-        if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
-        if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
-
-        chips.forEach(c => {
-            const chip = document.createElement('div');
-            chip.className = 'chip';
-            chip.innerHTML = `${c.label} <span>&times;</span>`;
-            chip.onclick = () => {
-                if (c.key === 'status') filtroStatusAtivo = null;
-                else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
-                else if (c.key === 'atraso') filtroAtrasoAtivo = null;
-                else if (c.key === 'transp') filtroTransportadoraAtiva = null;
-                atualizarTudo();
-            };
-            chipArea.appendChild(chip);
-        });
-    }
-
-    function atualizarDatalist(id, values) {
-        const datalist = document.getElementById(id);
-        if (!datalist) return;
-        datalist.innerHTML = '';
-        values
-            .filter(Boolean)
-            .sort((a, b) => String(a).localeCompare(String(b)))
-            .forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v;
-                datalist.appendChild(opt);
-            });
-    }
-
-    function atualizarSelectDinamico(id, values, allLabel, selectedValue) {
-        const select = document.getElementById(id);
-        if (!select) return;
-
-        const unique = Array.from(new Set(values.filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)));
-        const current = selectedValue || '';
-
-        select.innerHTML = `<option value="">${allLabel}</option>`;
-        unique.forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v;
-            opt.textContent = v;
-            if (v === current) opt.selected = true;
-            select.appendChild(opt);
-        });
-
-        if (current && !unique.includes(current)) {
-            const opt = document.createElement('option');
-            opt.value = current;
-            opt.textContent = current;
-            opt.selected = true;
-            select.appendChild(opt);
-        }
-    }
-
-    function atualizarFiltrosDinamicos() {
-        const filtros = obterFiltroAtual();
-
-        const baseArmador = dadosCompletos.filter(d => matchFilters(d, filtros, 'armador'));
-        const baseContainer = dadosCompletos.filter(d => matchFilters(d, filtros, 'container'));
-        const basePlaca = dadosCompletos.filter(d => matchFilters(d, filtros, 'placa'));
-        const baseTransp = dadosCompletos.filter(d => matchFilters(d, filtros, 'transportadora'));
-        const baseCargaPulmao = dadosCompletos.filter(d => matchFilters(d, filtros, 'cargaPulmao'));
-        const baseTipoCarga = dadosCompletos.filter(d => matchFilters(d, filtros, 'tipoCarga'));
-        const baseStatus = dadosCompletos.filter(d => matchFilters(d, filtros, 'status'));
-
-        atualizarDatalist('listaArmador', baseArmador.map(d => d.armador || ''));
-        atualizarDatalist('listaContainer', baseContainer.map(d => d.container || ''));
-        atualizarDatalist('listaPlaca', basePlaca.map(d => d.placa || ''));
-        atualizarDatalist('listaTransportadora', baseTransp.map(d => d.transportadora || ''));
-
-        atualizarSelectDinamico('filtroCargaPulmao', baseCargaPulmao.map(d => d.carga_pulmao || ''), 'Todos', filtros.cargaPulmao);
-        atualizarSelectDinamico('filtroTipoCarga', baseTipoCarga.map(d => d.tipo_carga || ''), 'Todos', filtros.tipoCarga);
-
-        const statusSelect = document.getElementById('filtroStatus');
-        if (statusSelect) {
-            const statusUnique = Array.from(new Set(baseStatus.map(d => normalizarStatus(d.status || 'ag. carregamento')))).filter(Boolean);
-            const current = filtros.status || '';
-            statusSelect.innerHTML = `<option value="">Todos</option>`;
-            ['ag. carregamento', 'liberado', 'depositado'].forEach(s => {
-                if (statusUnique.includes(s) || current === s) {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = s.toUpperCase();
-                    if (current === s) opt.selected = true;
-                    statusSelect.appendChild(opt);
-                }
-            });
-            if (current && !statusUnique.includes(current)) {
-                const opt = document.createElement('option');
-                opt.value = current;
-                opt.textContent = current.toUpperCase();
-                opt.selected = true;
-                statusSelect.appendChild(opt);
-            }
-        }
-    }
-
-    function fotoLink(url, titulo) {
-        return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline; white-space:nowrap;" onclick='abrirFoto(${JSON.stringify(url)}, ${JSON.stringify(titulo)})'>${titulo}</span>` : '-';
-    }
-
-    async function carregarProcessos() {
-        try {
-            if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
-
-            const { data: { user } } = await clienteSupabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const { data: userData } = await clienteSupabase
-                .from('usuarios')
-                .select('perfil, transportadora')
-                .eq('email', user.email)
-                .single();
-
-            const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
-            const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
-
-            let query = clienteSupabase.from('coletas').select('*');
-
-            if (!ehAdmin && userData?.transportadora) {
-                query = query.eq('transportadora', userData.transportadora);
-            }
-
-            const { data, error } = await query.order('created_at', { ascending: false });
-            if (error) throw error;
-
-            dadosCompletos = data || [];
-            atualizarTudo();
-        } catch (error) {
-            console.error('Erro ao carregar processos:', error);
-            alert('Erro ao carregar processos: ' + (error?.message || error));
-        }
-    }
-
-    function renderGraficos() {
-        return;
-    }
-
-    function renderTabela(dados) {
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
-
-        if (dados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="16" class="sem-dados">Nenhum container encontrado.</td></tr>';
-            return;
-        }
-
-        dados.forEach(d => {
-            const rule = getFreeTimeRuleCached(d.armador);
-            const diasTotal = rule ? rule.dias : '-';
-            const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
-            const vencido = diasRest !== null && diasRest < 0;
-            const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
-            const statusText = statusNorm.toUpperCase();
-            const statusColor = getStatusColor(statusNorm);
-
-            const fotoUrl = d.foto_url ? `${STORAGE_BASE}${d.foto_url}` : null;
-            const fotoGenset1Url = d.genset ? `${STORAGE_BASE}${d.genset}` : null;
-            const fotoGenset2Url = d.liberado ? `${STORAGE_BASE}${d.liberado}` : null;
-            const fotoGenset3Url = d.depositado ? `${STORAGE_BASE}${d.depositado}` : null;
-
-            let localizacaoHtml = '';
-            const loc = d.localizacao || 'N/A';
-            if (loc !== 'N/A' && loc !== 'GPS Bloqueado' && loc !== 'Sem GPS') {
-                localizacaoHtml = `<span class="loc-link" onclick="abrirMapa('${encodeURIComponent(loc)}')">📍 Local</span>`;
-            } else {
-                localizacaoHtml = loc;
-            }
-
-            const tipoCarga = d.tipo_carga || 'N/A';
-            const tipoBadgeClass = getTipoBadgeClass(tipoCarga);
-
-            tbody.innerHTML += `
-                <tr>
-                    <td class="col-nowrap">${d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A'}</td>
-                    <td>${d.container || 'N/A'}</td>
-                    <td class="col-nowrap"><span class="status-badge" style="background-color:${statusColor};">${statusText}</span></td>
-                    <td>${d.armador || 'N/A'}</td>
-                    <td>${d.transportadora || 'N/A'}</td>
-                    <td>${d.placa || 'N/A'}</td>
-                    <td><span class="badge-tipo ${d.carga_pulmao === 'Carga' ? 'badge-resfriado' : 'badge-congelado'}">${d.carga_pulmao || 'N/A'}</span></td>
-                    <td><span class="badge-tipo ${tipoBadgeClass}">${tipoCarga}</span></td>
-                    <td>${diasTotal}</td>
-                    <td>${diasRest !== null ? diasRest : '-'}</td>
-                    <td class="${vencido ? 'vencido-sim' : 'vencido-nao'}">${vencido ? 'SIM' : 'NÃO'}</td>
-                    <td>${localizacaoHtml}</td>
-                    <td>${fotoLink(fotoUrl, 'RIC')}</td>
-                    <td>${fotoLink(fotoGenset1Url, 'AG. CARREGAMENTO')}</td>
-                    <td>${fotoLink(fotoGenset2Url, 'LIBERADO')}</td>
-                    <td>${fotoLink(fotoGenset3Url, 'DEPOSITADO')}</td>
-                </tr>
-            `;
-        });
-    }
-
-    function atualizarTudo() {
-        const dados = obterDadosFiltrados();
-        atualizarChips();
-        atualizarFiltrosDinamicos();
-        renderGraficos(dados);
-        renderTabela(dados);
-    }
-
-    function aplicarFiltros() {
-        atualizarTudo();
-    }
-
-    function limparFiltros() {
-        document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
-            if (el.tagName === 'SELECT') el.selectedIndex = 0;
-            else el.value = '';
-        });
-        filtroStatusAtivo = null;
-        filtroFreeTimeAtivo = null;
-        filtroAtrasoAtivo = null;
-        filtroTransportadoraAtiva = null;
-        atualizarTudo();
-    }
-
-    function exportarExcel() {
-        try {
-            const dados = obterDadosFiltrados();
-            if (dados.length === 0) {
-                alert('Nenhum dado para exportar.');
-                return;
-            }
-
-            const exportData = dados.map(d => {
-                const rule = getFreeTimeRuleCached(d.armador);
-                const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
-                const vencido = diasRest !== null && diasRest < 0;
-
-                return {
-                    Retirada: d.data_retirada ? formatarDataISO(d.data_retirada) : '',
-                    Container: d.container || '',
-                    Status: normalizarStatus(d.status).toUpperCase(),
-                    Armador: d.armador || '',
-                    Transportadora: d.transportadora || '',
-                    Placa: d.placa || '',
-                    'Carga/Pulmão': d.carga_pulmao || '',
-                    'Tipo de Carga': d.tipo_carga || '',
-                    'FT Total': rule ? rule.dias : '',
-                    'Dias Rest': diasRest,
-                    Vencido: vencido ? 'SIM' : 'NÃO',
-                    Localização: d.localizacao || '',
-                    RIC: d.foto_url || '',
-                    'AG. CARREGAMENTO': d.genset || '',
-                    LIBERADO: d.liberado || '',
-                    DEPOSITADO: d.depositado || ''
-                };
-            });
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Containers');
-            XLSX.writeFile(wb, 'Processos_Container.xlsx');
-        } catch (error) {
-            console.error('Erro ao exportar Excel:', error);
-            alert('Ocorreu um erro ao gerar o arquivo Excel.');
-        }
-    }
-
-    function aplicarTransformFoto() {
-        const img = document.getElementById('foto-ampliada');
-        if (!img) return;
-        img.style.transform = `translate(${fotoPanX}px, ${fotoPanY}px) scale(${fotoZoom})`;
-    }
-
-    function ajustarFotoParaTela() {
-        const img = document.getElementById('foto-ampliada');
-        const stage = document.getElementById('container-img');
-        if (!img || !stage || !img.naturalWidth || !img.naturalHeight) return;
-
-        const maxW = Math.floor(window.innerWidth * 0.92);
-        const maxH = Math.floor(window.innerHeight * 0.82);
-        const ratio = img.naturalWidth / img.naturalHeight;
-
-        let w = maxW;
-        let h = Math.floor(w / ratio);
-
-        if (h > maxH) {
-            h = maxH;
-            w = Math.floor(h * ratio);
-        }
-
-        w = Math.max(180, w);
-        h = Math.max(180, h);
-
-        stage.style.width = w + 'px';
-        stage.style.height = h + 'px';
-
-        fotoZoom = 1;
-        fotoPanX = 0;
-        fotoPanY = 0;
-        aplicarTransformFoto();
-    }
-
-    function resetarZoomFoto() {
-        fotoZoom = 1;
-        fotoPanX = 0;
-        fotoPanY = 0;
-        aplicarTransformFoto();
-    }
-
-    function zoomFoto(delta) {
-        const novoZoom = Math.max(1, Math.min(5, fotoZoom + delta));
-        fotoZoom = novoZoom;
-        if (fotoZoom === 1) {
-            fotoPanX = 0;
-            fotoPanY = 0;
-        }
-        aplicarTransformFoto();
-    }
-
-    function iniciarDragFoto(e) {
-        if (fotoZoom <= 1) return;
-        fotoIsDragging = true;
-        fotoDragStartX = e.clientX;
-        fotoDragStartY = e.clientY;
-        fotoStartPanX = fotoPanX;
-        fotoStartPanY = fotoPanY;
-        e.preventDefault();
-    }
-
-    function moverDragFoto(e) {
-        if (!fotoIsDragging) return;
-        fotoPanX = fotoStartPanX + (e.clientX - fotoDragStartX);
-        fotoPanY = fotoStartPanY + (e.clientY - fotoDragStartY);
-        aplicarTransformFoto();
-    }
-
-    function finalizarDragFoto() {
-        fotoIsDragging = false;
-    }
-
-    function getDistanceTouch(t1, t2) {
-        const dx = t1.clientX - t2.clientX;
-        const dy = t1.clientY - t2.clientY;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    function iniciarPinchFoto(e) {
-        if (e.touches.length === 2) {
-            fotoTouchLastDist = getDistanceTouch(e.touches[0], e.touches[1]);
-            fotoTouchStartZoom = fotoZoom;
-        }
-    }
-
-    function moverPinchFoto(e) {
-        if (e.touches.length === 2 && fotoTouchLastDist) {
-            const newDist = getDistanceTouch(e.touches[0], e.touches[1]);
-            const ratio = newDist / fotoTouchLastDist;
-            fotoZoom = Math.max(1, Math.min(5, fotoTouchStartZoom * ratio));
-            if (fotoZoom === 1) {
-                fotoPanX = 0;
-                fotoPanY = 0;
-            }
+  });
+
+  window.addEventListener('load', async () => {
+    showLoading();
+    try {
+      const ok = await verificarAcesso();
+      if (!ok) return;
+
+      await carregarProcessos();
+
+      const fotoStage = document.getElementById('container-img');
+      const fotoImg = document.getElementById('foto-ampliada');
+
+      if (fotoStage) {
+        fotoStage.addEventListener('wheel', function(e) {
+          e.preventDefault();
+          const delta = e.deltaY < 0 ? 0.15 : -0.15;
+          zoomFoto(delta);
+        }, { passive: false });
+
+        fotoStage.addEventListener('mousedown', iniciarDragFoto);
+        window.addEventListener('mousemove', moverDragFoto);
+        window.addEventListener('mouseup', finalizarDragFoto);
+
+        fotoStage.addEventListener('touchstart', function(e) {
+          if (e.touches.length === 1 && fotoZoom > 1) {
+            fotoIsDragging = true;
+            fotoDragStartX = e.touches[0].clientX;
+            fotoDragStartY = e.touches[0].clientY;
+            fotoStartPanX = fotoPanX;
+            fotoStartPanY = fotoPanY;
+          }
+          if (e.touches.length === 2) {
+            iniciarPinchFoto(e);
+          }
+        }, { passive: false });
+
+        fotoStage.addEventListener('touchmove', function(e) {
+          if (e.touches.length === 1 && fotoIsDragging) {
+            fotoPanX = fotoStartPanX + (e.touches[0].clientX - fotoDragStartX);
+            fotoPanY = fotoStartPanY + (e.touches[0].clientY - fotoDragStartY);
             aplicarTransformFoto();
             e.preventDefault();
-        }
-    }
+          } else if (e.touches.length === 2) {
+            moverPinchFoto(e);
+          }
+        }, { passive: false });
 
-    function finalizarPinchFoto() {
-        fotoTouchLastDist = null;
-    }
+        fotoStage.addEventListener('touchend', function() {
+          fotoIsDragging = false;
+          finalizarPinchFoto();
+        });
+      }
 
-    function abrirFoto(url, titulo) {
-        const img = document.getElementById('foto-ampliada');
-        const modal = document.getElementById('foto-modal');
-        const title = document.getElementById('foto-titulo');
-        const stage = document.getElementById('container-img');
-        if (!img || !modal || !title || !stage) return;
+      if (fotoImg) {
+        fotoImg.addEventListener('dblclick', function() {
+          if (fotoZoom === 1) zoomFoto(1);
+          else resetarZoomFoto();
+        });
+      }
 
-        modal.style.display = 'flex';
-        title.textContent = titulo || '';
-
-        img.onload = () => {
-            requestAnimationFrame(() => ajustarFotoParaTela());
-        };
-
-        img.src = url;
-
-        setTimeout(() => {
-            if (img.complete) ajustarFotoParaTela();
-        }, 120);
-    }
-
-    function fecharFoto() {
-        const modal = document.getElementById('foto-modal');
-        if (modal) modal.style.display = 'none';
-        resetarZoomFoto();
-        const img = document.getElementById('foto-ampliada');
-        if (img) {
-            img.src = '';
-            img.onload = null;
-        }
-    }
-
-    function abrirMapa(query) {
-        const iframe = document.getElementById('mapa-iframe');
-        const modal = document.getElementById('mapa-modal');
-        if (!iframe || !modal) return;
-        iframe.src = `https://www.google.com/maps?q=${query}&output=embed`;
-        modal.style.display = 'flex';
-    }
-
-    function fecharMapa() {
-        const modal = document.getElementById('mapa-modal');
-        const iframe = document.getElementById('mapa-iframe');
-        if (modal) modal.style.display = 'none';
-        if (iframe) iframe.src = '';
-    }
-
-    function fecharModalDeposito() {
-        const modal = document.getElementById('modal-data-deposito');
-        if (modal) modal.style.display = 'none';
-    }
-
-    function confirmarDataDeposito() {
-        fecharModalDeposito();
-    }
-
-    window.addEventListener('click', function(e) {
-        if (e.target === document.getElementById('foto-modal')) fecharFoto();
-        if (e.target === document.getElementById('mapa-modal')) fecharMapa();
-        if (e.target === document.getElementById('modal-data-deposito')) fecharModalDeposito();
-    });
-
-    window.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            fecharFoto();
-            fecharMapa();
-            fecharModalDeposito();
-        }
-    });
-
-    window.addEventListener('load', async () => {
-        showLoading();
-        try {
-            const ok = await verificarAcesso();
-            if (!ok) return;
-
-            await carregarProcessos();
-
-            const fotoStage = document.getElementById('container-img');
-            const fotoImg = document.getElementById('foto-ampliada');
-
-            if (fotoStage) {
-                fotoStage.addEventListener('wheel', function(e) {
-                    e.preventDefault();
-                    const delta = e.deltaY < 0 ? 0.15 : -0.15;
-                    zoomFoto(delta);
-                }, { passive: false });
-
-                fotoStage.addEventListener('mousedown', iniciarDragFoto);
-                window.addEventListener('mousemove', moverDragFoto);
-                window.addEventListener('mouseup', finalizarDragFoto);
-
-                fotoStage.addEventListener('touchstart', function(e) {
-                    if (e.touches.length === 1 && fotoZoom > 1) {
-                        fotoIsDragging = true;
-                        fotoDragStartX = e.touches[0].clientX;
-                        fotoDragStartY = e.touches[0].clientY;
-                        fotoStartPanX = fotoPanX;
-                        fotoStartPanY = fotoPanY;
-                    }
-                    if (e.touches.length === 2) {
-                        iniciarPinchFoto(e);
-                    }
-                }, { passive: false });
-
-                fotoStage.addEventListener('touchmove', function(e) {
-                    if (e.touches.length === 1 && fotoIsDragging) {
-                        fotoPanX = fotoStartPanX + (e.touches[0].clientX - fotoDragStartX);
-                        fotoPanY = fotoStartPanY + (e.touches[0].clientY - fotoDragStartY);
-                        aplicarTransformFoto();
-                        e.preventDefault();
-                    } else if (e.touches.length === 2) {
-                        moverPinchFoto(e);
-                    }
-                }, { passive: false });
-
-                fotoStage.addEventListener('touchend', function() {
-                    fotoIsDragging = false;
-                    finalizarPinchFoto();
-                });
-            }
-
-            if (fotoImg) {
-                fotoImg.addEventListener('dblclick', function() {
-                    if (fotoZoom === 1) zoomFoto(1);
-                    else resetarZoomFoto();
-                });
-            }
-
-            if (refreshInterval) clearInterval(refreshInterval);
-            refreshInterval = setInterval(() => {
-                if (document.visibilityState === 'visible') {
-                    carregarProcessos();
-                }
-            }, 20000);
-
-            atualizarFiltrosDinamicos();
-        } finally {
-            hideLoading();
-        }
-    });
-
-    document.addEventListener('visibilitychange', () => {
+      if (refreshInterval) clearInterval(refreshInterval);
+      refreshInterval = setInterval(() => {
         if (document.visibilityState === 'visible') {
-            carregarProcessos();
+          carregarProcessos();
         }
-    });
+      }, 20000);
 
-    document.getElementById('filtroDataInicio').addEventListener('change', atualizarTudo);
-    document.getElementById('filtroDataFim').addEventListener('change', atualizarTudo);
-    document.getElementById('filtroDataRetirada').addEventListener('change', atualizarTudo);
-    document.getElementById('filtroArmador').addEventListener('input', () => {
-        clearTimeout(window._tArmador);
-        window._tArmador = setTimeout(atualizarTudo, 120);
-    });
-    document.getElementById('filtroContainer').addEventListener('input', () => {
-        clearTimeout(window._tContainer);
-        window._tContainer = setTimeout(atualizarTudo, 120);
-    });
-    document.getElementById('filtroPlaca').addEventListener('input', () => {
-        clearTimeout(window._tPlaca);
-        window._tPlaca = setTimeout(atualizarTudo, 120);
-    });
-    document.getElementById('filtroTransportadora').addEventListener('input', () => {
-        clearTimeout(window._tTransp);
-        window._tTransp = setTimeout(atualizarTudo, 120);
-    });
-    document.getElementById('filtroCargaPulmao').addEventListener('change', atualizarTudo);
-    document.getElementById('filtroTipoCarga').addEventListener('change', atualizarTudo);
-    document.getElementById('filtroStatus').addEventListener('change', () => {
-        const v = document.getElementById('filtroStatus').value;
-        filtroStatusAtivo = v || null;
-        atualizarTudo();
-    });
+      atualizarFiltrosDinamicos();
+    } finally {
+      hideLoading();
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      carregarProcessos();
+    }
+  });
+
+  document.getElementById('filtroDataInicio').addEventListener('change', atualizarTudo);
+  document.getElementById('filtroDataFim').addEventListener('change', atualizarTudo);
+  document.getElementById('filtroDataRetirada').addEventListener('change', atualizarTudo);
+  document.getElementById('filtroArmador').addEventListener('input', () => {
+    clearTimeout(window._tArmador);
+    window._tArmador = setTimeout(atualizarTudo, 120);
+  });
+  document.getElementById('filtroContainer').addEventListener('input', () => {
+    clearTimeout(window._tContainer);
+    window._tContainer = setTimeout(atualizarTudo, 120);
+  });
+  document.getElementById('filtroPlaca').addEventListener('input', () => {
+    clearTimeout(window._tPlaca);
+    window._tPlaca = setTimeout(atualizarTudo, 120);
+  });
+  document.getElementById('filtroTransportadora').addEventListener('input', () => {
+    clearTimeout(window._tTransp);
+    window._tTransp = setTimeout(atualizarTudo, 120);
+  });
+  document.getElementById('filtroCargaPulmao').addEventListener('change', atualizarTudo);
+  document.getElementById('filtroTipoCarga').addEventListener('change', atualizarTudo);
+  document.getElementById('filtroStatus').addEventListener('change', () => {
+    filtroStatusAtivo = document.getElementById('filtroStatus').value || null;
+    atualizarTudo();
+  });
 </script>
 </body>
 </html>
