@@ -711,28 +711,12 @@ body {
         </select>
       </div>
       <div class="form-group">
-        <label>PLACA</label>
-        <input type="text" id="placa" placeholder="Digite a placa" disabled>
-      </div>
-      <div class="form-group">
-        <label>CIDADE</label>
-        <input type="text" id="cidade" placeholder="Ex: Santos, Rio de Janeiro..." disabled>
-      </div>
-      <div class="form-group">
-        <label>TERMINAL DE COLETA</label>
-        <input type="text" id="terminalColeta" placeholder="Ex: Lechman, VMG..." disabled>
-      </div>
-      <div class="form-group">
         <label>CONTAINER</label>
         <input type="text" id="containerInput" placeholder="Digite o número do container" disabled>
       </div>
       <div class="form-group">
-        <label>TARA</label>
-        <input type="text" id="tara" placeholder="Ex: 4730" disabled>
-      </div>
-      <div class="form-group">
-        <label>MAX GROSS</label>
-        <input type="text" id="maxGross" placeholder="Ex: 35000" disabled>
+        <label>PLACA</label>
+        <input type="text" id="placa" placeholder="Digite a placa" disabled>
       </div>
     </div>
   </div>
@@ -811,7 +795,7 @@ body {
       </div>
     </div>
   </div>  <script src="script.js"></script>  <script>
-    const DRAFT_KEY = 'coletaweb_draft_v11';
+    const DRAFT_KEY = 'coletaweb_draft_v12';
     const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
     const ETAPAS = ['ric', 'genset1', 'genset2', 'genset3'];
 
@@ -915,7 +899,7 @@ body {
     }
 
     function camposObrigatoriosPreenchidos() {
-      const ids = ['dataRetirada', 'armador', 'placa', 'cidade', 'terminalColeta', 'containerInput', 'tara', 'maxGross'];
+      const ids = ['dataRetirada', 'armador', 'placa', 'containerInput'];
       return ids.every(id => (document.getElementById(id)?.value || '').trim() !== '');
     }
 
@@ -924,11 +908,7 @@ body {
         data_retirada: document.getElementById('dataRetirada').value,
         armador: document.getElementById('armador').value.trim(),
         placa: document.getElementById('placa').value.trim(),
-        cidade: document.getElementById('cidade').value.trim(),
-        terminalColeta: document.getElementById('terminalColeta').value.trim(),
-        container: document.getElementById('containerInput').value.trim(),
-        tara: document.getElementById('tara').value.trim(),
-        maxGross: document.getElementById('maxGross').value.trim()
+        container: document.getElementById('containerInput').value.trim()
       };
     }
 
@@ -1343,7 +1323,7 @@ body {
 
     function atualizarBloqueiosCampos() {
       const liberado = !!tipoCargaSelecionado && !!cargaPulmaoSelecionado;
-      ['dataRetirada', 'armador', 'placa', 'cidade', 'terminalColeta', 'containerInput', 'tara', 'maxGross'].forEach(id => {
+      ['dataRetirada', 'armador', 'placa', 'containerInput'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = !liberado;
       });
@@ -1469,11 +1449,7 @@ body {
       document.getElementById('dataRetirada').value = campos.data_retirada || '';
       document.getElementById('armador').value = campos.armador || '';
       document.getElementById('placa').value = campos.placa || '';
-      document.getElementById('cidade').value = campos.cidade || '';
-      document.getElementById('terminalColeta').value = campos.terminalColeta || '';
       document.getElementById('containerInput').value = campos.container || '';
-      document.getElementById('tara').value = campos.tara || '';
-      document.getElementById('maxGross').value = campos.maxGross || '';
     }
 
     function restaurarPreviewAtual() {
@@ -1617,11 +1593,7 @@ body {
         data_retirada: registro.data_retirada,
         armador: registro.armador,
         placa: registro.placa,
-        cidade: registro.cidade,
-        terminalColeta: registro.terminal_coleta,
-        container: registro.container,
-        tara: registro.tara,
-        maxGross: registro.max_gross
+        container: registro.container
       });
 
       atualizarInterfaceEtapa();
@@ -1666,7 +1638,7 @@ body {
       atualizarInterfaceEtapa();
     });
 
-    ['dataRetirada', 'armador', 'placa', 'cidade', 'terminalColeta', 'containerInput', 'tara', 'maxGross'].forEach(id => {
+    ['dataRetirada', 'armador', 'placa', 'containerInput'].forEach(id => {
       const el = document.getElementById(id);
       el.addEventListener('input', () => {
         salvarRascunho();
@@ -1718,11 +1690,7 @@ body {
       document.getElementById('dataRetirada').value = '';
       document.getElementById('armador').value = '';
       document.getElementById('placa').value = '';
-      document.getElementById('cidade').value = '';
-      document.getElementById('terminalColeta').value = '';
       document.getElementById('containerInput').value = '';
-      document.getElementById('tara').value = '';
-      document.getElementById('maxGross').value = '';
 
       document.getElementById('cameraInput').value = '';
       document.getElementById('gensetInput').value = '';
@@ -1812,11 +1780,7 @@ body {
             armador: campos.armador,
             container: campos.container || 'N/A',
             placa: campos.placa,
-            tara: campos.tara,
-            max_gross: campos.maxGross,
             carga_pulmao: cargaPulmaoSelecionado,
-            terminal_coleta: campos.terminalColeta,
-            cidade: campos.cidade,
             foto_url: fileNameRIC,
             localizacao: localizacao,
             transportadora: transportadora,
