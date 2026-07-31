@@ -557,9 +557,9 @@
       <thead>
         <tr>
           <th>Status</th>
+          <th>ORDEM</th>
           <th>Retirada</th>
           <th>Container</th>
-          <th>ORDEM</th>
           <th>Armador</th>
           <th>Transp.</th>
           <th>Placa</th>
@@ -1029,9 +1029,9 @@
           <td class="col-nowrap">
             <span class="status-badge" style="background-color:${statusColor};">${statusText}</span>
           </td>
+          <td>${d.ordem || 'N/A'}</td>
           <td class="col-nowrap">${d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A'}</td>
           <td>${d.container || 'N/A'}</td>
-          <td>${d.ordem || 'N/A'}</td>
           <td>${d.armador || 'N/A'}</td>
           <td>${d.transportadora || 'N/A'}</td>
           <td>${d.placa || 'N/A'}</td>
@@ -1089,9 +1089,9 @@
 
         return {
           Status: normalizarStatus(d.status).toUpperCase(),
+          ORDEM: d.ordem || '',
           Retirada: d.data_retirada ? formatarDataISO(d.data_retirada) : '',
           Container: d.container || '',
-          ORDEM: d.ordem || '',
           Armador: d.armador || '',
           Transportadora: d.transportadora || '',
           Placa: d.placa || '',

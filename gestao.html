@@ -382,6 +382,77 @@
       color: #1e2f3a;
     }
 
+    .foto-link,
+    .loc-link {
+      color: var(--navy);
+      cursor: pointer;
+      text-decoration: underline;
+      font-weight: 700;
+      font-size: 10px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.18s ease;
+    }
+
+    .foto-link:hover,
+    .loc-link:hover {
+      transform: translateY(-1px);
+    }
+
+    #mapa-modal,
+    #foto-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      background: rgba(0,0,0,0.72);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .mapa-container,
+    .foto-container {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      width: 90%;
+      max-width: 900px;
+      height: 80vh;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .mapa-container iframe {
+      width: 100%;
+      height: calc(100% - 40px);
+      border: none;
+      border-radius: 10px;
+    }
+
+    .foto-container img {
+      width: 100%;
+      height: calc(100% - 40px);
+      object-fit: contain;
+      background: #111;
+      border-radius: 10px;
+    }
+
+    .fechar-mapa,
+    .fechar-foto {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 34px;
+      color: var(--navy);
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 10;
+      line-height: 1;
+    }
+
     #loading-overlay {
       display: none;
       position: fixed;
@@ -613,38 +684,43 @@
   <div class="table-wrapper">
     <table id="main-table">
       <colgroup>
+        <col style="width:7%">
+        <col style="width:8%">
         <col style="width:8%">
         <col style="width:8%">
         <col style="width:9%">
-        <col style="width:10%">
-        <col style="width:10%">
+        <col style="width:9%">
+        <col style="width:7%">
         <col style="width:8%">
         <col style="width:8%">
-        <col style="width:10%">
         <col style="width:7%">
         <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:8%">
         <col style="width:6%">
-        <col style="width:9%">
-        <col style="width:5%">
-        <col style="width:7%">
-        <col style="width:7%">
-        <col style="width:7%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:8%">
       </colgroup>
       <thead>
         <tr>
           <th>Status</th>
+          <th>ORDEM</th>
           <th>Retirada</th>
           <th>Container</th>
-          <th>ORDEM</th>
           <th>Armador</th>
           <th>Transp.</th>
           <th>Placa</th>
           <th>Carga/Pulmão</th>
           <th>Tipo de Carga</th>
           <th>FT Total</th>
+          <th>Custo/Dia</th>
+          <th>Custo Total</th>
           <th>Dias Rest.</th>
           <th>Vencido?</th>
-          <th>Localização</th>
+          <th>Local</th>
           <th>RIC</th>
           <th>AG. CARREGAMENTO</th>
           <th>LIBERADO</th>
@@ -653,6 +729,20 @@
       </thead>
       <tbody id="table-body"></tbody>
     </table>
+  </div>
+</div>
+
+<div id="mapa-modal">
+  <div class="mapa-container">
+    <span class="fechar-mapa" onclick="fecharMapa()">&times;</span>
+    <iframe id="mapa-iframe"></iframe>
+  </div>
+</div>
+
+<div id="foto-modal">
+  <div class="foto-container">
+    <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
+    <img id="foto-img" src="" alt="Foto">
   </div>
 </div>
 
@@ -695,6 +785,23 @@
   let lastSignature = '';
   let carregandoInicial = true;
 
+  function escapeHtml(texto) {
+    return String(texto || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function beginSoftTransition() {
+    document.body.classList.add('is-updating');
+    clearTimeout(window._softTransitionTimer);
+    window._softTransitionTimer = setTimeout(() => {
+      document.body.classList.remove('is-updating');
+    }, 180);
+  }
+
   function getFreeTimeRuleCached(armador) {
     if (!armador) return null;
     const nome = armador.trim().toUpperCase();
@@ -730,14 +837,6 @@
   function getValue(id) {
     const el = document.getElementById(id);
     return el ? el.value : '';
-  }
-
-  function beginSoftTransition() {
-    document.body.classList.add('is-updating');
-    clearTimeout(window._softTransitionTimer);
-    window._softTransitionTimer = setTimeout(() => {
-      document.body.classList.remove('is-updating');
-    }, 180);
   }
 
   async function verificarAcesso() {
@@ -796,6 +895,22 @@
     const agora = new Date();
     const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
     return Math.ceil(diff / 86400000);
+  }
+
+  function calcularCustoDia(armador) {
+    const rule = getFreeTimeRuleCached(armador);
+    return rule ? rule.custo : null;
+  }
+
+  function calcularCustoTotal(diasRestantes, custoDia) {
+    if (diasRestantes === null || custoDia === null) return null;
+    const atrasados = Math.max(0, -diasRestantes);
+    return atrasados * custoDia;
+  }
+
+  function formatarMoedaUSD(valor) {
+    if (valor === null || valor === undefined || isNaN(valor)) return '-';
+    return 'US$ ' + Number(valor).toFixed(2);
   }
 
   function getTipoBadgeClass(tipo) {
@@ -914,18 +1029,55 @@
 
   function atualizarFiltrosDinamicos() {
     const filtros = obterFiltroAtual();
-    const baseOrdem = dadosCompletos.filter(d => matchFilters(d, filtros, 'ordem'));
     const baseArmador = dadosCompletos.filter(d => matchFilters(d, filtros, 'armador'));
     const baseTransp = dadosCompletos.filter(d => matchFilters(d, filtros, 'transportadora'));
 
     atualizarDatalist('listaArmador', baseArmador.map(d => d.armador || ''));
     atualizarDatalist('listaTransportadora', baseTransp.map(d => d.transportadora || ''));
 
-    document.getElementById('filtroStatus').value = filtros.status || '';
+    const elStatus = document.getElementById('filtroStatus');
+    if (elStatus) elStatus.value = filtros.status || '';
+  }
+
+  function abrirFoto(url, titulo) {
+    const modal = document.getElementById('foto-modal');
+    const img = document.getElementById('foto-img');
+    if (!modal || !img) return;
+    img.src = url;
+    img.alt = titulo || 'Foto';
+    modal.style.display = 'flex';
+  }
+
+  function fecharFoto() {
+    const modal = document.getElementById('foto-modal');
+    const img = document.getElementById('foto-img');
+    if (modal) modal.style.display = 'none';
+    if (img) img.src = '';
+  }
+
+  function abrirMapa(query) {
+    const iframe = document.getElementById('mapa-iframe');
+    const modal = document.getElementById('mapa-modal');
+    if (!iframe || !modal) return;
+    iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+    modal.style.display = 'flex';
+  }
+
+  function fecharMapa() {
+    const modal = document.getElementById('mapa-modal');
+    const iframe = document.getElementById('mapa-iframe');
+    if (modal) modal.style.display = 'none';
+    if (iframe) iframe.src = '';
   }
 
   function fotoLink(url, titulo) {
-    return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline; white-space:nowrap;" onclick='abrirFoto(${JSON.stringify(url)}, ${JSON.stringify(titulo)})'>${titulo}</span>` : '-';
+    if (!url) return '-';
+    return `<span class="foto-link" data-url="${escapeHtml(url)}" data-titulo="${escapeHtml(titulo || '')}">${escapeHtml(titulo || '')}</span>`;
+  }
+
+  function renderLocalizacao(loc) {
+    if (!loc || loc === 'N/A' || loc === 'GPS Bloqueado' || loc === 'Sem GPS') return 'N/A';
+    return `<span class="loc-link" data-localizacao="${escapeHtml(loc)}">📍 Local</span>`;
   }
 
   async function carregarProcessos() {
@@ -1230,17 +1382,17 @@
     tbody.innerHTML = '';
 
     if (dados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="16" class="sem-dados">Nenhum container encontrado.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="19" class="sem-dados">Nenhum container encontrado.</td></tr>';
       return;
     }
 
     dados.forEach(d => {
       const rule = getFreeTimeRuleCached(d.armador);
       const diasTotal = rule ? rule.dias : '-';
+      const custoDia = calcularCustoDia(d.armador);
       const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+      const custoTotal = calcularCustoTotal(diasRest, custoDia);
       const vencido = diasRest !== null && diasRest < 0;
-      const custoDiario = (vencido && rule) ? rule.custo.toFixed(2) : '-';
-      const custoTotal = (vencido && rule) ? (Math.abs(diasRest) * rule.custo).toFixed(2) : '-';
       const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
       const statusText = statusNorm.toUpperCase();
       const statusColor = getStatusColor(statusNorm);
@@ -1249,18 +1401,20 @@
       tr.className = 'row-appear';
       tr.innerHTML = `
         <td><span class="status-badge" style="background-color:${statusColor};">${statusText}</span></td>
+        <td>${d.ordem || 'N/A'}</td>
         <td>${d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A'}</td>
         <td>${d.container || 'N/A'}</td>
-        <td>${d.ordem || 'N/A'}</td>
         <td>${d.armador || 'N/A'}</td>
         <td>${d.transportadora || 'N/A'}</td>
         <td>${d.placa || 'N/A'}</td>
         <td><span class="badge-tipo ${d.carga_pulmao === 'Carga' ? 'badge-resfriado' : 'badge-congelado'}">${d.carga_pulmao || 'N/A'}</span></td>
         <td><span class="badge-tipo ${getTipoBadgeClass(d.tipo_carga)}">${d.tipo_carga || 'N/A'}</span></td>
         <td>${diasTotal}</td>
+        <td>${custoDia !== null ? formatarMoedaUSD(custoDia) : '-'}</td>
+        <td>${custoTotal !== null ? formatarMoedaUSD(custoTotal) : '-'}</td>
         <td>${diasRest !== null ? diasRest : '-'}</td>
         <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
-        <td>${d.localizacao || 'N/A'}</td>
+        <td>${renderLocalizacao(d.localizacao || '')}</td>
         <td>${fotoLink(d.foto_url ? `${STORAGE_BASE}${d.foto_url}` : null, 'RIC')}</td>
         <td>${fotoLink(d.genset ? `${STORAGE_BASE}${d.genset}` : null, 'AG. CARREGAMENTO')}</td>
         <td>${fotoLink(d.liberado ? `${STORAGE_BASE}${d.liberado}` : null, 'LIBERADO')}</td>
@@ -1306,19 +1460,23 @@
       const exportData = dados.map(d => {
         const rule = getFreeTimeRuleCached(d.armador);
         const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+        const custoDia = rule ? rule.custo : null;
+        const custoTotal = calcularCustoTotal(diasRest, custoDia);
         const vencido = diasRest !== null && diasRest < 0;
 
         return {
           Status: normalizarStatus(d.status).toUpperCase(),
+          ORDEM: d.ordem || '',
           Retirada: d.data_retirada ? formatarDataISO(d.data_retirada) : '',
           Container: d.container || '',
-          ORDEM: d.ordem || '',
           Armador: d.armador || '',
           Transportadora: d.transportadora || '',
           Placa: d.placa || '',
           'Carga/Pulmão': d.carga_pulmao || '',
           'Tipo de Carga': d.tipo_carga || '',
           'FT Total': rule ? rule.dias : '',
+          'Custo/Dia (USD)': custoDia !== null ? custoDia : '',
+          'Custo Total (USD)': custoTotal !== null ? custoTotal : '',
           'Dias Rest': diasRest,
           Vencido: vencido ? 'SIM' : 'NÃO',
           Localização: d.localizacao || '',
@@ -1401,24 +1559,84 @@
     }
   });
 
-  document.getElementById('filtroDataInicio').addEventListener('change', atualizarTudo);
-  document.getElementById('filtroDataFim').addEventListener('change', atualizarTudo);
-  document.getElementById('filtroDataRetirada').addEventListener('change', atualizarTudo);
+  document.addEventListener('click', function(e) {
+    const alvoFoto = e.target.closest('.foto-link');
+    if (alvoFoto && alvoFoto.dataset && alvoFoto.dataset.url) {
+      abrirFoto(alvoFoto.dataset.url, alvoFoto.dataset.titulo || '');
+      return;
+    }
 
-  document.getElementById('filtroArmador').addEventListener('input', () => {
-    clearTimeout(window._tArmador);
-    window._tArmador = setTimeout(atualizarTudo, 120);
+    const alvo = e.target.closest('.loc-link');
+    if (alvo && alvo.dataset && alvo.dataset.localizacao) {
+      abrirMapa(alvo.dataset.localizacao);
+    }
   });
 
-  document.getElementById('filtroOrdem').addEventListener('input', () => {
-    clearTimeout(window._tOrdem);
-    window._tOrdem = setTimeout(atualizarTudo, 120);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      const fotoModal = document.getElementById('foto-modal');
+      const mapaModal = document.getElementById('mapa-modal');
+
+      if (fotoModal && fotoModal.style.display === 'flex') {
+        fecharFoto();
+      } else if (mapaModal && mapaModal.style.display === 'flex') {
+        fecharMapa();
+      }
+    }
   });
 
-  document.getElementById('filtroStatus').addEventListener('change', () => {
-    filtroStatusAtivo = document.getElementById('filtroStatus').value || null;
-    atualizarTudo();
+  document.getElementById('foto-modal').addEventListener('click', function (e) {
+    if (e.target === this) {
+      fecharFoto();
+    }
   });
+
+  document.getElementById('mapa-modal').addEventListener('click', function (e) {
+    if (e.target === this) {
+      fecharMapa();
+    }
+  });
+
+  document.querySelector('.foto-container').addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
+
+  document.querySelector('.mapa-container').addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
+
+  const elDataInicio = document.getElementById('filtroDataInicio');
+  if (elDataInicio) elDataInicio.addEventListener('change', atualizarTudo);
+
+  const elDataFim = document.getElementById('filtroDataFim');
+  if (elDataFim) elDataFim.addEventListener('change', atualizarTudo);
+
+  const elDataRetirada = document.getElementById('filtroDataRetirada');
+  if (elDataRetirada) elDataRetirada.addEventListener('change', atualizarTudo);
+
+  const elArmador = document.getElementById('filtroArmador');
+  if (elArmador) {
+    elArmador.addEventListener('input', () => {
+      clearTimeout(window._tArmador);
+      window._tArmador = setTimeout(atualizarTudo, 120);
+    });
+  }
+
+  const elOrdem = document.getElementById('filtroOrdem');
+  if (elOrdem) {
+    elOrdem.addEventListener('input', () => {
+      clearTimeout(window._tOrdem);
+      window._tOrdem = setTimeout(atualizarTudo, 120);
+    });
+  }
+
+  const elStatus = document.getElementById('filtroStatus');
+  if (elStatus) {
+    elStatus.addEventListener('change', () => {
+      filtroStatusAtivo = document.getElementById('filtroStatus').value || null;
+      atualizarTudo();
+    });
+  }
 </script>
 </body>
 </html>

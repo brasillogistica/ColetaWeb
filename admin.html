@@ -1,181 +1,547 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css">
-    <title>Gerenciamento | ColetaWeb</title>
-    <style>
-        @media (max-width: 768px) {
-            body { padding: 10px !important; }
-            .card { padding: 15px !important; border-radius: 18px !important; }
-            .card > h2 { font-size: 1.1rem !important; text-align: center !important; }
-            .card > div[style*="display: flex; gap: 10px; flex-wrap: wrap;"] { flex-direction: column !important; }
-            .card input,
-            .card select,
-            .card button {
-                width: 100% !important;
-                min-height: 46px;
-                font-size: 13px !important;
-            }
-            table {
-                display: block;
-                width: 100%;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            th, td {
-                font-size: 11px !important;
-                padding: 8px !important;
-                white-space: nowrap;
-            }
-            .btn-main { width: 100% !important; }
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerenciamento | ColetaWeb</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
 
-        @media (max-width: 480px) {
-            body { padding: 8px !important; }
-            .card { padding: 12px !important; }
-            .card > h2 { font-size: 1rem !important; }
-        }
-    </style>
+    body {
+      background: var(--bg);
+      padding: 20px 10px;
+      color: var(--navy);
+    }
+
+    .header-card {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 25px;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .logo-minerva .m { color: var(--navy); font-weight: 800; }
+    .logo-minerva .f { color: var(--red); font-weight: 800; }
+
+    .header-title {
+      font-weight: 800;
+      font-size: 17px;
+      text-transform: uppercase;
+      color: var(--navy);
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .card h2,
+    .card h3 {
+      color: var(--navy);
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .card h2 {
+      font-size: 17px;
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .filter-bar {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 25px;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .form-inline {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .form-inline .form-group {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--gold);
+      padding: 6px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      background: transparent;
+      outline: none;
+    }
+
+    .btn-main {
+      background: var(--navy);
+      color: white;
+      border: none;
+      border-radius: 99px;
+      font-weight: 800;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.15s ease;
+      font-size: 10px;
+      padding: 7px 12px;
+    }
+
+    .btn-main:hover {
+      filter: brightness(0.96);
+      transform: translateY(-1px);
+    }
+
+    .btn-compact {
+      min-width: 110px;
+      min-height: 34px;
+      padding: 7px 12px;
+      font-size: 9px;
+      letter-spacing: .3px;
+    }
+
+    .btn-danger {
+      background: var(--red);
+    }
+
+    .btn-secondary {
+      background: var(--grey);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .table-container {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12px;
+    }
+
+    th {
+      background: var(--navy);
+      color: white;
+      padding: 10px 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    th:first-child { border-radius: 12px 0 0 0; }
+    th:last-child { border-radius: 0 12px 0 0; }
+
+    td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #f2f2f2;
+      color: var(--navy);
+      text-align: center;
+      background: var(--white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f9f9f9;
+    }
+
+    .sem-dados {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+      font-weight: 700;
+    }
+
+    .status-aprovado {
+      color: #15803d;
+      font-weight: 800;
+    }
+
+    .status-pendente {
+      color: #b45309;
+      font-weight: 800;
+    }
+
+    .status-reprovado {
+      color: var(--red);
+      font-weight: 800;
+    }
+
+    .status-master {
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    .btn-slim {
+      padding: 6px 10px;
+      font-size: 9px;
+      min-width: unset;
+      min-height: 30px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 8px !important;
+      }
+
+      .header-card {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 15px !important;
+        border-radius: 18px !important;
+      }
+
+      .header-title {
+        font-size: 12px !important;
+      }
+
+      .card,
+      .filter-bar,
+      .table-container {
+        padding: 12px !important;
+        border-radius: 18px !important;
+      }
+
+      .form-inline {
+        flex-direction: column !important;
+        gap: 10px !important;
+      }
+
+      .form-inline .form-group {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+
+      .btn-main,
+      .btn-compact,
+      .btn-slim {
+        width: 100% !important;
+        min-height: 44px !important;
+        font-size: 11px !important;
+      }
+
+      .btn-group {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .table-wrapper {
+        max-height: 65vh !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        min-width: 900px !important;
+      }
+
+      th, td {
+        padding: 8px 6px !important;
+        font-size: 10px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 8px !important;
+      }
+
+      .card {
+        padding: 12px !important;
+      }
+
+      .header-title {
+        font-size: 11px !important;
+      }
+
+      .btn-main,
+      .btn-compact,
+      .btn-slim {
+        font-size: 10px !important;
+      }
+    }
+  </style>
 </head>
-<body style="padding: 40px; background: #f2f2f2;">
+<body>
 
-    <div class="card">
-        <h2 style="color: var(--navy); margin-bottom: 20px;">GERENCIAMENTO DE USUÁRIOS</h2>
+<header class="header-card">
+  <div class="logo-minerva">
+    <span class="m">minerva</span><span class="f">foods</span>
+  </div>
+  <div class="header-title">Gerenciamento de Usuários</div>
+</header>
 
-        <div style="margin-bottom: 30px; padding: 15px; border: 1px solid var(--gold); border-radius: 10px; background: #fafafa;">
-            <h3 style="color: var(--navy); margin-bottom: 15px; font-size: 14px;">Adicionar novo usuário (Cadastre antes em Authentication)</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="email" id="novoEmail" placeholder="email@minervafoods.com" style="padding: 8px; width: 220px; border: 1px solid #ccc; border-radius: 5px;">
+<section class="filter-bar">
+  <div class="card" style="margin:0; padding: 0; border: none; box-shadow: none;">
+    <h3>Adicionar novo usuário (cadastre antes em Authentication)</h3>
+    <div class="form-inline">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="novoEmail" placeholder="email@minervafoods.com">
+      </div>
 
-                <select id="novoPerfil" style="padding: 8px;">
-                    <option value="user">User</option>
-                    <option value="administrador">Administrador</option>
-                </select>
+      <div class="form-group">
+        <label>Perfil</label>
+        <select id="novoPerfil">
+          <option value="user">User</option>
+          <option value="administrador">Administrador</option>
+        </select>
+      </div>
 
-                <select id="novaTransportadora" style="padding: 8px;">
-                    <option value="">Carregando...</option>
-                </select>
+      <div class="form-group">
+        <label>Transportadora</label>
+        <select id="novaTransportadora">
+          <option value="">Carregando...</option>
+        </select>
+      </div>
 
-                <button class="btn-main" style="padding: 8px 15px; background: var(--navy); font-size: 12px;" onclick="criarUsuario()">CRIAR</button>
-            </div>
-        </div>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-            <thead>
-                <tr style="background: var(--navy); color: white;">
-                    <th style="padding: 10px; text-align: left;">E-mail</th>
-                    <th style="padding: 10px; text-align: left;">Transportadora</th>
-                    <th style="padding: 10px; text-align: left;">Perfil</th>
-                </tr>
-            </thead>
-            <tbody id="user-table-body"></tbody>
-        </table>
-
-        <button class="btn-main" style="background: var(--grey);" onclick="window.location.href='index.html'">VOLTAR</button>
+      <div class="form-group" style="min-width:110px; flex:0 0 110px;">
+        <label>&nbsp;</label>
+        <button class="btn-main btn-compact" onclick="criarUsuario()">Criar</button>
+      </div>
     </div>
+  </div>
+</section>
 
-    <script src="script.js"></script>
-    <script>
-        async function carregarUsuarios() {
-            if (typeof clienteSupabase === 'undefined' || !clienteSupabase) {
-                setTimeout(carregarUsuarios, 500);
-                return;
-            }
+<div class="table-container">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:10px; flex-wrap:wrap;">
+    <div class="header-title" style="font-size: 13px; margin:0;">Usuários cadastrados</div>
+    <div class="btn-group">
+      <button class="btn-main btn-secondary btn-slim" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+  </div>
 
-            const { data: { session } } = await clienteSupabase.auth.getSession();
-            if (!session) { window.location.href = 'login.html'; return; }
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>E-mail</th>
+          <th>Transportadora</th>
+          <th>Perfil</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="user-table-body"></tbody>
+    </table>
+  </div>
+</div>
 
-            const { data: userData } = await clienteSupabase
-                .from('usuarios')
-                .select('perfil, status')
-                .eq('email', session.user.email)
-                .single();
+<script src="script.js"></script>
+<script>
+  async function carregarUsuarios() {
+    if (typeof clienteSupabase === 'undefined' || !clienteSupabase) {
+      setTimeout(carregarUsuarios, 500);
+      return;
+    }
 
-            const perfilAtual = userData ? (userData.perfil || '').trim().toLowerCase() : '';
-            const statusAtual = userData ? (userData.status || '').trim().toLowerCase() : '';
+    const { data: { session } } = await clienteSupabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
 
-            const isMaster = perfilAtual === 'master' || perfilAtual === 'mestre';
-            const isAdminAprovado = perfilAtual === 'administrador' && statusAtual === 'aprovado';
+    const { data: userData } = await clienteSupabase
+      .from('usuarios')
+      .select('perfil, status')
+      .eq('email', session.user.email)
+      .single();
 
-            if (!isMaster && !isAdminAprovado) {
-                alert('Acesso negado: área restrita.');
-                window.location.href = 'index.html';
-                return;
-            }
+    const perfilAtual = userData ? (userData.perfil || '').trim().toLowerCase() : '';
+    const statusAtual = userData ? (userData.status || '').trim().toLowerCase() : '';
 
-            const { data, error } = await clienteSupabase.from('usuarios').select('*').order('email', { ascending: true });
-            if (error) { console.error(error); return; }
+    const isMaster = perfilAtual === 'master' || perfilAtual === 'mestre';
+    const isAdminAprovado = perfilAtual === 'administrador' && statusAtual === 'aprovado';
 
-            const tbody = document.getElementById('user-table-body');
-            tbody.innerHTML = '';
+    if (!isMaster && !isAdminAprovado) {
+      alert('Acesso negado: área restrita.');
+      window.location.href = 'index.html';
+      return;
+    }
 
-            data.forEach(user => {
-                let perfilTd = user.perfil;
+    const { data, error } = await clienteSupabase
+      .from('usuarios')
+      .select('*')
+      .order('email', { ascending: true });
 
-                if (isMaster && user.perfil !== 'master') {
-                    perfilTd = `
-                        <select onchange="atualizarCampo('${user.email}', 'perfil', this.value)" style="padding: 5px;">
-                            <option value="user" ${user.perfil === 'user' ? 'selected' : ''}>User</option>
-                            <option value="administrador" ${user.perfil === 'administrador' ? 'selected' : ''}>Administrador</option>
-                        </select>`;
-                }
+    if (error) {
+      console.error(error);
+      return;
+    }
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.email}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${user.transportadora || 'N/A'}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">${perfilTd}</td>
-                    </tr>
-                `;
-            });
-        }
+    const tbody = document.getElementById('user-table-body');
+    tbody.innerHTML = '';
 
-        async function criarUsuario() {
-            const email = document.getElementById('novoEmail').value.trim();
-            const perfil = document.getElementById('novoPerfil').value;
-            const transportadora = document.getElementById('novaTransportadora').value;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="sem-dados">Nenhum usuário encontrado.</td></tr>';
+      return;
+    }
 
-            if (!email) return alert('Digite um e-mail');
-            if (!transportadora) return alert('Selecione uma transportadora');
+    data.forEach(user => {
+      const status = (user.status || '').toLowerCase();
+      const statusClass =
+        status === 'aprovado' ? 'status-aprovado' :
+        status === 'pendente' ? 'status-pendente' :
+        status === 'master' ? 'status-master' :
+        'status-reprovado';
 
-            const { error } = await clienteSupabase.from('usuarios').insert([{
-                email: email,
-                perfil: perfil,
-                transportadora: transportadora,
-                status: 'aprovado'
-            }]);
+      let perfilTd = `<span class="${user.perfil === 'master' ? 'status-master' : ''}">${user.perfil || 'N/A'}</span>`;
 
-            if (error) alert('Erro ao criar: ' + error.message);
-            else {
-                alert('Usuário vinculado com sucesso no banco!');
-                document.getElementById('novoEmail').value = '';
-                carregarUsuarios();
-            }
-        }
+      if (isMaster && user.perfil !== 'master') {
+        perfilTd = `
+          <select onchange="atualizarCampo('${user.email}', 'perfil', this.value)" style="padding:5px; border:1px solid var(--gold); border-radius:8px; color:var(--navy); font-weight:600;">
+            <option value="user" ${user.perfil === 'user' ? 'selected' : ''}>User</option>
+            <option value="administrador" ${user.perfil === 'administrador' ? 'selected' : ''}>Administrador</option>
+          </select>`;
+      }
 
-        async function atualizarCampo(email, campo, valor) {
-            const updateObj = {};
-            updateObj[campo] = valor;
+      const statusTd = isMaster && user.perfil !== 'master'
+        ? `
+          <select onchange="atualizarCampo('${user.email}', 'status', this.value)" style="padding:5px; border:1px solid var(--gold); border-radius:8px; color:var(--navy); font-weight:600;">
+            <option value="pendente" ${user.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+            <option value="aprovado" ${user.status === 'aprovado' ? 'selected' : ''}>Aprovado</option>
+            <option value="reprovado" ${user.status === 'reprovado' ? 'selected' : ''}>Reprovado</option>
+          </select>`
+        : `<span class="${statusClass}">${user.status || 'N/A'}</span>`;
 
-            const { error } = await clienteSupabase
-                .from('usuarios')
-                .update(updateObj)
-                .eq('email', email);
+      const acaoTd = isMaster && user.perfil !== 'master'
+        ? `<button class="btn-main btn-danger btn-slim" onclick="excluirUsuario('${user.email}')">Excluir</button>`
+        : '-';
 
-            if (error) alert('Erro ao atualizar: ' + error.message);
-            else {
-                alert('Atualizado com sucesso!');
-                carregarUsuarios();
-            }
-        }
+      tbody.innerHTML += `
+        <tr>
+          <td>${user.email}</td>
+          <td>${user.transportadora || 'N/A'}</td>
+          <td>${perfilTd}</td>
+          <td>${statusTd}</td>
+          <td>${acaoTd}</td>
+        </tr>
+      `;
+    });
+  }
 
-        window.addEventListener('load', async () => {
-            await carregarUsuarios();
-            await carregarTransportadoras();
-        });
-    </script>
+  async function criarUsuario() {
+    const email = document.getElementById('novoEmail').value.trim();
+    const perfil = document.getElementById('novoPerfil').value;
+    const transportadora = document.getElementById('novaTransportadora').value;
+
+    if (!email) return alert('Digite um e-mail');
+    if (!transportadora) return alert('Selecione uma transportadora');
+
+    const { error } = await clienteSupabase.from('usuarios').insert([{
+      email: email,
+      perfil: perfil,
+      transportadora: transportadora,
+      status: 'aprovado'
+    }]);
+
+    if (error) alert('Erro ao criar: ' + error.message);
+    else {
+      alert('Usuário vinculado com sucesso no banco!');
+      document.getElementById('novoEmail').value = '';
+      carregarUsuarios();
+    }
+  }
+
+  async function atualizarCampo(email, campo, valor) {
+    const updateObj = {};
+    updateObj[campo] = valor;
+
+    const { error } = await clienteSupabase
+      .from('usuarios')
+      .update(updateObj)
+      .eq('email', email);
+
+    if (error) alert('Erro ao atualizar: ' + error.message);
+    else {
+      alert('Atualizado com sucesso!');
+      carregarUsuarios();
+    }
+  }
+
+  async function excluirUsuario(email) {
+    if (!confirm(`Excluir o usuário ${email}?`)) return;
+
+    const { error } = await clienteSupabase
+      .from('usuarios')
+      .delete()
+      .eq('email', email);
+
+    if (error) alert('Erro ao excluir: ' + error.message);
+    else {
+      alert('Usuário excluído com sucesso!');
+      carregarUsuarios();
+    }
+  }
+
+  window.addEventListener('load', async () => {
+    await carregarUsuarios();
+    await carregarTransportadoras();
+  });
+</script>
 </body>
 </html>
