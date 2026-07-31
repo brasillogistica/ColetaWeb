@@ -715,6 +715,10 @@ body {
         <input type="text" id="containerInput" placeholder="Digite o número do container" disabled>
       </div>
       <div class="form-group">
+        <label>ORDEM</label>
+        <input type="text" id="ordem" placeholder="Digite a ORDEM (aceita letras, números e símbolos)" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="form-group">
         <label>PLACA</label>
         <input type="text" id="placa" placeholder="Digite a placa" disabled>
       </div>
@@ -852,6 +856,11 @@ body {
       return String(texto || '').trim().toLowerCase();
     }
 
+    function tipoExigeOrdem() {
+      const t = normalizarTexto(tipoCargaSelecionado);
+      return t === 'resfriado' || t === 'congelado com genset' || t === 'congelado';
+    }
+
     function obterUrlFoto(nomeOuUrl) {
       if (!nomeOuUrl) return '';
       if (nomeOuUrl.startsWith('http') || nomeOuUrl.startsWith('data:')) return nomeOuUrl;
@@ -900,6 +909,7 @@ body {
 
     function camposObrigatoriosPreenchidos() {
       const ids = ['dataRetirada', 'armador', 'placa', 'containerInput'];
+      if (tipoExigeOrdem()) ids.push('ordem');
       return ids.every(id => (document.getElementById(id)?.value || '').trim() !== '');
     }
 
@@ -908,7 +918,8 @@ body {
         data_retirada: document.getElementById('dataRetirada').value,
         armador: document.getElementById('armador').value.trim(),
         placa: document.getElementById('placa').value.trim(),
-        container: document.getElementById('containerInput').value.trim()
+        container: document.getElementById('containerInput').value.trim(),
+        ordem: document.getElementById('ordem').value.trim()
       };
     }
 
@@ -1323,7 +1334,7 @@ body {
 
     function atualizarBloqueiosCampos() {
       const liberado = !!tipoCargaSelecionado && !!cargaPulmaoSelecionado;
-      ['dataRetirada', 'armador', 'placa', 'containerInput'].forEach(id => {
+      ['dataRetirada', 'armador', 'placa', 'containerInput', 'ordem'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = !liberado;
       });
@@ -1450,6 +1461,7 @@ body {
       document.getElementById('armador').value = campos.armador || '';
       document.getElementById('placa').value = campos.placa || '';
       document.getElementById('containerInput').value = campos.container || '';
+      document.getElementById('ordem').value = campos.ordem || '';
     }
 
     function restaurarPreviewAtual() {
@@ -1593,7 +1605,8 @@ body {
         data_retirada: registro.data_retirada,
         armador: registro.armador,
         placa: registro.placa,
-        container: registro.container
+        container: registro.container,
+        ordem: registro.ordem
       });
 
       atualizarInterfaceEtapa();
@@ -1638,7 +1651,7 @@ body {
       atualizarInterfaceEtapa();
     });
 
-    ['dataRetirada', 'armador', 'placa', 'containerInput'].forEach(id => {
+    ['dataRetirada', 'armador', 'placa', 'containerInput', 'ordem'].forEach(id => {
       const el = document.getElementById(id);
       el.addEventListener('input', () => {
         salvarRascunho();
@@ -1691,6 +1704,7 @@ body {
       document.getElementById('armador').value = '';
       document.getElementById('placa').value = '';
       document.getElementById('containerInput').value = '';
+      document.getElementById('ordem').value = '';
 
       document.getElementById('cameraInput').value = '';
       document.getElementById('gensetInput').value = '';
@@ -1723,6 +1737,7 @@ body {
       if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
       if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
       if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
+      if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
       if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
 
       const { data: { user } } = await clienteSupabase.auth.getUser();
@@ -1779,6 +1794,7 @@ body {
             data_retirada: campos.data_retirada,
             armador: campos.armador,
             container: campos.container || 'N/A',
+            ordem: campos.ordem,
             placa: campos.placa,
             carga_pulmao: cargaPulmaoSelecionado,
             foto_url: fileNameRIC,

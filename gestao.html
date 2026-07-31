@@ -1,1294 +1,1424 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Gestão | ColetaWeb</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        :root {
-            --navy: #2d4b5e;
-            --gold: #c5b68d;
-            --red: #E84D53;
-            --bg: #f2f2f2;
-            --white: #ffffff;
-            --grey: #6c757d;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        html, body {
-            width: 100%;
-            min-height: 100%;
-            overflow-x: hidden;
-        }
-
-        body {
-            background: var(--bg);
-            padding: 8px;
-            color: var(--navy);
-            width: 100%;
-            max-width: none;
-            margin: 0;
-        }
-
-        .header-card,
-        .filter-bar,
-        .table-container,
-        .card {
-            width: 100%;
-        }
-
-        .header-card {
-            background: var(--white);
-            border: 1px solid var(--gold);
-            border-radius: 25px;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 6px;
-        }
-
-        .logo-minerva {
-            font-size: 22px;
-            letter-spacing: -1px;
-            user-select: none;
-        }
-        .logo-minerva .m { color: var(--navy); font-weight: 800; }
-        .logo-minerva .f { color: var(--red); font-weight: 800; }
-
-        .header-title {
-            font-weight: 800;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-
-        .filter-bar {
-            background: var(--white);
-            border: 1px solid var(--gold);
-            border-radius: 22px;
-            padding: 6px 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            flex-wrap: wrap;
-        }
-
-        .filter-row {
-            display: flex;
-            gap: 6px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-
-        .filter-group {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 120px;
-        }
-
-        .filter-group label {
-            font-size: 8px;
-            font-weight: 800;
-            color: var(--gold);
-            text-transform: uppercase;
-            margin-bottom: 1px;
-        }
-
-        .filter-group input,
-        .filter-group select {
-            border: none;
-            border-bottom: 1px solid var(--gold);
-            padding: 4px 0;
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--navy);
-            background: transparent;
-            outline: none;
-            width: 100%;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            width: 100%;
-            margin-top: 2px;
-        }
-
-        .btn-filtrar,
-        .btn-limpar,
-        .btn-voltar {
-            padding: 5px 12px;
-            border-radius: 99px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-size: 8px;
-            border: none;
-            white-space: nowrap;
-            align-self: flex-end;
-            margin-bottom: 1px;
-        }
-
-        .btn-filtrar { background: var(--navy); color: white; }
-        .btn-limpar { background: transparent; border: 1px solid var(--navy); color: var(--navy); }
-        .btn-voltar { background: #6c757d; color: white; }
-
-        .chips-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-bottom: 6px;
-            min-height: 18px;
-        }
-
-        .chip {
-            background: var(--red);
-            color: white;
-            padding: 2px 10px;
-            border-radius: 99px;
-            font-size: 8px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
-        .chip span {
-            font-size: 11px;
-            line-height: 1;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 150px 150px 150px;
-            gap: 6px;
-            margin-bottom: 6px;
-            width: 100%;
-        }
-
-        .card {
-            background: var(--white);
-            border: 1px solid var(--gold);
-            border-radius: 18px;
-            padding: 6px 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .card-left {
-            height: 150px;
-        }
-
-        .card-right {
-            grid-column: 2;
-            grid-row: 1 / 4;
-            height: 456px;
-            overflow: hidden;
-        }
-
-        .chart-title {
-            font-size: 8px;
-            font-weight: 800;
-            color: var(--navy);
-            text-transform: uppercase;
-            margin-bottom: 2px;
-        }
-
-        .card-left canvas {
-            height: 120px !important;
-            max-height: 120px;
-        }
-
-        .card-right canvas {
-            height: 100% !important;
-            max-height: 100%;
-        }
-
-        .cost-card {
-            margin-bottom: 6px;
-            height: 150px;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .cost-card canvas {
-            height: 100% !important;
-        }
-
-        .table-card {
-            grid-column: span 2;
-            width: 100%;
-            padding: 8px 8px 6px 8px;
-        }
-
-        .table-wrapper {
-            max-height: calc(100vh - 740px);
-            min-height: 300px;
-            overflow: auto;
-            border-radius: 12px;
-            margin-top: 4px;
-            width: 100%;
-        }
-
-        table {
-            width: 100%;
-            min-width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            table-layout: fixed;
-            font-size: 10px;
-            font-family: 'Courier New', monospace;
-        }
-
-        thead {
-            border-radius: 12px 12px 0 0;
-            overflow: hidden;
-        }
-
-        th {
-            position: sticky;
-            top: 0;
-            background: var(--navy);
-            color: white;
-            padding: 9px 6px;
-            text-align: center;
-            font-weight: 700;
-            text-transform: uppercase;
-            z-index: 10;
-            white-space: normal;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            border-bottom: 2px solid var(--navy);
-            line-height: 1.1;
-            font-size: 10px;
-        }
-
-        th:first-child { border-radius: 12px 0 0 0; }
-        th:last-child { border-radius: 0 12px 0 0; }
-
-        td {
-            padding: 7px 6px;
-            border-bottom: 1px solid #f2f2f2;
-            color: var(--navy);
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            background: var(--white);
-            line-height: 1.1;
-            font-size: 10px;
-        }
-
-        tr:nth-child(even) td {
-            background-color: #f9f9f9;
-        }
-
-        .vencido-sim {
-            color: var(--red) !important;
-        }
-
-        .btn-excel-small {
-            background: var(--navy);
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 99px;
-            font-size: 7px;
-            font-weight: 700;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        .sem-dados {
-            text-align: center;
-            padding: 15px;
-            color: #888;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 14px;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            white-space: nowrap;
-            color: #1e2f3a;
-        }
-
-        #loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.8);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--gold);
-            border-top-color: var(--navy);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 768px) {
-            body { padding: 8px !important; }
-
-            .header-card {
-                flex-direction: column !important;
-                gap: 8px !important;
-                align-items: center !important;
-                text-align: center !important;
-                padding: 12px !important;
-                border-radius: 18px !important;
-            }
-
-            .header-title { font-size: 12px !important; }
-
-            .filter-bar {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                padding: 10px !important;
-                border-radius: 18px !important;
-            }
-
-            .filter-row {
-                flex-direction: column !important;
-                gap: 8px !important;
-            }
-
-            .filter-group {
-                min-width: 100% !important;
-                width: 100% !important;
-            }
-
-            .btn-filtrar,
-            .btn-limpar,
-            .btn-voltar {
-                width: 100% !important;
-                align-self: stretch !important;
-                min-height: 44px !important;
-                font-size: 11px !important;
-            }
-
-            .dashboard-grid {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 6px !important;
-            }
-
-            .card-left,
-            .card-right,
-            .cost-card,
-            .table-card {
-                width: 100% !important;
-                max-height: none !important;
-                grid-column: auto !important;
-                grid-row: auto !important;
-            }
-
-            .card-left canvas,
-            .card-right canvas,
-            .cost-card canvas {
-                height: 200px !important;
-                max-height: 200px !important;
-            }
-
-            .table-container {
-                padding: 8px !important;
-                border-radius: 18px !important;
-            }
-
-            .table-wrapper {
-                max-height: 60vh !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            table {
-                min-width: 1100px !important;
-            }
-
-            th, td {
-                padding: 6px 4px !important;
-                font-size: 9px !important;
-            }
-
-            .btn-excel-small {
-                width: 100%;
-                min-height: 44px;
-                font-size: 11px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body { padding: 6px !important; }
-
-            .header-card { padding: 10px !important; }
-
-            .header-title { font-size: 11px !important; }
-
-            .filter-bar { padding: 8px !important; }
-
-            .card { padding: 8px !important; border-radius: 14px !important; }
-
-            .chart-title { font-size: 8px !important; }
-
-            .card-left canvas,
-            .card-right canvas,
-            .cost-card canvas {
-                height: 160px !important;
-                max-height: 160px !important;
-            }
-
-            .table-wrapper {
-                max-height: 55vh !important;
-            }
-
-            th, td {
-                font-size: 8px !important;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Gestão | ColetaWeb</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --navy: #2d4b5e;
+      --gold: #c5b68d;
+      --red: #E84D53;
+      --bg: #f2f2f2;
+      --white: #ffffff;
+      --grey: #6c757d;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      background: var(--bg);
+      padding: 8px;
+      color: var(--navy);
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      transition: background-color 0.18s ease, opacity 0.18s ease;
+    }
+
+    body.is-updating {
+      background: #f6f6f6;
+    }
+
+    .header-card,
+    .filter-bar,
+    .table-container,
+    .card {
+      width: 100%;
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    body.is-updating .header-card,
+    body.is-updating .filter-bar,
+    body.is-updating .table-container,
+    body.is-updating .card {
+      transform: translateY(1px);
+      opacity: 0.98;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+    }
+
+    .header-card {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 25px;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 6px;
+    }
+
+    .logo-minerva {
+      font-size: 22px;
+      letter-spacing: -1px;
+      user-select: none;
+    }
+    .logo-minerva .m { color: var(--navy); font-weight: 800; }
+    .logo-minerva .f { color: var(--red); font-weight: 800; }
+
+    .header-title {
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .filter-bar {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 22px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .filter-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 120px;
+    }
+
+    .filter-group label {
+      font-size: 8px;
+      font-weight: 800;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1px;
+    }
+
+    .filter-group input,
+    .filter-group select {
+      border: none;
+      border-bottom: 1px solid var(--gold);
+      padding: 4px 0;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--navy);
+      background: transparent;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+      border-bottom-color: var(--navy);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+      margin-top: 2px;
+    }
+
+    .btn-filtrar,
+    .btn-limpar,
+    .btn-voltar,
+    .btn-excel-small {
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-size: 8px;
+      border: none;
+      white-space: nowrap;
+      align-self: flex-end;
+      margin-bottom: 1px;
+      transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease, background-color 0.18s ease;
+    }
+
+    .btn-filtrar:hover,
+    .btn-limpar:hover,
+    .btn-voltar:hover,
+    .btn-excel-small:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.98);
+    }
+
+    .btn-filtrar { background: var(--navy); color: white; }
+    .btn-limpar { background: transparent; border: 1px solid var(--navy); color: var(--navy); }
+    .btn-voltar { background: #6c757d; color: white; }
+    .btn-excel-small { background: var(--navy); color: white; }
+
+    .chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 6px;
+      min-height: 18px;
+    }
+
+    .chip {
+      background: var(--red);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-size: 8px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+      animation: chipIn 0.18s ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+    }
+
+    .chip span {
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    @keyframes chipIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 150px 150px 150px;
+      gap: 6px;
+      margin-bottom: 6px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 18px;
+      padding: 6px 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .card-left {
+      height: 150px;
+    }
+
+    .card-right {
+      grid-column: 2;
+      grid-row: 1 / 4;
+      height: 456px;
+      overflow: hidden;
+    }
+
+    .chart-title {
+      font-size: 8px;
+      font-weight: 800;
+      color: var(--navy);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .card-left canvas {
+      height: 120px !important;
+      max-height: 120px;
+    }
+
+    .card-right canvas {
+      height: 100% !important;
+      max-height: 100%;
+    }
+
+    .cost-card {
+      margin-bottom: 6px;
+      height: 150px;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .cost-card canvas {
+      height: 100% !important;
+    }
+
+    .table-card {
+      grid-column: span 2;
+      width: 100%;
+      padding: 8px 8px 6px 8px;
+    }
+
+    .table-wrapper {
+      max-height: calc(100vh - 740px);
+      min-height: 300px;
+      overflow: auto;
+      border-radius: 12px;
+      margin-top: 4px;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      min-width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      font-size: 10px;
+      font-family: 'Courier New', monospace;
+    }
+
+    thead {
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--navy);
+      color: white;
+      padding: 9px 6px;
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+      z-index: 20;
+      white-space: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-bottom: 2px solid var(--navy);
+      line-height: 1.1;
+      font-size: 10px;
+      backdrop-filter: blur(2px);
+    }
+
+    th:first-child { border-radius: 12px 0 0 0; }
+    th:last-child { border-radius: 0 12px 0 0; }
+
+    td {
+      padding: 7px 6px;
+      border-bottom: 1px solid #f2f2f2;
+      color: var(--navy);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: var(--white);
+      line-height: 1.1;
+      font-size: 10px;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f9f9f9;
+    }
+
+    .row-appear {
+      animation: rowFade 0.22s ease both;
+    }
+
+    @keyframes rowFade {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .vencido-sim {
+      color: var(--red) !important;
+    }
+
+    .sem-dados {
+      text-align: center;
+      padding: 15px;
+      color: #888;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: #1e2f3a;
+    }
+
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.8);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--gold);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .card-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #888;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      padding: 12px;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 8px !important; }
+
+      .header-card {
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 12px !important;
+        border-radius: 18px !important;
+      }
+
+      .header-title { font-size: 12px !important; }
+
+      .filter-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 10px !important;
+        border-radius: 18px !important;
+      }
+
+      .filter-row {
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+
+      .filter-group {
+        min-width: 100% !important;
+        width: 100% !important;
+      }
+
+      .btn-filtrar,
+      .btn-limpar,
+      .btn-voltar,
+      .btn-excel-small {
+        width: 100% !important;
+        align-self: stretch !important;
+        min-height: 44px !important;
+        font-size: 11px !important;
+      }
+
+      .dashboard-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+      }
+
+      .card-left,
+      .card-right,
+      .cost-card,
+      .table-card {
+        width: 100% !important;
+        max-height: none !important;
+        grid-column: auto !important;
+        grid-row: auto !important;
+      }
+
+      .card-left canvas,
+      .card-right canvas,
+      .cost-card canvas {
+        height: 200px !important;
+        max-height: 200px !important;
+      }
+
+      .table-wrapper {
+        max-height: 60vh !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        min-width: 1400px !important;
+      }
+
+      th, td {
+        padding: 6px 4px !important;
+        font-size: 9px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 6px !important; }
+
+      .header-card { padding: 10px !important; }
+
+      .header-title { font-size: 11px !important; }
+
+      .filter-bar { padding: 8px !important; }
+
+      .card { padding: 8px !important; border-radius: 14px !important; }
+
+      .chart-title { font-size: 8px !important; }
+
+      .card-left canvas,
+      .card-right canvas,
+      .cost-card canvas {
+        height: 160px !important;
+        max-height: 160px !important;
+      }
+
+      .table-wrapper {
+        max-height: 55vh !important;
+      }
+
+      th, td {
+        font-size: 8px !important;
+      }
+    }
+  </style>
 </head>
 <body>
-
 <div id="loading-overlay"><div class="spinner"></div></div>
 
 <header class="header-card">
-    <div class="logo-minerva"><span class="m">minerva</span><span class="f">foods</span></div>
-    <div class="header-title">PAINEL DE GESTÃO – PROGRESSO DOS CONTAINERS</div>
+  <div class="logo-minerva"><span class="m">minerva</span><span class="f">foods</span></div>
+  <div class="header-title">Painel de Gestão – Progresso dos Containers</div>
 </header>
 
 <section class="filter-bar">
-    <div class="filter-row">
-        <div class="filter-group">
-            <label>Container</label>
-            <input type="text" id="filtroContainer" placeholder="Número do container">
-        </div>
-        <div class="filter-group">
-            <label>Armador</label>
-            <input type="text" id="filtroArmador" placeholder="Nome do armador">
-        </div>
-        <div class="filter-group">
-            <label>Status</label>
-            <select id="filtroStatus">
-                <option value="">Todos</option>
-                <option value="ag. carregamento">AG. CARREGAMENTO</option>
-                <option value="liberado">LIBERADO</option>
-                <option value="depositado">DEPOSITADO</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>Data Retirada</label>
-            <input type="date" id="filtroDataRetirada">
-        </div>
-        <div class="filter-group">
-            <label>Data Finalizado</label>
-            <input type="date" id="filtroDataFim">
-        </div>
+  <div class="filter-row">
+    <div class="filter-group">
+      <label>ORDEM</label>
+      <input type="text" id="filtroOrdem" placeholder="Digite a ORDEM" autocomplete="off">
     </div>
+    <div class="filter-group">
+      <label>Armador</label>
+      <input type="text" id="filtroArmador" placeholder="Nome do armador" list="listaArmador">
+      <datalist id="listaArmador"></datalist>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="filtroStatus">
+        <option value="">Todos</option>
+        <option value="ag. carregamento">AG. CARREGAMENTO</option>
+        <option value="liberado">LIBERADO</option>
+        <option value="depositado">DEPOSITADO</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Data Retirada</label>
+      <input type="date" id="filtroDataRetirada">
+    </div>
+    <div class="filter-group">
+      <label>Data Finalizado</label>
+      <input type="date" id="filtroDataFim">
+    </div>
+  </div>
 
-    <div class="btn-group">
-        <button class="btn-filtrar" onclick="aplicarFiltrosForm()">Filtrar</button>
-        <button class="btn-limpar" onclick="limparTudo()">Limpar</button>
-        <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
-    </div>
+  <div class="btn-group">
+    <button class="btn-filtrar" onclick="aplicarFiltrosForm()">Filtrar</button>
+    <button class="btn-limpar" onclick="limparTudo()">Limpar</button>
+    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
+  </div>
 </section>
 
 <div class="chips-container" id="chips-area"></div>
 
 <div class="dashboard-grid">
-    <div class="card card-left">
-        <div class="chart-title">Containers por Status</div>
-        <canvas id="chartStatus"></canvas>
-    </div>
-    <div class="card card-left">
-        <div class="chart-title">Free Time Consumido (%)</div>
-        <canvas id="chartFreeTime"></canvas>
-    </div>
-    <div class="card card-left">
-        <div class="chart-title">Depositados em Atraso</div>
-        <canvas id="chartAtraso"></canvas>
-    </div>
+  <div class="card card-left">
+    <div class="chart-title">Ordens por Status</div>
+    <canvas id="chartStatus"></canvas>
+  </div>
+  <div class="card card-left">
+    <div class="chart-title">Free Time Consumido (%)</div>
+    <canvas id="chartFreeTime"></canvas>
+  </div>
+  <div class="card card-left">
+    <div class="chart-title">Depositados em Atraso</div>
+    <canvas id="chartAtraso"></canvas>
+  </div>
 
-    <div class="card card-right">
-        <div class="chart-title">Containers por Transportadora</div>
-        <div style="flex:1; position:relative; min-height:0; overflow:hidden;">
-            <canvas id="chartTransportadora"></canvas>
-        </div>
+  <div class="card card-right">
+    <div class="chart-title">Containers por Transportadora</div>
+    <div style="flex:1; position:relative; min-height:0; overflow:hidden;">
+      <canvas id="chartTransportadora"></canvas>
     </div>
+  </div>
 </div>
 
 <div class="card cost-card">
-    <div class="chart-title">Custo Total em Atraso (USD)</div>
-    <div style="flex:1; position:relative;">
-        <canvas id="chartCusto"></canvas>
-    </div>
+  <div class="chart-title">Custo Total em Atraso (USD)</div>
+  <div style="flex:1; position:relative;">
+    <canvas id="chartCusto"></canvas>
+  </div>
 </div>
 
 <div class="card table-card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <div class="chart-title" style="margin:0;">Registros de Containers</div>
-        <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
-    </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+    <div class="chart-title" style="margin:0;">Registros de Containers</div>
+    <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
+  </div>
 
-    <div class="table-wrapper">
-        <table id="main-table">
-            <colgroup>
-                <col style="width:8%">
-                <col style="width:9%">
-                <col style="width:11%">
-                <col style="width:11%">
-                <col style="width:12%">
-                <col style="width:10%">
-                <col style="width:7%">
-                <col style="width:7%">
-                <col style="width:7%">
-                <col style="width:4%">
-                <col style="width:4%">
-                <col style="width:5%">
-                <col style="width:5%">
-                <col style="width:6%">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th>Container</th>
-                    <th>Status</th>
-                    <th>Armador</th>
-                    <th>Transp.</th>
-                    <th>Terminal</th>
-                    <th>Cidade</th>
-                    <th>Reg.</th>
-                    <th>Retirada</th>
-                    <th>Final.</th>
-                    <th>FT</th>
-                    <th>Rest.</th>
-                    <th>C. Diário</th>
-                    <th>C. Total</th>
-                    <th>Vencido?</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
+  <div class="table-wrapper">
+    <table id="main-table">
+      <colgroup>
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:9%">
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:10%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:6%">
+        <col style="width:9%">
+        <col style="width:5%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Retirada</th>
+          <th>Container</th>
+          <th>ORDEM</th>
+          <th>Armador</th>
+          <th>Transp.</th>
+          <th>Placa</th>
+          <th>Carga/Pulmão</th>
+          <th>Tipo de Carga</th>
+          <th>FT Total</th>
+          <th>Dias Rest.</th>
+          <th>Vencido?</th>
+          <th>Localização</th>
+          <th>RIC</th>
+          <th>AG. CARREGAMENTO</th>
+          <th>LIBERADO</th>
+          <th>DEPOSITADO</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
 </div>
 
 <script src="script.js"></script>
 <script>
-    const FREE_TIME_RULES = {
-        "PIL": { dias: 30, custo: 100 },
-        "HAPAG LLOYD": { dias: 30, custo: 297 },
-        "HAPAG": { dias: 30, custo: 297 },
-        "ONE": { dias: 30, custo: 100 },
-        "ALPHA SHIPPING": { dias: 30, custo: 100 },
-        "ALPHA": { dias: 30, custo: 100 },
-        "CMA CGM": { dias: 25, custo: 175 },
-        "CMA": { dias: 25, custo: 175 },
-        "YANG MING": { dias: 35, custo: 100 },
-        "HMM": { dias: 42, custo: 100 },
-        "MAERSK": { dias: 24, custo: 160 },
-        "MSC": { dias: 30, custo: 130 },
-        "COSCO": { dias: 35, custo: 100 },
-        "EVERGREEN": { dias: 35, custo: 80 },
-        "ZIM": { dias: 30, custo: 141 },
-        "INTERTRANS - COSCO": { dias: 21, custo: 250 },
-        "INTERTRANS - CMA CGM": { dias: 21, custo: 335 },
-        "INTERTRANS - HMM": { dias: 21, custo: 360 },
-        "INTERTRANS - YANG MING": { dias: 21, custo: 300 },
-        "BR-X CARGO": { dias: 14, custo: 353 }
+  const FREE_TIME_RULES = {
+    "PIL": { dias: 30, custo: 100 },
+    "HAPAG LLOYD": { dias: 30, custo: 297 },
+    "HAPAG": { dias: 30, custo: 297 },
+    "ONE": { dias: 30, custo: 100 },
+    "ALPHA SHIPPING": { dias: 30, custo: 100 },
+    "ALPHA": { dias: 30, custo: 100 },
+    "CMA CGM": { dias: 25, custo: 175 },
+    "CMA": { dias: 25, custo: 175 },
+    "YANG MING": { dias: 35, custo: 100 },
+    "HMM": { dias: 42, custo: 100 },
+    "MAERSK": { dias: 24, custo: 160 },
+    "MSC": { dias: 30, custo: 130 },
+    "COSCO": { dias: 35, custo: 100 },
+    "EVERGREEN": { dias: 35, custo: 80 },
+    "ZIM": { dias: 30, custo: 141 },
+    "INTERTRANS - COSCO": { dias: 21, custo: 250 },
+    "INTERTRANS - CMA CGM": { dias: 21, custo: 335 },
+    "INTERTRANS - HMM": { dias: 21, custo: 360 },
+    "INTERTRANS - YANG MING": { dias: 21, custo: 300 },
+    "BR-X CARGO": { dias: 14, custo: 353 }
+  };
+
+  const STATUS_FLUXO = ['ag. carregamento', 'liberado', 'depositado'];
+  const freeTimeCache = new Map();
+  const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
+
+  let dadosCompletos = [];
+  let filtroStatusAtivo = null;
+  let filtroFreeTimeAtivo = null;
+  let filtroAtrasoAtivo = null;
+  let filtroTransportadoraAtiva = null;
+  let refreshInterval = null;
+  let charts = {};
+  let lastSignature = '';
+  let carregandoInicial = true;
+
+  function getFreeTimeRuleCached(armador) {
+    if (!armador) return null;
+    const nome = armador.trim().toUpperCase();
+    if (freeTimeCache.has(nome)) return freeTimeCache.get(nome);
+
+    for (const [key, value] of Object.entries(FREE_TIME_RULES)) {
+      if (nome === key.toUpperCase() || nome.includes(key.toUpperCase()) || key.toUpperCase().includes(nome)) {
+        freeTimeCache.set(nome, value);
+        return value;
+      }
+    }
+    freeTimeCache.set(nome, null);
+    return null;
+  }
+
+  function normalizarStatus(status) {
+    const s = (status || '').toString().trim().toLowerCase();
+    if (s === 'ag. locação' || s === 'ag. locacao' || s === 'ag. carregamento') return 'ag. carregamento';
+    if (s === 'liberada') return 'liberado';
+    if (s === 'depositado') return 'depositado';
+    return s;
+  }
+
+  function getStatusColor(status) {
+    const colors = {
+      'ag. carregamento': '#FDE68A',
+      'liberado': '#DBEAFE',
+      'depositado': '#D1FAE5'
     };
+    return colors[normalizarStatus(status)] || '#F3F4F6';
+  }
 
-    const STATUS_FLUXO = ['ag. carregamento', 'liberado', 'depositado'];
-    const freeTimeCache = new Map();
+  function getValue(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+  }
 
-    function getFreeTimeRuleCached(armador) {
-        if (!armador) return null;
-        const nome = armador.trim().toUpperCase();
-        if (freeTimeCache.has(nome)) return freeTimeCache.get(nome);
-        for (const [key, value] of Object.entries(FREE_TIME_RULES)) {
-            if (nome === key.toUpperCase() || nome.includes(key.toUpperCase()) || key.toUpperCase().includes(nome)) {
-                freeTimeCache.set(nome, value);
-                return value;
+  function beginSoftTransition() {
+    document.body.classList.add('is-updating');
+    clearTimeout(window._softTransitionTimer);
+    window._softTransitionTimer = setTimeout(() => {
+      document.body.classList.remove('is-updating');
+    }, 180);
+  }
+
+  async function verificarAcesso() {
+    try {
+      if (!clienteSupabase) return false;
+
+      const { data: { user } } = await clienteSupabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return false;
+      }
+
+      const { data: userData } = await clienteSupabase
+        .from('usuarios')
+        .select('perfil, status, transportadora')
+        .eq('email', user.email)
+        .single();
+
+      if (!userData) {
+        window.location.href = 'index.html';
+        return false;
+      }
+
+      const perfil = (userData.perfil || '').trim().toLowerCase();
+      const status = (userData.status || '').trim().toLowerCase();
+      const transportadora = (userData.transportadora || '').trim();
+
+      const ehMaster = perfil === 'master' || perfil === 'mestre';
+      const ehAdmin = ehMaster || (perfil === 'administrador' && (status === 'aprovado' || status === ''));
+      const ehTransportadora = !!transportadora;
+
+      if (!ehAdmin && !ehTransportadora) {
+        alert('Acesso negado.');
+        window.location.href = 'index.html';
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Erro em verificarAcesso:', error);
+      alert('Erro ao verificar acesso.');
+      return false;
+    }
+  }
+
+  function formatarDataISO(iso) {
+    if (!iso) return 'N/A';
+    const date = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
+    if (isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString('pt-BR');
+  }
+
+  function calcularDiasRestantes(dataRetirada, diasFreeTime) {
+    if (!dataRetirada || !diasFreeTime) return null;
+    const retirada = new Date(dataRetirada + 'T00:00:00');
+    const agora = new Date();
+    const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
+    return Math.ceil(diff / 86400000);
+  }
+
+  function getTipoBadgeClass(tipo) {
+    const t = (tipo || '').toString().trim().toLowerCase();
+    if (t === 'resfriado') return 'badge-resfriado';
+    if (t === 'congelado com genset') return 'badge-congelado-genset';
+    if (t === 'congelado') return 'badge-congelado';
+    return 'badge-congelado';
+  }
+
+  function obterFiltroAtual() {
+    return {
+      dataInicio: getValue('filtroDataInicio'),
+      dataFim: getValue('filtroDataFim'),
+      dataRetirada: getValue('filtroDataRetirada'),
+      ordem: getValue('filtroOrdem').trim().toLowerCase(),
+      armador: getValue('filtroArmador').trim().toLowerCase(),
+      status: getValue('filtroStatus'),
+      transportadora: getValue('filtroTransportadora').trim().toLowerCase()
+    };
+  }
+
+  function matchFilters(d, filtros, ignoreKey = null) {
+    const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
+
+    if (ignoreKey !== 'ordem' && filtros.ordem && !(d.ordem || '').toLowerCase().includes(filtros.ordem)) return false;
+    if (ignoreKey !== 'armador' && filtros.armador && !(d.armador || '').toLowerCase().includes(filtros.armador)) return false;
+    if (ignoreKey !== 'status' && filtros.status && statusNorm !== filtros.status) return false;
+    if (ignoreKey !== 'dataRetirada' && filtros.dataRetirada && d.data_retirada !== filtros.dataRetirada) return false;
+    if (ignoreKey !== 'transportadora' && filtros.transportadora && !(d.transportadora || '').toLowerCase().includes(filtros.transportadora)) return false;
+
+    if (filtros.dataInicio || filtros.dataFim) {
+      const created = d.created_at ? new Date(d.created_at) : null;
+      if (!created) return false;
+
+      if (filtros.dataInicio && ignoreKey !== 'dataInicio') {
+        const ini = new Date(filtros.dataInicio + 'T00:00:00');
+        if (created < ini) return false;
+      }
+      if (filtros.dataFim && ignoreKey !== 'dataFim') {
+        const fim = new Date(filtros.dataFim + 'T23:59:59');
+        if (created > fim) return false;
+      }
+    }
+
+    if (filtroStatusAtivo && ignoreKey !== 'status' && statusNorm !== filtroStatusAtivo) return false;
+
+    if (filtroFreeTimeAtivo) {
+      const rule = getFreeTimeRuleCached(d.armador);
+      if (!rule || !d.data_retirada) return false;
+      const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+      if (rest === null) return false;
+      const pct = ((rule.dias - rest) / rule.dias) * 100;
+      const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
+      if (faixa !== filtroFreeTimeAtivo) return false;
+    }
+
+    if (filtroAtrasoAtivo) {
+      const isDepositado = statusNorm === 'depositado' || d.finalizado;
+      if (!isDepositado) return false;
+      const rule = getFreeTimeRuleCached(d.armador);
+      if (!rule || !d.data_retirada) return false;
+      const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+      const emAtraso = rest !== null && rest < 0;
+      if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
+      if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
+    }
+
+    if (filtroTransportadoraAtiva && ignoreKey !== 'transportadora' && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
+
+    return true;
+  }
+
+  function obterDadosFiltrados(ignoreKey = null) {
+    const filtros = obterFiltroAtual();
+    return dadosCompletos.filter(d => matchFilters(d, filtros, ignoreKey));
+  }
+
+  function atualizarDatalist(id, values) {
+    const datalist = document.getElementById(id);
+    if (!datalist) return;
+    datalist.innerHTML = '';
+    Array.from(new Set(values.filter(Boolean)))
+      .sort((a, b) => String(a).localeCompare(String(b)))
+      .forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        datalist.appendChild(opt);
+      });
+  }
+
+  function atualizarChips() {
+    const chipArea = document.getElementById('chips-area');
+    if (!chipArea) return;
+    chipArea.innerHTML = '';
+    const chips = [];
+    if (filtroStatusAtivo) chips.push({ label: filtroStatusAtivo.toUpperCase(), key: 'status' });
+    if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
+    if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
+    if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
+
+    chips.forEach(c => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = `${c.label} <span>&times;</span>`;
+      chip.onclick = () => {
+        if (c.key === 'status') filtroStatusAtivo = null;
+        else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
+        else if (c.key === 'atraso') filtroAtrasoAtivo = null;
+        else if (c.key === 'transp') filtroTransportadoraAtiva = null;
+        atualizarTudo();
+      };
+      chipArea.appendChild(chip);
+    });
+  }
+
+  function atualizarFiltrosDinamicos() {
+    const filtros = obterFiltroAtual();
+    const baseOrdem = dadosCompletos.filter(d => matchFilters(d, filtros, 'ordem'));
+    const baseArmador = dadosCompletos.filter(d => matchFilters(d, filtros, 'armador'));
+    const baseTransp = dadosCompletos.filter(d => matchFilters(d, filtros, 'transportadora'));
+
+    atualizarDatalist('listaArmador', baseArmador.map(d => d.armador || ''));
+    atualizarDatalist('listaTransportadora', baseTransp.map(d => d.transportadora || ''));
+
+    document.getElementById('filtroStatus').value = filtros.status || '';
+  }
+
+  function fotoLink(url, titulo) {
+    return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline; white-space:nowrap;" onclick='abrirFoto(${JSON.stringify(url)}, ${JSON.stringify(titulo)})'>${titulo}</span>` : '-';
+  }
+
+  async function carregarProcessos() {
+    if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
+
+    const { data: { user } } = await clienteSupabase.auth.getUser();
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const { data: userData } = await clienteSupabase
+      .from('usuarios')
+      .select('perfil, transportadora')
+      .eq('email', user.email)
+      .single();
+
+    const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
+    const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
+
+    let query = clienteSupabase.from('coletas').select('*');
+    if (!ehAdmin && userData?.transportadora) {
+      query = query.eq('transportadora', userData.transportadora);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+
+    const novoDado = data || [];
+    const novaAssinatura = novoDado.map(d => `${d.id}:${d.updated_at || d.created_at || ''}:${d.status || ''}:${d.ordem || ''}`).join('|');
+
+    if (novaAssinatura === lastSignature && !carregandoInicial) return;
+
+    lastSignature = novaAssinatura;
+    dadosCompletos = novoDado;
+    atualizarTudo();
+    carregandoInicial = false;
+  }
+
+  function prepararGraficos(dados) {
+    const transpMap = new Map();
+    const statusCount = new Map(STATUS_FLUXO.map(s => [s, 0]));
+    const faixas = { '0-25%':0, '26-50%':0, '51-75%':0, '76-99%':0, '≥100%':0 };
+    let depositadosNoPrazo = 0;
+    let depositadosAtrasados = 0;
+    let custoTotalAtraso = 0;
+    const custoMensalMap = new Map();
+
+    for (const d of dados) {
+      const t = d.transportadora || 'N/A';
+      transpMap.set(t, (transpMap.get(t) || 0) + 1);
+
+      const st = normalizarStatus(d.status);
+      if (statusCount.has(st)) statusCount.set(st, statusCount.get(st) + 1);
+
+      const rule = getFreeTimeRuleCached(d.armador);
+      if (rule && d.data_retirada) {
+        const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+        if (rest !== null) {
+          const pct = ((rule.dias - rest) / rule.dias) * 100;
+          let faixa;
+          if (pct >= 100) faixa = '≥100%';
+          else if (pct >= 76) faixa = '76-99%';
+          else if (pct >= 51) faixa = '51-75%';
+          else if (pct >= 26) faixa = '26-50%';
+          else faixa = '0-25%';
+          faixas[faixa]++;
+
+          const isDepositado = st === 'depositado' || d.finalizado;
+          if (isDepositado) {
+            if (rest < 0) {
+              depositadosAtrasados++;
+              const custo = Math.abs(rest) * rule.custo;
+              custoTotalAtraso += custo;
+
+              const retDate = new Date(d.data_retirada + 'T00:00:00');
+              const mesAno = `${retDate.getFullYear()}-${String(retDate.getMonth() + 1).padStart(2, '0')}`;
+              custoMensalMap.set(mesAno, (custoMensalMap.get(mesAno) || 0) + custo);
+            } else {
+              depositadosNoPrazo++;
             }
+          }
         }
-        freeTimeCache.set(nome, null);
-        return null;
+      }
     }
 
-    function normalizarStatus(status) {
-        const s = (status || '').toString().trim().toLowerCase();
-        if (s === 'ag. locação' || s === 'ag. locacao' || s === 'ag. carregamento') return 'ag. carregamento';
-        if (s === 'liberada') return 'liberado';
-        if (s === 'depositado') return 'depositado';
-        return s;
-    }
+    const sortedMonths = Array.from(custoMensalMap.keys()).sort();
+    const custoMensalLabels = sortedMonths.map(m => {
+      const [ano, mes] = m.split('-');
+      const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      return `${meses[parseInt(mes)-1]}/${ano.slice(2)}`;
+    });
+    const custoMensalValues = sortedMonths.map(m => custoMensalMap.get(m));
 
-    function getStatusColor(status) {
-        const colors = {
-            'ag. carregamento': '#FDE68A',
-            'liberado': '#DBEAFE',
-            'depositado': '#D1FAE5'
-        };
-        return colors[normalizarStatus(status)] || '#F3F4F6';
-    }
+    const transpLabels = Array.from(transpMap.keys()).sort((a,b) => transpMap.get(b) - transpMap.get(a));
+    const transpValues = transpLabels.map(k => transpMap.get(k));
 
-    let dadosCompletos = [];
-    let filtroStatusAtivo = null;
-    let filtroFreeTimeAtivo = null;
-    let filtroAtrasoAtivo = null;
-    let filtroTransportadoraAtiva = null;
-    let dadosModalDeposito = {};
-    let charts = {};
+    const statusLabels = STATUS_FLUXO.map(s => s.substring(0,3).toUpperCase());
+    const statusValues = STATUS_FLUXO.map(s => statusCount.get(s));
 
-    function showLoading() {
-        const el = document.getElementById('loading-overlay');
-        if (el) el.style.display = 'flex';
-    }
+    return {
+      transpLabels,
+      transpValues,
+      statusLabels,
+      statusValues,
+      faixas,
+      atrasados: depositadosAtrasados,
+      noPrazo: depositadosNoPrazo,
+      custoTotalAtraso,
+      custoMensalLabels,
+      custoMensalValues
+    };
+  }
 
-    function hideLoading() {
-        const el = document.getElementById('loading-overlay');
-        if (el) el.style.display = 'none';
-    }
+  function initCharts() {
+    const colors = { navy: '#2d4b5e', gold: '#c5b68d', red: '#E84D53' };
 
-    function getValue(id) {
-        const el = document.getElementById(id);
-        return el ? el.value : '';
-    }
-
-    async function verificarAcesso() {
-        try {
-            if (!clienteSupabase) return false;
-
-            const { data: { user } } = await clienteSupabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'login.html';
-                return false;
-            }
-
-            const { data: userData } = await clienteSupabase
-                .from('usuarios')
-                .select('perfil, status')
-                .eq('email', user.email)
-                .single();
-
-            if (!userData) {
-                window.location.href = 'index.html';
-                return false;
-            }
-
-            const perfil = (userData.perfil || '').trim().toLowerCase();
-            const status = (userData.status || '').trim().toLowerCase();
-            const permitido = perfil === 'master' || perfil === 'administrador';
-            const aprovado = perfil === 'master' || status === 'aprovado';
-
-            if (!permitido || !aprovado) {
-                alert('Acesso negado.');
-                window.location.href = 'index.html';
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Erro em verificarAcesso:', error);
-            alert('Erro ao verificar acesso.');
-            return false;
+    charts.status = new Chart(document.getElementById('chartStatus'), {
+      type: 'bar',
+      data: { labels: [], datasets: [{ data: [], backgroundColor: [colors.gold, colors.navy, colors.red], borderRadius: 3, barPercentage: 0.6, categoryPercentage: 0.75 }] },
+      options: {
+        animation: { duration: 560, easing: 'easeOutQuart' },
+        responsive: true,
+        maintainAspectRatio: false,
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const idx = elements[0].index;
+          const status = STATUS_FLUXO[idx];
+          filtroStatusAtivo = (filtroStatusAtivo === status) ? null : status;
+          atualizarTudo();
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            font: { weight: 'bold', size: 8 },
+            formatter: v => v || '',
+            offset: 4,
+            clip: false
+          }
+        },
+        scales: {
+          x: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } },
+          y: { ticks: { stepSize: 1, font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } }
         }
-    }
+      },
+      plugins: [ChartDataLabels]
+    });
 
-    function calcularDiasRestantes(dataRetirada, diasFreeTime) {
-        if (!dataRetirada || !diasFreeTime) return null;
-        const retirada = new Date(dataRetirada + 'T00:00:00');
-        const agora = new Date();
-        const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
-        return Math.ceil(diff / 86400000);
-    }
-
-    function obterDadosFiltrados() {
-        const fContainer = getValue('filtroContainer').trim().toLowerCase();
-        const fArmador = getValue('filtroArmador').trim().toLowerCase();
-        const fStatusForm = getValue('filtroStatus');
-        const fDataRetirada = getValue('filtroDataRetirada');
-        const fDataInicio = getValue('filtroDataInicio');
-        const fDataFim = getValue('filtroDataFim');
-
-        return dadosCompletos.filter(d => {
-            const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
-
-            if (fContainer && !(d.container || '').toLowerCase().includes(fContainer)) return false;
-            if (fArmador && !(d.armador || '').toLowerCase().includes(fArmador)) return false;
-            if (fStatusForm && statusNorm !== fStatusForm) return false;
-            if (fDataRetirada && d.data_retirada !== fDataRetirada) return false;
-
-            if (fDataInicio || fDataFim) {
-                const created = d.created_at ? new Date(d.created_at) : null;
-                if (!created) return false;
-
-                if (fDataInicio) {
-                    const ini = new Date(fDataInicio + 'T00:00:00');
-                    if (created < ini) return false;
-                }
-                if (fDataFim) {
-                    const fim = new Date(fDataFim + 'T23:59:59');
-                    if (created > fim) return false;
-                }
-            }
-
-            if (filtroStatusAtivo && statusNorm !== filtroStatusAtivo) return false;
-
-            if (filtroFreeTimeAtivo) {
-                const rule = getFreeTimeRuleCached(d.armador);
-                if (!rule || !d.data_retirada) return false;
-                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-                if (rest === null) return false;
-                const pct = ((rule.dias - rest) / rule.dias) * 100;
-                const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
-                if (faixa !== filtroFreeTimeAtivo) return false;
-            }
-
-            if (filtroAtrasoAtivo) {
-                const isDepositado = statusNorm === 'depositado' || d.finalizado;
-                if (!isDepositado) return false;
-                const rule = getFreeTimeRuleCached(d.armador);
-                if (!rule || !d.data_retirada) return false;
-                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-                const emAtraso = rest !== null && rest < 0;
-                if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
-                if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
-            }
-
-            if (filtroTransportadoraAtiva && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
-
-            return true;
-        });
-    }
-
-    function atualizarChips() {
-        const chipArea = document.getElementById('chips-area');
-        if (!chipArea) return;
-        chipArea.innerHTML = '';
-        const chips = [];
-        if (filtroStatusAtivo) chips.push({ label: filtroStatusAtivo.toUpperCase(), key: 'status' });
-        if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
-        if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
-        if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
-
-        chips.forEach(c => {
-            const chip = document.createElement('div');
-            chip.className = 'chip';
-            chip.innerHTML = `${c.label} <span>&times;</span>`;
-            chip.onclick = () => {
-                if (c.key === 'status') filtroStatusAtivo = null;
-                else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
-                else if (c.key === 'atraso') filtroAtrasoAtivo = null;
-                else if (c.key === 'transp') filtroTransportadoraAtiva = null;
-                atualizarChips();
-                renderTudo();
-            };
-            chipArea.appendChild(chip);
-        });
-    }
-
-    function formatarDataISO(iso) {
-        if (!iso) return 'N/A';
-        const date = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
-        if (isNaN(date.getTime())) return 'N/A';
-        return date.toLocaleDateString('pt-BR');
-    }
-
-    function fotoLink(url, titulo) {
-        return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline;" onclick="abrirFoto('${url}')">${titulo}</span>` : '-';
-    }
-
-    async function carregarProcessos() {
-        try {
-            if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
-
-            const { data: { user } } = await clienteSupabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const { data: userData } = await clienteSupabase
-                .from('usuarios')
-                .select('perfil, transportadora')
-                .eq('email', user.email)
-                .single();
-
-            const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
-            const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
-
-            let query = clienteSupabase.from('coletas').select('*');
-
-            if (!ehAdmin && userData?.transportadora) {
-                query = query.eq('transportadora', userData.transportadora);
-            }
-
-            const { data, error } = await query.order('created_at', { ascending: false });
-            if (error) throw error;
-
-            dadosCompletos = data || [];
-            renderTudo();
-        } catch (error) {
-            console.error('Erro ao carregar processos:', error);
-            alert('Erro ao carregar processos: ' + (error?.message || error));
+    charts.freeTime = new Chart(document.getElementById('chartFreeTime'), {
+      type: 'bar',
+      data: { labels: [], datasets: [{ data: [], backgroundColor: [colors.navy, colors.navy, colors.gold, colors.gold, colors.red], borderRadius: 3, barPercentage: 0.6, categoryPercentage: 0.75 }] },
+      options: {
+        animation: { duration: 560, easing: 'easeOutQuart' },
+        responsive: true,
+        maintainAspectRatio: false,
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const faixa = Object.keys({ '0-25%':0, '26-50%':0, '51-75%':0, '76-99%':0, '≥100%':0 })[elements[0].index];
+          filtroFreeTimeAtivo = (filtroFreeTimeAtivo === faixa) ? null : faixa;
+          atualizarTudo();
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            font: { weight: 'bold', size: 8 },
+            formatter: v => v || '',
+            offset: 4,
+            clip: false
+          }
+        },
+        scales: {
+          x: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } },
+          y: { ticks: { stepSize: 1, font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } }
         }
+      },
+      plugins: [ChartDataLabels]
+    });
+
+    charts.atraso = new Chart(document.getElementById('chartAtraso'), {
+      type: 'bar',
+      data: { labels: [], datasets: [{ data: [], backgroundColor: [colors.navy, colors.red], borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.6 }] },
+      options: {
+        animation: { duration: 560, easing: 'easeOutQuart' },
+        responsive: true,
+        maintainAspectRatio: false,
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const tipo = elements[0].index === 0 ? 'no_prazo' : 'em_atraso';
+          filtroAtrasoAtivo = (filtroAtrasoAtivo === tipo) ? null : tipo;
+          atualizarTudo();
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            font: { weight: 'bold', size: 8 },
+            formatter: v => v || '',
+            offset: 4,
+            clip: false
+          }
+        },
+        scales: {
+          x: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } },
+          y: { ticks: { stepSize: 1, font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+
+    charts.transp = new Chart(document.getElementById('chartTransportadora'), {
+      type: 'bar',
+      data: { labels: [], datasets: [{ data: [], backgroundColor: colors.navy, borderRadius: 3, barPercentage: 0.55, categoryPercentage: 0.7 }] },
+      options: {
+        animation: { duration: 560, easing: 'easeOutQuart' },
+        responsive: true,
+        indexAxis: 'y',
+        maintainAspectRatio: false,
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const label = charts.transp.data.labels[elements[0].index];
+          filtroTransportadoraAtiva = (filtroTransportadoraAtiva === label) ? null : label;
+          atualizarTudo();
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
+          datalabels: { display: false }
+        },
+        scales: {
+          x: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } },
+          y: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } }
+        }
+      },
+      plugins: []
+    });
+
+    charts.custo = new Chart(document.getElementById('chartCusto'), {
+      type: 'line',
+      data: { labels: [], datasets: [{ label: 'Custo (USD)', data: [], borderColor: colors.red, backgroundColor: 'rgba(232, 77, 83, 0.1)', borderWidth: 2, pointBackgroundColor: colors.red, pointBorderColor: '#fff', pointBorderWidth: 1, pointRadius: 4, tension: 0.2, fill: true }] },
+      options: {
+        animation: { duration: 560, easing: 'easeOutQuart' },
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => `Custo: US$ ${Number(ctx.raw || 0).toFixed(2)}` } },
+          datalabels: { display: false }
+        },
+        scales: {
+          x: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy, maxRotation: 45 }, grid: { display: false } },
+          y: {
+            beginAtZero: true,
+            ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy, callback: v => `$${v}` },
+            grid: { color: '#f0f0f0' },
+            title: { display: true, text: 'USD', font: { size: 9, weight: 'bold' }, color: colors.navy }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  }
+
+  function setChartData(chart, labels, values) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = values;
+    chart.update();
+  }
+
+  function renderGraficos(dadosFiltrados) {
+    const prep = prepararGraficos(dadosFiltrados);
+    const colors = { navy: '#2d4b5e', gold: '#c5b68d', red: '#E84D53' };
+
+    setChartData(charts.status, prep.statusLabels, prep.statusValues);
+    charts.status.data.datasets[0].backgroundColor = [colors.gold, colors.navy, colors.red];
+    charts.status.update();
+
+    setChartData(charts.freeTime, Object.keys(prep.faixas), Object.values(prep.faixas));
+    charts.freeTime.data.datasets[0].backgroundColor = [colors.navy, colors.navy, colors.gold, colors.gold, colors.red];
+    charts.freeTime.update();
+
+    setChartData(charts.atraso, ['No Prazo', 'Em Atraso'], [prep.noPrazo, prep.atrasados]);
+    charts.atraso.data.datasets[0].backgroundColor = [colors.navy, colors.red];
+    charts.atraso.update();
+
+    setChartData(charts.transp, prep.transpLabels, prep.transpValues);
+    charts.transp.update();
+
+    setChartData(charts.custo, prep.custoMensalLabels, prep.custoMensalValues);
+    charts.custo.update();
+  }
+
+  function renderTabela(dados) {
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+
+    if (dados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="16" class="sem-dados">Nenhum container encontrado.</td></tr>';
+      return;
     }
 
-    function prepararGraficos(dados) {
-        const transpMap = new Map();
-        const statusCount = new Map(STATUS_FLUXO.map(s => [s, 0]));
-        const faixas = { '0-25%':0, '26-50%':0, '51-75%':0, '76-99%':0, '≥100%':0 };
-        let depositadosNoPrazo = 0;
-        let depositadosAtrasados = 0;
-        let custoTotalAtraso = 0;
-        const custoMensalMap = new Map();
+    dados.forEach(d => {
+      const rule = getFreeTimeRuleCached(d.armador);
+      const diasTotal = rule ? rule.dias : '-';
+      const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+      const vencido = diasRest !== null && diasRest < 0;
+      const custoDiario = (vencido && rule) ? rule.custo.toFixed(2) : '-';
+      const custoTotal = (vencido && rule) ? (Math.abs(diasRest) * rule.custo).toFixed(2) : '-';
+      const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
+      const statusText = statusNorm.toUpperCase();
+      const statusColor = getStatusColor(statusNorm);
 
-        for (const d of dados) {
-            const t = d.transportadora || 'N/A';
-            transpMap.set(t, (transpMap.get(t) || 0) + 1);
+      const tr = document.createElement('tr');
+      tr.className = 'row-appear';
+      tr.innerHTML = `
+        <td><span class="status-badge" style="background-color:${statusColor};">${statusText}</span></td>
+        <td>${d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A'}</td>
+        <td>${d.container || 'N/A'}</td>
+        <td>${d.ordem || 'N/A'}</td>
+        <td>${d.armador || 'N/A'}</td>
+        <td>${d.transportadora || 'N/A'}</td>
+        <td>${d.placa || 'N/A'}</td>
+        <td><span class="badge-tipo ${d.carga_pulmao === 'Carga' ? 'badge-resfriado' : 'badge-congelado'}">${d.carga_pulmao || 'N/A'}</span></td>
+        <td><span class="badge-tipo ${getTipoBadgeClass(d.tipo_carga)}">${d.tipo_carga || 'N/A'}</span></td>
+        <td>${diasTotal}</td>
+        <td>${diasRest !== null ? diasRest : '-'}</td>
+        <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
+        <td>${d.localizacao || 'N/A'}</td>
+        <td>${fotoLink(d.foto_url ? `${STORAGE_BASE}${d.foto_url}` : null, 'RIC')}</td>
+        <td>${fotoLink(d.genset ? `${STORAGE_BASE}${d.genset}` : null, 'AG. CARREGAMENTO')}</td>
+        <td>${fotoLink(d.liberado ? `${STORAGE_BASE}${d.liberado}` : null, 'LIBERADO')}</td>
+        <td>${fotoLink(d.depositado ? `${STORAGE_BASE}${d.depositado}` : null, 'DEPOSITADO')}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-            const st = normalizarStatus(d.status);
-            if (statusCount.has(st)) statusCount.set(st, statusCount.get(st) + 1);
+  function atualizarTudo() {
+    beginSoftTransition();
+    const dados = obterDadosFiltrados();
+    atualizarChips();
+    atualizarFiltrosDinamicos();
+    renderGraficos(dados);
+    renderTabela(dados);
+  }
 
-            const rule = getFreeTimeRuleCached(d.armador);
-            if (rule && d.data_retirada) {
-                const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-                if (rest !== null) {
-                    const pct = ((rule.dias - rest) / rule.dias) * 100;
-                    let faixa;
-                    if (pct >= 100) faixa = '≥100%';
-                    else if (pct >= 76) faixa = '76-99%';
-                    else if (pct >= 51) faixa = '51-75%';
-                    else if (pct >= 26) faixa = '26-50%';
-                    else faixa = '0-25%';
-                    faixas[faixa]++;
+  function aplicarFiltrosForm() {
+    atualizarTudo();
+  }
 
-                    const isDepositado = st === 'depositado' || d.finalizado;
-                    if (isDepositado) {
-                        if (rest < 0) {
-                            depositadosAtrasados++;
-                            const custo = Math.abs(rest) * rule.custo;
-                            custoTotalAtraso += custo;
+  function limparTudo() {
+    document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+    filtroStatusAtivo = null;
+    filtroFreeTimeAtivo = null;
+    filtroAtrasoAtivo = null;
+    filtroTransportadoraAtiva = null;
+    atualizarTudo();
+  }
 
-                            const retDate = new Date(d.data_retirada + 'T00:00:00');
-                            const mesAno = `${retDate.getFullYear()}-${String(retDate.getMonth() + 1).padStart(2, '0')}`;
-                            custoMensalMap.set(mesAno, (custoMensalMap.get(mesAno) || 0) + custo);
-                        } else {
-                            depositadosNoPrazo++;
-                        }
-                    }
-                }
-            }
-        }
+  function exportarExcel() {
+    try {
+      const dados = obterDadosFiltrados();
+      if (dados.length === 0) {
+        alert('Nenhum dado para exportar.');
+        return;
+      }
 
-        const sortedMonths = Array.from(custoMensalMap.keys()).sort();
-        const custoMensalLabels = sortedMonths.map(m => {
-            const [ano, mes] = m.split('-');
-            const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            return `${meses[parseInt(mes)-1]}/${ano.slice(2)}`;
-        });
-        const custoMensalValues = sortedMonths.map(m => custoMensalMap.get(m));
-
-        const transpLabels = Array.from(transpMap.keys()).sort((a,b) => transpMap.get(b) - transpMap.get(a));
-        const transpValues = transpLabels.map(k => transpMap.get(k));
-
-        const statusLabels = STATUS_FLUXO.map(s => s.substring(0,3).toUpperCase());
-        const statusValues = STATUS_FLUXO.map(s => statusCount.get(s));
+      const exportData = dados.map(d => {
+        const rule = getFreeTimeRuleCached(d.armador);
+        const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
+        const vencido = diasRest !== null && diasRest < 0;
 
         return {
-            transpLabels,
-            transpValues,
-            statusLabels,
-            statusValues,
-            faixas,
-            atrasados: depositadosAtrasados,
-            noPrazo: depositadosNoPrazo,
-            custoTotalAtraso,
-            custoMensalLabels,
-            custoMensalValues
+          Status: normalizarStatus(d.status).toUpperCase(),
+          Retirada: d.data_retirada ? formatarDataISO(d.data_retirada) : '',
+          Container: d.container || '',
+          ORDEM: d.ordem || '',
+          Armador: d.armador || '',
+          Transportadora: d.transportadora || '',
+          Placa: d.placa || '',
+          'Carga/Pulmão': d.carga_pulmao || '',
+          'Tipo de Carga': d.tipo_carga || '',
+          'FT Total': rule ? rule.dias : '',
+          'Dias Rest': diasRest,
+          Vencido: vencido ? 'SIM' : 'NÃO',
+          Localização: d.localizacao || '',
+          RIC: d.foto_url || '',
+          'AG. CARREGAMENTO': d.genset || '',
+          LIBERADO: d.liberado || '',
+          DEPOSITADO: d.depositado || ''
         };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Containers');
+      XLSX.writeFile(wb, 'Painel_Gestao.xlsx');
+    } catch (error) {
+      console.error('Erro ao exportar Excel:', error);
+      alert('Ocorreu um erro ao gerar o arquivo Excel.');
     }
+  }
 
-    function renderGraficos(dadosFiltrados) {
-        const prep = prepararGraficos(dadosFiltrados);
-        const colors = { navy: '#2d4b5e', gold: '#c5b68d', red: '#E84D53' };
+  async function carregarTodos() {
+    try {
+      if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
 
-        Object.values(charts).forEach(c => c.destroy());
-        charts = {};
+      const { data: { user } } = await clienteSupabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
 
-        const baseOptions = {
-            maintainAspectRatio: false,
-            layout: { padding: { top: 8, bottom: 2, left: 4, right: 4 } },
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    font: { weight: 'bold', size: 8 },
-                    formatter: v => v || '',
-                    offset: 4,
-                    clip: false
-                }
-            },
-            scales: {
-                x: {
-                    ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy, maxRotation: 0 },
-                    grid: { display: false }
-                },
-                y: {
-                    ticks: { stepSize: 1, font: { size: 8, weight: 'bold' }, color: colors.navy },
-                    grid: { display: false }
-                }
-            }
-        };
+      const { data: userData } = await clienteSupabase
+        .from('usuarios')
+        .select('perfil, transportadora')
+        .eq('email', user.email)
+        .single();
 
-        charts.status = new Chart(document.getElementById('chartStatus'), {
-            type: 'bar',
-            data: {
-                labels: prep.statusLabels,
-                datasets: [{
-                    data: prep.statusValues,
-                    backgroundColor: [colors.gold, colors.navy, colors.red],
-                    borderRadius: 3,
-                    barPercentage: 0.6,
-                    categoryPercentage: 0.75
-                }]
-            },
-            options: {
-                ...baseOptions,
-                onClick: (e, elements) => {
-                    if (elements.length > 0) {
-                        const idx = elements[0].index;
-                        const status = STATUS_FLUXO[idx];
-                        filtroStatusAtivo = (filtroStatusAtivo === status) ? null : status;
-                        atualizarChips();
-                        aplicarTodos();
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
+      const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
+      const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
 
-        charts.freeTime = new Chart(document.getElementById('chartFreeTime'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(prep.faixas),
-                datasets: [{
-                    data: Object.values(prep.faixas),
-                    backgroundColor: [colors.navy, colors.navy, colors.gold, colors.gold, colors.red],
-                    borderRadius: 3,
-                    barPercentage: 0.6,
-                    categoryPercentage: 0.75
-                }]
-            },
-            options: {
-                ...baseOptions,
-                onClick: (e, elements) => {
-                    if (elements.length > 0) {
-                        const faixa = Object.keys(prep.faixas)[elements[0].index];
-                        filtroFreeTimeAtivo = (filtroFreeTimeAtivo === faixa) ? null : faixa;
-                        atualizarChips();
-                        aplicarTodos();
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
+      let query = clienteSupabase.from('coletas').select('*');
+      if (!ehAdmin && userData?.transportadora) {
+        query = query.eq('transportadora', userData.transportadora);
+      }
 
-        charts.atraso = new Chart(document.getElementById('chartAtraso'), {
-            type: 'bar',
-            data: {
-                labels: ['No Prazo', 'Em Atraso'],
-                datasets: [{
-                    data: [prep.noPrazo, prep.atrasados],
-                    backgroundColor: [colors.navy, colors.red],
-                    borderRadius: 3,
-                    barPercentage: 0.5,
-                    categoryPercentage: 0.6
-                }]
-            },
-            options: {
-                ...baseOptions,
-                onClick: (e, elements) => {
-                    if (elements.length > 0) {
-                        const tipo = elements[0].index === 0 ? 'no_prazo' : 'em_atraso';
-                        filtroAtrasoAtivo = (filtroAtrasoAtivo === tipo) ? null : tipo;
-                        atualizarChips();
-                        aplicarTodos();
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
+      const { data, error } = await query.order('created_at', { ascending: false });
+      if (error) throw error;
 
-        charts.transp = new Chart(document.getElementById('chartTransportadora'), {
-            type: 'bar',
-            data: {
-                labels: prep.transpLabels,
-                datasets: [{
-                    data: prep.transpValues,
-                    backgroundColor: colors.navy,
-                    borderRadius: 3,
-                    barPercentage: 0.55,
-                    categoryPercentage: 0.7
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                maintainAspectRatio: false,
-                layout: { padding: { top: 4, bottom: 4, left: 4, right: 4 } },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
-                    datalabels: { display: false }
-                },
-                scales: {
-                    x: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } },
-                    y: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } }
-                },
-                onClick: (e, elements) => {
-                    if (elements.length > 0) {
-                        const transp = prep.transpLabels[elements[0].index];
-                        filtroTransportadoraAtiva = (filtroTransportadoraAtiva === transp) ? null : transp;
-                        atualizarChips();
-                        aplicarTodos();
-                    }
-                }
-            },
-            plugins: []
-        });
+      const novoDado = data || [];
+      const novaAssinatura = novoDado.map(d => `${d.id}:${d.updated_at || d.created_at || ''}:${d.status || ''}:${d.ordem || ''}`).join('|');
 
-        charts.custo = new Chart(document.getElementById('chartCusto'), {
-            type: 'line',
-            data: {
-                labels: prep.custoMensalLabels,
-                datasets: [{
-                    label: 'Custo (USD)',
-                    data: prep.custoMensalValues,
-                    borderColor: colors.red,
-                    backgroundColor: 'rgba(232, 77, 83, 0.1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: colors.red,
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 1,
-                    pointRadius: 4,
-                    tension: 0.2,
-                    fill: true
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                layout: { padding: { top: 8, bottom: 4, left: 8, right: 10 } },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => `Custo: US$ ${ctx.raw.toFixed(2)}`
-                        }
-                    },
-                    datalabels: {
-                        anchor: 'end',
-                        align: 'top',
-                        offset: 3,
-                        font: { weight: 'bold', size: 8 },
-                        formatter: v => `$${v.toFixed(0)}`,
-                        color: colors.navy,
-                        display: prep.custoMensalValues.length <= 12
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy, maxRotation: 45 },
-                        grid: { display: false }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            font: { size: 8, weight: 'bold' },
-                            color: colors.navy,
-                            callback: v => `$${v}`
-                        },
-                        grid: { color: '#f0f0f0' },
-                        title: {
-                            display: true,
-                            text: 'USD',
-                            font: { size: 9, weight: 'bold' },
-                            color: colors.navy
-                        }
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
+      if (novaAssinatura === lastSignature && !carregandoInicial) return;
+
+      lastSignature = novaAssinatura;
+      dadosCompletos = novoDado;
+      atualizarTudo();
+      carregandoInicial = false;
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao carregar dados: ' + (err?.message || err));
     }
+  }
 
-    function renderTabela(dados) {
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
+  window.onload = async () => {
+    if (await verificarAcesso()) {
+      initCharts();
+      await carregarTodos();
 
-        if (dados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="14" class="sem-dados">Nenhum container encontrado.</td></tr>';
-            return;
+      if (refreshInterval) clearInterval(refreshInterval);
+      refreshInterval = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          carregarTodos();
         }
-
-        for (const d of dados) {
-            const rule = getFreeTimeRuleCached(d.armador);
-            const diasTotal = rule ? rule.dias : '-';
-            const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
-            const vencido = diasRest !== null && diasRest < 0;
-            const custoDiario = (vencido && rule) ? rule.custo.toFixed(2) : '-';
-            const custoTotal = (vencido && rule) ? (Math.abs(diasRest) * rule.custo).toFixed(2) : '-';
-            const statusText = normalizarStatus(d.status).toUpperCase();
-            const statusColor = getStatusColor(d.status);
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${d.container || 'N/A'}</td>
-                <td><span class="status-badge" style="background-color:${statusColor};">${statusText}</span></td>
-                <td>${d.armador || 'N/A'}</td>
-                <td>${d.transportadora || 'N/A'}</td>
-                <td>${d.terminal_coleta || 'N/A'}</td>
-                <td>${d.cidade || 'N/A'}</td>
-                <td>${formatarDataISO(d.created_at)}</td>
-                <td>${formatarDataISO(d.data_retirada)}</td>
-                <td>${formatarDataISO(d.data_finalizado)}</td>
-                <td>${diasTotal}</td>
-                <td>${diasRest !== null ? diasRest : '-'}</td>
-                <td>${custoDiario}</td>
-                <td>${custoTotal}</td>
-                <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
-            `;
-            tbody.appendChild(tr);
-        }
+      }, 20000);
     }
+  };
 
-    function aplicarTodos() {
-        const filtrados = obterDadosFiltrados();
-        renderGraficos(filtrados);
-        renderTabela(filtrados);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      carregarTodos();
     }
+  });
 
-    function aplicarFiltrosForm() {
-        aplicarTodos();
-    }
+  document.getElementById('filtroDataInicio').addEventListener('change', atualizarTudo);
+  document.getElementById('filtroDataFim').addEventListener('change', atualizarTudo);
+  document.getElementById('filtroDataRetirada').addEventListener('change', atualizarTudo);
 
-    function limparTudo() {
-        document.getElementById('filtroContainer').value = '';
-        document.getElementById('filtroArmador').value = '';
-        document.getElementById('filtroStatus').value = '';
-        document.getElementById('filtroDataRetirada').value = '';
-        document.getElementById('filtroDataFim').value = '';
-        filtroStatusAtivo = null;
-        filtroFreeTimeAtivo = null;
-        filtroAtrasoAtivo = null;
-        filtroTransportadoraAtiva = null;
-        atualizarChips();
-        aplicarTodos();
-    }
+  document.getElementById('filtroArmador').addEventListener('input', () => {
+    clearTimeout(window._tArmador);
+    window._tArmador = setTimeout(atualizarTudo, 120);
+  });
 
-    function exportarExcel() {
-        try {
-            const dados = obterDadosFiltrados();
-            if (dados.length === 0) {
-                alert('Nenhum dado para exportar.');
-                return;
-            }
+  document.getElementById('filtroOrdem').addEventListener('input', () => {
+    clearTimeout(window._tOrdem);
+    window._tOrdem = setTimeout(atualizarTudo, 120);
+  });
 
-            const exportData = dados.map(d => {
-                const rule = getFreeTimeRuleCached(d.armador);
-                const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
-                const vencido = diasRest !== null && diasRest < 0;
-
-                return {
-                    Container: d.container,
-                    Status: normalizarStatus(d.status).toUpperCase(),
-                    Armador: d.armador,
-                    Transportadora: d.transportadora,
-                    Terminal: d.terminal_coleta || '',
-                    Cidade: d.cidade || '',
-                    Registro: formatarDataISO(d.created_at),
-                    Retirada: formatarDataISO(d.data_retirada),
-                    Finalizado: formatarDataISO(d.data_finalizado),
-                    'FT Total': rule ? rule.dias : '',
-                    'Dias Rest': diasRest,
-                    'Custo Diário': vencido && rule ? rule.custo : '',
-                    'Custo Total': vencido && rule ? (Math.abs(diasRest) * rule.custo) : '',
-                    Vencido: vencido ? 'SIM' : 'NÃO'
-                };
-            });
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Containers');
-            XLSX.writeFile(wb, 'Painel_Gestao.xlsx');
-        } catch (error) {
-            console.error('Erro ao exportar Excel:', error);
-            alert('Ocorreu um erro ao gerar o arquivo Excel.');
-        }
-    }
-
-    async function carregarTodos() {
-        showLoading();
-        try {
-            const { data, error } = await clienteSupabase
-                .from('coletas')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(500);
-
-            if (error) throw error;
-            dadosCompletos = data || [];
-            aplicarTodos();
-        } catch (err) {
-            console.error(err);
-            alert('Erro ao carregar dados.');
-        } finally {
-            hideLoading();
-        }
-    }
-
-    window.onload = async () => {
-        if (await verificarAcesso()) {
-            await carregarTodos();
-        }
-    };
+  document.getElementById('filtroStatus').addEventListener('change', () => {
+    filtroStatusAtivo = document.getElementById('filtroStatus').value || null;
+    atualizarTudo();
+  });
 </script>
 </body>
 </html>
