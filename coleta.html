@@ -1812,12 +1812,24 @@
     box.addEventListener('click', function(e) { e.stopPropagation(); });
   }
 
+  function obterNomeExibicaoUsuario() {
+    const email = (usuarioLogado?.email || '').toLowerCase();
+    const parte = email.split('@')[0] || '';
+    if (!parte) return 'Usuário';
+
+    return parte
+      .split(/[._-]/)
+      .filter(Boolean)
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+      .join(' ');
+  }
+
   function mostrarMensagemFotoSalva(etapaNome, callback) {
     mostrarAlerta(`Foto salva com sucesso (${String(etapaNome || '').toUpperCase()}).`, callback || null);
   }
 
   function mostrarMensagemFinalizado() {
-    const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
+    const nome = nomeUsuarioLogado || obterNomeExibicaoUsuario() || 'Usuário';
     mostrarAlerta(`Finalizado. ${nome} pode fazer um novo registro.`, function () {
       limparFluxoCompleto();
     });
@@ -2003,7 +2015,7 @@
 
         registroId = inserted.id;
         registroAtual = inserted;
-        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+        fotosSalvas.ric = { nome: fotoPendenteNome, url: fotoSalva?.url || obterUrlFoto(fotoPendenteNome) };
         etapaFluxo = 'genset1';
 
         fecharModalDeposito();
