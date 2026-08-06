@@ -2015,7 +2015,7 @@
 
         registroId = inserted.id;
         registroAtual = inserted;
-        fotosSalvas.ric = { nome: fotoPendenteNome, url: fotoSalva?.url || obterUrlFoto(fotoPendenteNome) };
+        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
         etapaFluxo = 'genset1';
 
         fecharModalDeposito();
