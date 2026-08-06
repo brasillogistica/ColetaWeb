@@ -1829,8 +1829,8 @@
   }
 
   function mostrarMensagemFinalizado() {
-    const nome = nomeUsuarioLogado || obterNomeExibicaoUsuario() || 'Usuário';
-    mostrarAlerta(`Finalizado. ${nome} pode fazer um novo registro.`, function () {
+    const nome = obterNomeExibicaoUsuario();
+    mostrarAlerta(`Obrigado, ${nome}! Seu registro foi finalizado com sucesso. Agora você pode realizar um novo registro.`, function () {
       limparFluxoCompleto();
     });
   }
