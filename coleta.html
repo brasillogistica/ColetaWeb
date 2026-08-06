@@ -1586,8 +1586,6 @@
       const { data, error } = await query;
       if (error) throw error;
 
-      console.log('Registros retornados do Supabase:', data);
-
       registrosEmAndamento = (data || []).filter(r => !isFinalizado(r.finalizado));
 
       if (registroSelecionadoId) {
@@ -1664,6 +1662,7 @@
     modalDataTitulo = '';
     fotosSalvas = { ric: null, genset1: null, genset2: null, genset3: null };
     registroSelecionadoId = null;
+    termoBuscaAtual = '';
 
     document.getElementById('btnResfriado').classList.remove('active');
     document.getElementById('btnCongelado').classList.remove('active');
@@ -1676,6 +1675,7 @@
     document.getElementById('placa').value = '';
     document.getElementById('containerInput').value = '';
     document.getElementById('ordem').value = '';
+    document.getElementById('buscaContainer').value = '';
 
     document.getElementById('cameraInput').value = '';
     document.getElementById('gensetInput').value = '';
@@ -1695,6 +1695,10 @@
     atualizarResumoRegistroAtual();
     atualizarMensagemEtapa();
     filtrarResultadosBusca();
+  }
+
+  function mostrarMensagemFotoSalva(msg, callback) {
+    mostrarAlerta(msg || 'Foto salva com sucesso.', callback);
   }
 
   async function salvarColeta() {
@@ -1846,7 +1850,9 @@
         renderGaleria();
         await carregarRegistrosEmAndamento();
 
-        mostrarAlerta('RIC salvo com sucesso.');
+        mostrarMensagemFotoSalva('Foto salva com sucesso.', function () {
+          // continua normalmente para a próxima etapa
+        });
         return;
       }
 
@@ -1897,18 +1903,20 @@
       await carregarRegistrosEmAndamento();
 
       if (modalDataCampo === 'data_ag_carregamento') {
-        mostrarAlerta('Data da AG. CARREGAMENTO salva com sucesso.');
+        mostrarMensagemFotoSalva('Foto salva com sucesso. Próxima etapa liberada.');
         return;
       }
 
       if (modalDataCampo === 'data_liberado') {
-        mostrarAlerta('Data da LIBERAÇÃO salva com sucesso.');
+        mostrarMensagemFotoSalva('Foto salva com sucesso. Próxima etapa liberada.');
         return;
       }
 
       if (modalDataCampo === 'data_finalizado') {
-        mostrarAlerta('Registro finalizado com sucesso. Pronto para um novo registro.', function () {
-          limparFluxoCompleto();
+        mostrarMensagemFotoSalva('Foto salva com sucesso.', function () {
+          mostrarAlerta('Registro finalizado com sucesso. Você já pode começar um novo registro.', function () {
+            limparFluxoCompleto();
+          });
         });
         return;
       }
@@ -2082,17 +2090,9 @@
     }, 120);
   }
 
-  function dataAtualInput() {
-    return new Date().toISOString().split('T')[0];
-  }
-
   function sincronizarBotaoSalvar() {
     const btn = document.getElementById('btnSalvar');
     btn.disabled = !fotoAtualDataUrl || salvando || modalDepositoAberto;
-  }
-
-  function limparTextoBusca() {
-    limparBusca();
   }
 
   function onFileChangeRic(e) {
@@ -2190,10 +2190,6 @@
     if (reg.liberado && !reg.depositado) return 'liberado';
     if (reg.depositado) return 'depositado';
     return st || 'ag. carregamento';
-  }
-
-  function fecharModalDepositoAntigo() {
-    fecharModalDeposito();
   }
 
   window.addEventListener('click', function(e) {
