@@ -847,6 +847,7 @@
   let perfilUsuario = '';
   let transportadoraUsuario = '';
   let ehAdmin = false;
+  let nomeUsuarioLogado = '';
 
   let registrosEmAndamento = [];
   let resultadosFiltrados = [];
@@ -900,6 +901,14 @@
     if (etapa === 'genset1') return 'ETAPA 2/4 - FOTO DO PAINEL GENSET (AG. CARREGAMENTO)';
     if (etapa === 'genset2') return 'ETAPA 3/4 - FOTO DO PAINEL GENSET (LIBERADO)';
     if (etapa === 'genset3') return 'ETAPA 4/4 - FOTO DO PAINEL GENSET (DEPOSITADO / FINALIZAÇÃO)';
+    return '';
+  }
+
+  function textoEtapaCurta(etapa) {
+    if (etapa === 'ric') return 'RIC';
+    if (etapa === 'genset1') return 'AG. CARREGAMENTO';
+    if (etapa === 'genset2') return 'LIBERADO';
+    if (etapa === 'genset3') return 'DEPOSITADO';
     return '';
   }
 
@@ -1697,9 +1706,16 @@
     filtrarResultadosBusca();
   }
 
-  function mostrarMensagemFotoSalva(etapaNome, callback) {
+  function mostrarMensagemFotoSalva(etapaNome) {
     const etapaTexto = (etapaNome || '').toUpperCase();
-    mostrarAlerta(`Foto salva com sucesso (${etapaTexto}).`, callback);
+    mostrarAlerta(`Foto salva com sucesso (${etapaTexto}).`);
+  }
+
+  function mostrarMensagemFinalNovoRegistro() {
+    const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
+    mostrarAlerta(`${nome} pode fazer um novo registro.`, function () {
+      limparFluxoCompleto();
+    });
   }
 
   async function salvarColeta() {
@@ -1781,11 +1797,13 @@
         const campos = obterValoresCampos();
         const { data: userData } = await clienteSupabase
           .from('usuarios')
-          .select('transportadora')
+          .select('transportadora, nome')
           .eq('email', user.email)
           .single();
 
         const transportadora = userData ? userData.transportadora : 'N/A';
+        nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
+
         let localizacao = 'Sem GPS';
 
         try {
@@ -1912,11 +1930,10 @@
       }
 
       if (modalDataCampo === 'data_finalizado') {
-        mostrarMensagemFotoSalva('DEPOSITADO', function () {
-          mostrarAlerta('Você já pode fazer um novo registro.', function () {
-            limparFluxoCompleto();
-          });
-        });
+        mostrarMensagemFotoSalva('DEPOSITADO');
+        setTimeout(() => {
+          mostrarMensagemFinalNovoRegistro();
+        }, 250);
         return;
       }
     } catch (err) {
@@ -2027,7 +2044,7 @@
 
     const { data: userData } = await clienteSupabase
       .from('usuarios')
-      .select('perfil, status, transportadora')
+      .select('perfil, status, transportadora, nome')
       .eq('email', user.email)
       .single();
 
@@ -2040,6 +2057,7 @@
     perfilUsuario = (userData.perfil || '').trim().toLowerCase();
     const status = (userData.status || '').trim().toLowerCase();
     transportadoraUsuario = (userData.transportadora || '').trim();
+    nomeUsuarioLogado = userData.nome || user.user_metadata?.full_name || user.email || 'Usuário';
 
     const ehMaster = perfilUsuario === 'master' || perfilUsuario === 'mestre';
     ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
