@@ -832,6 +832,7 @@
   let modalDataTitulo = '';
   let modalDepositoAberto = false;
   let salvando = false;
+
   let usuarioLogado = null;
   let perfilUsuario = '';
   let transportadoraUsuario = '';
@@ -866,8 +867,13 @@
       .replaceAll("'", '&#39;');
   }
 
-  function normalizarTexto(texto) { return String(texto || '').trim().toLowerCase(); }
-  function isFinalizado(valor) { return valor === true || valor === 1 || valor === '1' || valor === 'true' || valor === 'TRUE'; }
+  function normalizarTexto(texto) {
+    return String(texto || '').trim().toLowerCase();
+  }
+
+  function isFinalizado(valor) {
+    return valor === true || valor === 1 || valor === '1' || valor === 'true' || valor === 'TRUE';
+  }
 
   function tipoExigeOrdem() {
     const t = normalizarTexto(tipoCargaSelecionado);
@@ -974,14 +980,19 @@
       registroSelecionadoId,
       campos: obterValoresCampos()
     };
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(payload)); } catch (e) {}
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+    } catch (e) {}
   }
 
-  function limparRascunho() { localStorage.removeItem(DRAFT_KEY); }
+  function limparRascunho() {
+    localStorage.removeItem(DRAFT_KEY);
+  }
 
   function setSalvando(ativar) {
     const btn = document.getElementById('btnSalvar');
     if (!btn) return;
+
     if (ativar) {
       btn.innerText = 'SALVANDO...';
       btn.classList.add('btn-salvar-loading');
@@ -1566,6 +1577,7 @@
           <strong>Status:</strong> ${escapeHtml((getEffectiveStatus(reg) || 'N/A').toString().toUpperCase())}
         </div>
       `;
+
       item.onclick = () => abrirRegistroParaContinuar(reg.id);
       lista.appendChild(item);
     });
@@ -1772,743 +1784,9 @@
     mostrarAlerta(`Foto salva com sucesso (${String(etapaNome || '').toUpperCase()}).`, callback || null);
   }
 
-  function mostrarMensagemFinalNovoRegistro() {
+  function mostrarMensagemFinalizado() {
     const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
-    mostrarAlerta(`${nome} pode fazer um novo registro.`, function () {
-      limparFluxoCompleto();
-    });
-  }
-
-  function novoRegistro() {
-    const temAlgo = !!registroId || !!tipoCargaSelecionado || !!cargaPulmaoSelecionado || !!fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean);
-    if (temAlgo) {
-      abrirModalConfirmacaoNovoRegistro(() => limparFluxoCompleto());
-      return;
-    }
-    limparFluxoCompleto();
-  }
-
-  function voltar() {
-    salvarRascunho();
-    window.location.href = 'index.html';
-  }
-
-  async function salvarColeta() {
-    if (salvando) return;
-
-    const cliente = getCliente();
-    if (!cliente) return mostrarAlerta('Erro: O sistema ainda está carregando.');
-    if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
-    if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
-    if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
-    if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
-    if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
-
-    const { data: { user } } = await cliente.auth.getUser();
-    if (!user) return mostrarAlerta('Usuário não autenticado!');
-
-    try {
-      setSalvando(true);
-
-      const etapaOrigem = etapaFluxo;
-      const suffix = etapaOrigem === 'ric' ? 'ric' : etapaOrigem;
-      const fileName = await uploadFoto(fotoAtualDataUrl, suffix);
-
-      fotoPendenteNome = fileName;
-      fotoPendenteEtapa = etapaOrigem;
-
-      const defaults = {
-        ric: { campo: 'data_retirada', titulo: 'Selecione a data da retirada' },
-        genset1: { campo: 'data_ag_carregamento', titulo: 'Selecione a data da AG. CARREGAMENTO' },
-        genset2: { campo: 'data_liberado', titulo: 'Selecione a data da LIBERAÇÃO' },
-        genset3: { campo: 'data_finalizado', titulo: 'Selecione a data do depósito' }
-      };
-
-      const cfg = defaults[etapaOrigem];
-      const dataInicial = obterDataInicialParaCampo(cfg.campo);
-
-      if (etapaOrigem === 'ric') fotosSalvas.ric = { nome: fileName, url: obterUrlFoto(fileName) };
-      else if (etapaOrigem === 'genset1') fotosSalvas.genset1 = { nome: fileName, url: obterUrlFoto(fileName) };
-      else if (etapaOrigem === 'genset2') fotosSalvas.genset2 = { nome: fileName, url: obterUrlFoto(fileName) };
-      else if (etapaOrigem === 'genset3') fotosSalvas.genset3 = { nome: fileName, url: obterUrlFoto(fileName) };
-
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-      renderGaleria();
-
-      abrirModalDataEtapa(cfg.campo, cfg.titulo, dataInicial);
-      setSalvando(false);
-    } catch (err) {
-      console.error(err);
-      setSalvando(false);
-      mostrarAlerta('Erro ao salvar foto: ' + err.message);
-    }
-  }
-
-  async function confirmarDataDeposito() {
-    const cliente = getCliente();
-    const dataEscolhida = document.getElementById('input-data-deposito').value;
-    if (!dataEscolhida) return alert('Selecione uma data.');
-    if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
-    if (!modalDataCampo) return alert('Erro: etapa não encontrada.');
-
-    try {
-      setSalvando(true);
-
-      const { data: { user } } = await cliente.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado.');
-
-      const dataValor = dataEscolhida;
-      const etapa = fotoPendenteEtapa || etapaFluxo;
-
-      if (etapa === 'ric') {
-        const campos = obterValoresCampos();
-        const userData = await buscarUsuarioPorEmail(cliente, user.email);
-        nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
-        const transportadora = obterTransportadoraFallback(userData);
-
-        let localizacao = 'Sem GPS';
-        try {
-          const pos = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
-          });
-
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-          const data = await response.json();
-
-          if (data && data.address) {
-            const addr = data.address;
-            const rua = addr.road || '';
-            const num = addr.house_number || '';
-            const bairro = addr.suburb || addr.neighbourhood || '';
-            const cidadeGps = addr.city || addr.town || '';
-            const estado = addr.state || addr.state_district || '';
-            localizacao = [rua, num, bairro, cidadeGps, estado].filter(Boolean).join(' - ');
-          } else {
-            localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-          }
-        } catch (e) {
-          console.warn('GPS bloqueado ou falhou:', e);
-          localizacao = 'GPS Bloqueado';
-        }
-
-        const insertObj = {
-          email_usuario: user.email,
-          data_retirada: dataValor,
-          armador: campos.armador,
-          container: campos.container || 'N/A',
-          ordem: campos.ordem,
-          placa: campos.placa,
-          carga_pulmao: cargaPulmaoSelecionado,
-          foto_url: fotoPendenteNome,
-          localizacao,
-          transportadora,
-          status: 'ag. carregamento',
-          finalizado: false,
-          tipo_carga: tipoCargaSelecionado,
-          created_at: new Date().toISOString()
-        };
-
-        const { data: inserted, error: dbError } = await cliente.from('coletas').insert([insertObj]).select().single();
-        if (dbError) throw dbError;
-
-        registroId = inserted.id;
-        registroAtual = inserted;
-        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-        etapaFluxo = 'genset1';
-
-        fecharModalDeposito();
-        fotoAtualDataUrl = '';
-        fotoPendenteNome = '';
-        fotoPendenteEtapa = '';
-        salvarRascunho();
-        atualizarInterfaceEtapa();
-        renderGaleria();
-        await carregarRegistrosEmAndamento();
-
-        mostrarMensagemFotoSalva('RIC');
-        return;
-      }
-
-      if (!registroId) throw new Error('Registro não encontrado. Salve o RIC novamente.');
-
-      const updateObj = {};
-      if (modalDataCampo === 'data_ag_carregamento') {
-        updateObj.genset = fotoPendenteNome;
-        updateObj.status = 'ag. carregamento';
-        updateObj.finalizado = false;
-        updateObj.data_ag_carregamento = dataValor;
-        etapaFluxo = 'genset2';
-        fotosSalvas.genset1 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-      if (modalDataCampo === 'data_liberado') {
-        updateObj.liberado = fotoPendenteNome;
-        updateObj.status = 'liberado';
-        updateObj.finalizado = false;
-        updateObj.data_liberado = dataValor;
-        etapaFluxo = 'genset3';
-        fotosSalvas.genset2 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-      if (modalDataCampo === 'data_finalizado') {
-        updateObj.depositado = fotoPendenteNome;
-        updateObj.status = 'depositado';
-        updateObj.finalizado = true;
-        updateObj.data_finalizado = dataValor;
-        fotosSalvas.genset3 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-
-      const { error } = await cliente.from('coletas').update(updateObj).eq('id', registroId);
-      if (error) throw error;
-
-      registroAtual = { ...(registroAtual || {}), ...updateObj, id: registroId };
-
-      fecharModalDeposito();
-      fotoAtualDataUrl = '';
-      fotoPendenteNome = '';
-      fotoPendenteEtapa = '';
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-      renderGaleria();
-      await carregarRegistrosEmAndamento();
-
-      if (modalDataCampo === 'data_ag_carregamento') {
-        mostrarMensagemFotoSalva('AG. CARREGAMENTO');
-        return;
-      }
-      if (modalDataCampo === 'data_liberado') {
-        mostrarMensagemFotoSalva('LIBERADO');
-        return;
-      }
-      if (modalDataCampo === 'data_finalizado') {
-        mostrarMensagemFotoSalva('DEPOSITADO', function () {
-          mostrarMensagemFinalNovoRegistro();
-        });
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-      mostrarAlerta('Erro ao salvar data: ' + err.message);
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  async function restaurarRascunho() {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) {
-      atualizarInterfaceEtapa();
-      return;
-    }
-
-    try {
-      const draft = JSON.parse(raw);
-      tipoCargaSelecionado = draft.tipoCargaSelecionado || '';
-      cargaPulmaoSelecionado = draft.cargaPulmaoSelecionado || '';
-      etapaFluxo = draft.etapaFluxo || 'ric';
-      registroId = draft.registroId || null;
-      registroAtual = draft.registroAtual || null;
-      fotoAtualDataUrl = draft.fotoAtualDataUrl || '';
-      fotoPendenteNome = draft.fotoPendenteNome || '';
-      fotoPendenteEtapa = draft.fotoPendenteEtapa || '';
-      modalDepositoAberto = !!draft.modalDepositoAberto;
-      modalDataCampo = draft.modalDataCampo || '';
-      modalDataTitulo = draft.modalDataTitulo || '';
-      fotosSalvas = draft.fotosSalvas || { ric: null, genset1: null, genset2: null, genset3: null };
-      termoBuscaAtual = draft.termoBuscaAtual || '';
-      registroSelecionadoId = draft.registroSelecionadoId || null;
-
-      if (draft.campos) preencherCamposRestaurados(draft.campos);
-
-      if (tipoCargaSelecionado) {
-        const map = { 'Resfriado': 'btnResfriado', 'Congelado com GenSet': 'btnCongeladoGenSet', 'Congelado': 'btnCongelado' };
-        const id = map[tipoCargaSelecionado];
-        if (id) document.getElementById(id).classList.add('active');
-      }
-      if (cargaPulmaoSelecionado) {
-        const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
-        if (id) document.getElementById(id).classList.add('active');
-      }
-
-      document.getElementById('buscaContainer').value = termoBuscaAtual || '';
-      await filtrarResultadosBusca();
-      atualizarInterfaceEtapa();
-      restaurarPreviewAtual();
-      renderGaleria();
-
-      if (modalDepositoAberto && modalDataCampo) {
-        setTimeout(() => abrirModalDataEtapa(modalDataCampo, modalDataTitulo || 'Selecione a data', obterDataInicialParaCampo(modalDataCampo)), 180);
-      }
-    } catch (e) {
-      console.warn('Falha ao restaurar rascunho:', e);
-      atualizarInterfaceEtapa();
-    }
-  }
-
-  async function buscarUsuarioPorEmail(cliente, email) {
-    try {
-      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora, nome').eq('email', email).maybeSingle();
-      if (!error && data) return data;
-    } catch (e) {}
-    try {
-      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora, nome').eq('email_usuario', email).maybeSingle();
-      if (!error && data) return data;
-    } catch (e) {}
-    return null;
-  }
-
-  function setUsuarioLogadoDados(userData, user) {
-    perfilUsuario = (userData?.perfil || '').trim().toLowerCase();
-    const status = (userData?.status || '').trim().toLowerCase();
-    transportadoraUsuario = obterTransportadoraFallback(userData);
-    nomeUsuarioLogado = userData?.nome || user?.user_metadata?.full_name || user?.email || 'Usuário';
-
-    const ehMaster = normalizarTexto(user?.email) === EMAIL_MASTER || perfilUsuario === 'master' || perfilUsuario === 'mestre';
-    ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
-    const ehTransportadora = !!transportadoraUsuario;
-
-    return { ehMaster, ehTransportadora };
-  }
-
-  async function verificarAcesso() {
-    const cliente = getCliente();
-    if (!cliente) return false;
-
-    const { data: { user } } = await cliente.auth.getUser();
-    if (!user) {
-      window.location.href = 'login.html';
-      return false;
-    }
-
-    usuarioLogado = user;
-    const isMasterEmail = normalizarTexto(user.email) === EMAIL_MASTER;
-    let userData = await buscarUsuarioPorEmail(cliente, user.email);
-
-    if (!userData && isMasterEmail) {
-      userData = {
-        perfil: 'master',
-        status: 'aprovado',
-        transportadora: 'Minerva Foods',
-        nome: user.user_metadata?.full_name || user.email
-      };
-    }
-
-    if (!userData) {
-      alert('Acesso negado.');
-      window.location.href = 'index.html';
-      return false;
-    }
-
-    const { ehMaster, ehTransportadora } = setUsuarioLogadoDados(userData, user);
-    if (!ehAdmin && !ehTransportadora && !ehMaster) {
-      alert('Acesso negado.');
-      window.location.href = 'index.html';
-      return false;
-    }
-
-    return true;
-  }
-
-  async function abrirRegistroParaContinuar(id) {
-    try {
-      const registroBruto = await buscarRegistroCompletoNoBanco(id);
-      if (!registroBruto) {
-        mostrarAlerta('Registro não encontrado.');
-        return;
-      }
-
-      const registro = normalizarRegistroBanco(registroBruto);
-
-      registroSelecionadoId = registro.id;
-      termoBuscaAtual = document.getElementById('buscaContainer').value || '';
-      await filtrarResultadosBusca();
-
-      tipoCargaSelecionado = registro.tipo_carga;
-      cargaPulmaoSelecionado = registro.carga_pulmao;
-      etapaFluxo = obterEtapaDoRegistro(registro);
-      registroId = registro.id;
-      registroAtual = registro;
-      fotoAtualDataUrl = '';
-      fotoPendenteNome = '';
-      fotoPendenteEtapa = '';
-      modalDepositoAberto = !!(registro.depositado && !isFinalizado(registro.finalizado));
-
-      fotosSalvas = {
-        ric: registro.foto_url ? { nome: registro.foto_url, url: obterUrlFoto(registro.foto_url) } : null,
-        genset1: registro.genset ? { nome: registro.genset, url: obterUrlFoto(registro.genset) } : null,
-        genset2: registro.liberado ? { nome: registro.liberado, url: obterUrlFoto(registro.liberado) } : null,
-        genset3: registro.depositado ? { nome: registro.depositado, url: obterUrlFoto(registro.depositado) } : null
-      };
-
-      aplicarBotoesAtivos();
-
-      preencherCamposRestaurados({
-        data_retirada: registro.data_retirada,
-        armador: registro.armador,
-        placa: registro.placa,
-        container: registro.container,
-        ordem: registro.ordem
-      });
-
-      atualizarInterfaceEtapa();
-      restaurarPreviewAtual();
-      renderGaleria();
-      salvarRascunho();
-
-      document.querySelector('.form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      if (modalDepositoAberto) {
-        setTimeout(() => abrirModalDataEtapa('data_finalizado', 'Selecione a data do depósito', registro.data_finalizado || new Date().toISOString().split('T')[0]), 180);
-      }
-    } catch (err) {
-      console.error(err);
-      mostrarAlerta('Erro ao abrir registro: ' + err.message);
-    }
-  }
-
-  function mostrarMensagemFotoSalva(etapaNome, callback) {
-    mostrarAlerta(`Foto salva com sucesso (${String(etapaNome || '').toUpperCase()}).`, callback || null);
-  }
-
-  function mostrarMensagemFinalNovoRegistro() {
-    const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
-    mostrarAlerta(`${nome} pode fazer um novo registro.`, function () {
-      limparFluxoCompleto();
-    });
-  }
-
-  function novoRegistro() {
-    const temAlgo = !!registroId || !!tipoCargaSelecionado || !!cargaPulmaoSelecionado || !!fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean);
-    if (temAlgo) {
-      abrirModalConfirmacaoNovoRegistro(() => limparFluxoCompleto());
-      return;
-    }
-    limparFluxoCompleto();
-  }
-
-  function voltar() {
-    salvarRascunho();
-    window.location.href = 'index.html';
-  }
-
-  async function salvarColeta() {
-    if (salvando) return;
-
-    const cliente = getCliente();
-    if (!cliente) return mostrarAlerta('Erro: O sistema ainda está carregando.');
-    if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
-    if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
-    if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
-    if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
-    if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
-
-    const { data: { user } } = await cliente.auth.getUser();
-    if (!user) return mostrarAlerta('Usuário não autenticado!');
-
-    try {
-      setSalvando(true);
-
-      const etapaOrigem = etapaFluxo;
-      const suffix = etapaOrigem === 'ric' ? 'ric' : etapaOrigem;
-      const fileName = await uploadFoto(fotoAtualDataUrl, suffix);
-
-      fotoPendenteNome = fileName;
-      fotoPendenteEtapa = etapaOrigem;
-
-      const defaults = {
-        ric: { campo: 'data_retirada', titulo: 'Selecione a data da retirada' },
-        genset1: { campo: 'data_ag_carregamento', titulo: 'Selecione a data da AG. CARREGAMENTO' },
-        genset2: { campo: 'data_liberado', titulo: 'Selecione a data da LIBERAÇÃO' },
-        genset3: { campo: 'data_finalizado', titulo: 'Selecione a data do depósito' }
-      };
-
-      const cfg = defaults[etapaOrigem];
-      const dataInicial = obterDataInicialParaCampo(cfg.campo);
-
-      if (etapaOrigem === 'ric') fotosSalvas.ric = { nome: fileName, url: obterUrlFoto(fileName) };
-      else if (etapaOrigem === 'genset1') fotosSalvas.genset1 = { nome: fileName, url: obterUrlFoto(fileName) };
-      else if (etapaOrigem === 'genset2') fotosSalvas.genset2 = { nome: fileName, url: obterUrlFoto(fileName) };
-      else if (etapaOrigem === 'genset3') fotosSalvas.genset3 = { nome: fileName, url: obterUrlFoto(fileName) };
-
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-      renderGaleria();
-
-      abrirModalDataEtapa(cfg.campo, cfg.titulo, dataInicial);
-      setSalvando(false);
-    } catch (err) {
-      console.error(err);
-      setSalvando(false);
-      mostrarAlerta('Erro ao salvar foto: ' + err.message);
-    }
-  }
-
-  async function confirmarDataDeposito() {
-    const cliente = getCliente();
-    const dataEscolhida = document.getElementById('input-data-deposito').value;
-    if (!dataEscolhida) return alert('Selecione uma data.');
-    if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
-    if (!modalDataCampo) return alert('Erro: etapa não encontrada.');
-
-    try {
-      setSalvando(true);
-
-      const { data: { user } } = await cliente.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado.');
-
-      const dataValor = dataEscolhida;
-      const etapa = fotoPendenteEtapa || etapaFluxo;
-
-      if (etapa === 'ric') {
-        const campos = obterValoresCampos();
-        const userData = await buscarUsuarioPorEmail(cliente, user.email);
-        nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
-        const transportadora = obterTransportadoraFallback(userData);
-
-        let localizacao = 'Sem GPS';
-        try {
-          const pos = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
-          });
-
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-          const data = await response.json();
-
-          if (data && data.address) {
-            const addr = data.address;
-            const rua = addr.road || '';
-            const num = addr.house_number || '';
-            const bairro = addr.suburb || addr.neighbourhood || '';
-            const cidadeGps = addr.city || addr.town || '';
-            const estado = addr.state || addr.state_district || '';
-            localizacao = [rua, num, bairro, cidadeGps, estado].filter(Boolean).join(' - ');
-          } else {
-            localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-          }
-        } catch (e) {
-          console.warn('GPS bloqueado ou falhou:', e);
-          localizacao = 'GPS Bloqueado';
-        }
-
-        const insertObj = {
-          email_usuario: user.email,
-          data_retirada: dataValor,
-          armador: campos.armador,
-          container: campos.container || 'N/A',
-          ordem: campos.ordem,
-          placa: campos.placa,
-          carga_pulmao: cargaPulmaoSelecionado,
-          foto_url: fotoPendenteNome,
-          localizacao,
-          transportadora,
-          status: 'ag. carregamento',
-          finalizado: false,
-          tipo_carga: tipoCargaSelecionado,
-          created_at: new Date().toISOString()
-        };
-
-        const { data: inserted, error: dbError } = await cliente.from('coletas').insert([insertObj]).select().single();
-        if (dbError) throw dbError;
-
-        registroId = inserted.id;
-        registroAtual = inserted;
-        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-        etapaFluxo = 'genset1';
-
-        fecharModalDeposito();
-        fotoAtualDataUrl = '';
-        fotoPendenteNome = '';
-        fotoPendenteEtapa = '';
-        salvarRascunho();
-        atualizarInterfaceEtapa();
-        renderGaleria();
-        await carregarRegistrosEmAndamento();
-
-        mostrarMensagemFotoSalva('RIC');
-        return;
-      }
-
-      if (!registroId) throw new Error('Registro não encontrado. Salve o RIC novamente.');
-
-      const updateObj = {};
-      if (modalDataCampo === 'data_ag_carregamento') {
-        updateObj.genset = fotoPendenteNome;
-        updateObj.status = 'ag. carregamento';
-        updateObj.finalizado = false;
-        updateObj.data_ag_carregamento = dataValor;
-        etapaFluxo = 'genset2';
-        fotosSalvas.genset1 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-      if (modalDataCampo === 'data_liberado') {
-        updateObj.liberado = fotoPendenteNome;
-        updateObj.status = 'liberado';
-        updateObj.finalizado = false;
-        updateObj.data_liberado = dataValor;
-        etapaFluxo = 'genset3';
-        fotosSalvas.genset2 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-      if (modalDataCampo === 'data_finalizado') {
-        updateObj.depositado = fotoPendenteNome;
-        updateObj.status = 'depositado';
-        updateObj.finalizado = true;
-        updateObj.data_finalizado = dataValor;
-        fotosSalvas.genset3 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-
-      const { error } = await cliente.from('coletas').update(updateObj).eq('id', registroId);
-      if (error) throw error;
-
-      registroAtual = { ...(registroAtual || {}), ...updateObj, id: registroId };
-
-      fecharModalDeposito();
-      fotoAtualDataUrl = '';
-      fotoPendenteNome = '';
-      fotoPendenteEtapa = '';
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-      renderGaleria();
-      await carregarRegistrosEmAndamento();
-
-      if (modalDataCampo === 'data_ag_carregamento') {
-        mostrarMensagemFotoSalva('AG. CARREGAMENTO');
-        return;
-      }
-      if (modalDataCampo === 'data_liberado') {
-        mostrarMensagemFotoSalva('LIBERADO');
-        return;
-      }
-      if (modalDataCampo === 'data_finalizado') {
-        mostrarMensagemFotoSalva('DEPOSITADO', function () {
-          mostrarMensagemFinalNovoRegistro();
-        });
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-      mostrarAlerta('Erro ao salvar data: ' + err.message);
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  async function restaurarRascunho() {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) {
-      atualizarInterfaceEtapa();
-      return;
-    }
-
-    try {
-      const draft = JSON.parse(raw);
-      tipoCargaSelecionado = draft.tipoCargaSelecionado || '';
-      cargaPulmaoSelecionado = draft.cargaPulmaoSelecionado || '';
-      etapaFluxo = draft.etapaFluxo || 'ric';
-      registroId = draft.registroId || null;
-      registroAtual = draft.registroAtual || null;
-      fotoAtualDataUrl = draft.fotoAtualDataUrl || '';
-      fotoPendenteNome = draft.fotoPendenteNome || '';
-      fotoPendenteEtapa = draft.fotoPendenteEtapa || '';
-      modalDepositoAberto = !!draft.modalDepositoAberto;
-      modalDataCampo = draft.modalDataCampo || '';
-      modalDataTitulo = draft.modalDataTitulo || '';
-      fotosSalvas = draft.fotosSalvas || { ric: null, genset1: null, genset2: null, genset3: null };
-      termoBuscaAtual = draft.termoBuscaAtual || '';
-      registroSelecionadoId = draft.registroSelecionadoId || null;
-
-      if (draft.campos) preencherCamposRestaurados(draft.campos);
-
-      if (tipoCargaSelecionado) {
-        const map = { 'Resfriado': 'btnResfriado', 'Congelado com GenSet': 'btnCongeladoGenSet', 'Congelado': 'btnCongelado' };
-        const id = map[tipoCargaSelecionado];
-        if (id) document.getElementById(id).classList.add('active');
-      }
-      if (cargaPulmaoSelecionado) {
-        const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
-        if (id) document.getElementById(id).classList.add('active');
-      }
-
-      document.getElementById('buscaContainer').value = termoBuscaAtual || '';
-      await filtrarResultadosBusca();
-      atualizarInterfaceEtapa();
-      restaurarPreviewAtual();
-      renderGaleria();
-
-      if (modalDepositoAberto && modalDataCampo) {
-        setTimeout(() => abrirModalDataEtapa(modalDataCampo, modalDataTitulo || 'Selecione a data', obterDataInicialParaCampo(modalDataCampo)), 180);
-      }
-    } catch (e) {
-      console.warn('Falha ao restaurar rascunho:', e);
-      atualizarInterfaceEtapa();
-    }
-  }
-
-  async function abrirRegistroParaContinuar(id) {
-    try {
-      const registroBruto = await buscarRegistroCompletoNoBanco(id);
-      if (!registroBruto) {
-        mostrarAlerta('Registro não encontrado.');
-        return;
-      }
-
-      const registro = normalizarRegistroBanco(registroBruto);
-
-      registroSelecionadoId = registro.id;
-      termoBuscaAtual = document.getElementById('buscaContainer').value || '';
-      await filtrarResultadosBusca();
-
-      tipoCargaSelecionado = registro.tipo_carga;
-      cargaPulmaoSelecionado = registro.carga_pulmao;
-      etapaFluxo = obterEtapaDoRegistro(registro);
-      registroId = registro.id;
-      registroAtual = registro;
-      fotoAtualDataUrl = '';
-      fotoPendenteNome = '';
-      fotoPendenteEtapa = '';
-      modalDepositoAberto = !!(registro.depositado && !isFinalizado(registro.finalizado));
-
-      fotosSalvas = {
-        ric: registro.foto_url ? { nome: registro.foto_url, url: obterUrlFoto(registro.foto_url) } : null,
-        genset1: registro.genset ? { nome: registro.genset, url: obterUrlFoto(registro.genset) } : null,
-        genset2: registro.liberado ? { nome: registro.liberado, url: obterUrlFoto(registro.liberado) } : null,
-        genset3: registro.depositado ? { nome: registro.depositado, url: obterUrlFoto(registro.depositado) } : null
-      };
-
-      aplicarBotoesAtivos();
-
-      preencherCamposRestaurados({
-        data_retirada: registro.data_retirada,
-        armador: registro.armador,
-        placa: registro.placa,
-        container: registro.container,
-        ordem: registro.ordem
-      });
-
-      atualizarInterfaceEtapa();
-      restaurarPreviewAtual();
-      renderGaleria();
-      salvarRascunho();
-
-      document.querySelector('.form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      if (modalDepositoAberto) {
-        setTimeout(() => abrirModalDataEtapa('data_finalizado', 'Selecione a data do depósito', registro.data_finalizado || new Date().toISOString().split('T')[0]), 180);
-      }
-    } catch (err) {
-      console.error(err);
-      mostrarAlerta('Erro ao abrir registro: ' + err.message);
-    }
-  }
-
-  function mostrarMensagemFotoSalva(etapaNome, callback) {
-    mostrarAlerta(`Foto salva com sucesso (${String(etapaNome || '').toUpperCase()}).`, callback || null);
-  }
-
-  function mostrarMensagemFinalNovoRegistro() {
-    const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
-    mostrarAlerta(`${nome} pode fazer um novo registro.`, function () {
+    mostrarAlerta(`Finalizado. ${nome} pode fazer um novo registro.`, function () {
       limparFluxoCompleto();
     });
   }
@@ -2539,326 +1817,6 @@
     document.getElementById('buscaContainer').value = '';
     salvarRascunho();
     filtrarResultadosBusca();
-  }
-
-  async function filtrarResultadosBusca() {
-    const termo = normalizarTexto(termoBuscaAtual);
-    resultadosFiltrados = registrosEmAndamento.filter(reg => {
-      if (isFinalizado(reg.finalizado)) return false;
-      if (!termo) return true;
-      return normalizarTexto(reg.container).includes(termo);
-    });
-    renderResultadosBusca();
-  }
-
-  function getEffectiveStatus(reg) {
-    if (isFinalizado(reg.finalizado)) return 'depositado';
-    const st = normalizarTexto(reg.status);
-    if (st === 'depositado' || st === 'liberado' || st === 'ag. carregamento') return st;
-    if (!reg.foto_url) return 'ag. carregamento';
-    if (reg.foto_url && !reg.genset) return 'ag. carregamento';
-    if (reg.genset && !reg.liberado) return 'ag. carregamento';
-    if (reg.liberado && !reg.depositado) return 'liberado';
-    if (reg.depositado) return 'depositado';
-    return st || 'ag. carregamento';
-  }
-
-  function renderResultadosBusca() {
-    const lista = document.getElementById('listaResultados');
-    const count = document.getElementById('resultadoBuscaCount');
-    const info = document.getElementById('registroSelecionadoInfo');
-    lista.innerHTML = '';
-
-    if (count) count.textContent = `${resultadosFiltrados.length} registro(s) em andamento.`;
-
-    const selecionado = registrosEmAndamento.find(r => String(r.id) === String(registroSelecionadoId));
-    if (info) {
-      info.textContent = selecionado
-        ? `Selecionado: ${selecionado.container || 'N/A'} | ${obterResumoBusca(selecionado)}`
-        : 'Nenhum processo selecionado.';
-    }
-
-    if (!resultadosFiltrados.length) {
-      lista.innerHTML = '<div style="padding:12px; text-align:center; color:#888; font-weight:700;">Nenhum registro encontrado.</div>';
-      return;
-    }
-
-    resultadosFiltrados.forEach(reg => {
-      const item = document.createElement('div');
-      item.className = 'result-item' + (String(reg.id) === String(registroSelecionadoId) ? ' active' : '');
-
-      const etapa = obterResumoBusca(reg);
-      const classe = classeResumoBusca(reg);
-      const container = escapeHtml(reg.container || 'N/A');
-      const armador = escapeHtml(reg.armador || 'N/A');
-      const cidade = escapeHtml(reg.cidade || 'N/A');
-      const retirada = reg.data_retirada ? new Date(reg.data_retirada + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
-
-      item.innerHTML = `
-        <div class="result-top">
-          <div class="result-container">${container}</div>
-          <span class="result-badge ${classe}">${etapa}</span>
-        </div>
-        <div class="result-meta">
-          <strong>Armador:</strong> ${armador}<br>
-          <strong>Cidade:</strong> ${cidade}<br>
-          <strong>Retirada:</strong> ${retirada}<br>
-          <strong>Status:</strong> ${escapeHtml((getEffectiveStatus(reg) || 'N/A').toString().toUpperCase())}
-        </div>
-      `;
-      item.onclick = () => abrirRegistroParaContinuar(reg.id);
-      lista.appendChild(item);
-    });
-  }
-
-  async function carregarRegistrosEmAndamento() {
-    try {
-      const cliente = getCliente();
-      if (!cliente) return;
-
-      let query = cliente.from('coletas').select('*').order('created_at', { ascending: false });
-
-      if (!ehAdmin && transportadoraUsuario) {
-        query = query.ilike('transportadora', transportadoraUsuario.trim());
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      registrosEmAndamento = (data || []).filter(r => !isFinalizado(r.finalizado));
-
-      if (registroSelecionadoId) {
-        const existe = registrosEmAndamento.find(r => String(r.id) === String(registroSelecionadoId));
-        if (!existe) registroSelecionadoId = null;
-      }
-
-      await filtrarResultadosBusca();
-    } catch (err) {
-      console.error('Erro ao carregar registros:', err);
-      mostrarAlerta('Erro ao carregar registros: ' + err.message);
-    }
-  }
-
-  function getClienteSeguro() {
-    return window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
-  }
-
-  function obterTransportadoraFallback(userData) {
-    return (userData?.transportadora || transportadoraUsuario || 'Minerva Foods').trim();
-  }
-
-  function setUsuarioLogadoDados(userData, user) {
-    perfilUsuario = (userData?.perfil || '').trim().toLowerCase();
-    const status = (userData?.status || '').trim().toLowerCase();
-    transportadoraUsuario = obterTransportadoraFallback(userData);
-    nomeUsuarioLogado = userData?.nome || user?.user_metadata?.full_name || user?.email || 'Usuário';
-
-    const ehMaster = normalizarTexto(user?.email) === EMAIL_MASTER || perfilUsuario === 'master' || perfilUsuario === 'mestre';
-    ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
-    const ehTransportadora = !!transportadoraUsuario;
-
-    return { ehMaster, ehTransportadora };
-  }
-
-  async function buscarUsuarioPorEmail(cliente, email) {
-    try {
-      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora, nome').eq('email', email).maybeSingle();
-      if (!error && data) return data;
-    } catch (e) {}
-    try {
-      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora, nome').eq('email_usuario', email).maybeSingle();
-      if (!error && data) return data;
-    } catch (e) {}
-    return null;
-  }
-
-  async function verificarAcesso() {
-    const cliente = getClienteSeguro();
-    if (!cliente) return false;
-
-    const { data: { user } } = await cliente.auth.getUser();
-    if (!user) {
-      window.location.href = 'login.html';
-      return false;
-    }
-
-    usuarioLogado = user;
-    const isMasterEmail = normalizarTexto(user.email) === EMAIL_MASTER;
-    let userData = await buscarUsuarioPorEmail(cliente, user.email);
-
-    if (!userData && isMasterEmail) {
-      userData = {
-        perfil: 'master',
-        status: 'aprovado',
-        transportadora: 'Minerva Foods',
-        nome: user.user_metadata?.full_name || user.email
-      };
-    }
-
-    if (!userData) {
-      alert('Acesso negado.');
-      window.location.href = 'index.html';
-      return false;
-    }
-
-    const { ehMaster, ehTransportadora } = setUsuarioLogadoDados(userData, user);
-    if (!ehAdmin && !ehTransportadora && !ehMaster) {
-      alert('Acesso negado.');
-      window.location.href = 'index.html';
-      return false;
-    }
-
-    return true;
-  }
-
-  async function confirmarDataDeposito() {
-    const cliente = getClienteSeguro();
-    const dataEscolhida = document.getElementById('input-data-deposito').value;
-    if (!dataEscolhida) return alert('Selecione uma data.');
-    if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
-    if (!modalDataCampo) return alert('Erro: etapa não encontrada.');
-
-    try {
-      setSalvando(true);
-
-      const { data: { user } } = await cliente.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado.');
-
-      const dataValor = dataEscolhida;
-      const etapa = fotoPendenteEtapa || etapaFluxo;
-
-      if (etapa === 'ric') {
-        const campos = obterValoresCampos();
-        const userData = await buscarUsuarioPorEmail(cliente, user.email);
-        nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
-        const transportadora = obterTransportadoraFallback(userData);
-
-        let localizacao = 'Sem GPS';
-        try {
-          const pos = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
-          });
-
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-          const data = await response.json();
-
-          if (data && data.address) {
-            const addr = data.address;
-            const rua = addr.road || '';
-            const num = addr.house_number || '';
-            const bairro = addr.suburb || addr.neighbourhood || '';
-            const cidadeGps = addr.city || addr.town || '';
-            const estado = addr.state || addr.state_district || '';
-            localizacao = [rua, num, bairro, cidadeGps, estado].filter(Boolean).join(' - ');
-          } else {
-            localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-          }
-        } catch (e) {
-          console.warn('GPS bloqueado ou falhou:', e);
-          localizacao = 'GPS Bloqueado';
-        }
-
-        const insertObj = {
-          email_usuario: user.email,
-          data_retirada: dataValor,
-          armador: campos.armador,
-          container: campos.container || 'N/A',
-          ordem: campos.ordem,
-          placa: campos.placa,
-          carga_pulmao: cargaPulmaoSelecionado,
-          foto_url: fotoPendenteNome,
-          localizacao,
-          transportadora,
-          status: 'ag. carregamento',
-          finalizado: false,
-          tipo_carga: tipoCargaSelecionado,
-          created_at: new Date().toISOString()
-        };
-
-        const { data: inserted, error: dbError } = await cliente.from('coletas').insert([insertObj]).select().single();
-        if (dbError) throw dbError;
-
-        registroId = inserted.id;
-        registroAtual = inserted;
-        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-        etapaFluxo = 'genset1';
-
-        fecharModalDeposito();
-        fotoAtualDataUrl = '';
-        fotoPendenteNome = '';
-        fotoPendenteEtapa = '';
-        salvarRascunho();
-        atualizarInterfaceEtapa();
-        renderGaleria();
-        await carregarRegistrosEmAndamento();
-
-        mostrarMensagemFotoSalva('RIC');
-        return;
-      }
-
-      if (!registroId) throw new Error('Registro não encontrado. Salve o RIC novamente.');
-
-      const updateObj = {};
-      if (modalDataCampo === 'data_ag_carregamento') {
-        updateObj.genset = fotoPendenteNome;
-        updateObj.status = 'ag. carregamento';
-        updateObj.finalizado = false;
-        updateObj.data_ag_carregamento = dataValor;
-        etapaFluxo = 'genset2';
-        fotosSalvas.genset1 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-      if (modalDataCampo === 'data_liberado') {
-        updateObj.liberado = fotoPendenteNome;
-        updateObj.status = 'liberado';
-        updateObj.finalizado = false;
-        updateObj.data_liberado = dataValor;
-        etapaFluxo = 'genset3';
-        fotosSalvas.genset2 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-      if (modalDataCampo === 'data_finalizado') {
-        updateObj.depositado = fotoPendenteNome;
-        updateObj.status = 'depositado';
-        updateObj.finalizado = true;
-        updateObj.data_finalizado = dataValor;
-        fotosSalvas.genset3 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-
-      const { error } = await cliente.from('coletas').update(updateObj).eq('id', registroId);
-      if (error) throw error;
-
-      registroAtual = { ...(registroAtual || {}), ...updateObj, id: registroId };
-
-      fecharModalDeposito();
-      fotoAtualDataUrl = '';
-      fotoPendenteNome = '';
-      fotoPendenteEtapa = '';
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-      renderGaleria();
-      await carregarRegistrosEmAndamento();
-
-      if (modalDataCampo === 'data_ag_carregamento') {
-        mostrarMensagemFotoSalva('AG. CARREGAMENTO');
-        return;
-      }
-      if (modalDataCampo === 'data_liberado') {
-        mostrarMensagemFotoSalva('LIBERADO');
-        return;
-      }
-      if (modalDataCampo === 'data_finalizado') {
-        mostrarMensagemFotoSalva('DEPOSITADO', function () {
-          mostrarMensagemFinalNovoRegistro();
-        });
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-      mostrarAlerta('Erro ao salvar data: ' + err.message);
-    } finally {
-      setSalvando(false);
-    }
   }
 
   function limparFluxoCompleto() {
@@ -2910,6 +1868,334 @@
     filtrarResultadosBusca();
   }
 
+  async function salvarColeta() {
+    if (salvando) return;
+
+    const cliente = getCliente();
+    if (!cliente) return mostrarAlerta('Erro: O sistema ainda está carregando.');
+    if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
+    if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
+    if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
+    if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
+    if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
+
+    const { data: { user } } = await cliente.auth.getUser();
+    if (!user) return mostrarAlerta('Usuário não autenticado!');
+
+    try {
+      setSalvando(true);
+
+      const etapaOrigem = etapaFluxo;
+      const suffix = etapaOrigem === 'ric' ? 'ric' : etapaOrigem;
+      const fileName = await uploadFoto(fotoAtualDataUrl, suffix);
+
+      fotoPendenteNome = fileName;
+      fotoPendenteEtapa = etapaOrigem;
+
+      const defaults = {
+        ric: { campo: 'data_retirada', titulo: 'Selecione a data da retirada' },
+        genset1: { campo: 'data_ag_carregamento', titulo: 'Selecione a data da AG. CARREGAMENTO' },
+        genset2: { campo: 'data_liberado', titulo: 'Selecione a data da LIBERAÇÃO' },
+        genset3: { campo: 'data_finalizado', titulo: 'Selecione a data do depósito' }
+      };
+
+      const cfg = defaults[etapaOrigem];
+      const dataInicial = obterDataInicialParaCampo(cfg.campo);
+
+      if (etapaOrigem === 'ric') {
+        fotosSalvas.ric = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset1') {
+        fotosSalvas.genset1 = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset2') {
+        fotosSalvas.genset2 = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset3') {
+        fotosSalvas.genset3 = { nome: fileName, url: obterUrlFoto(fileName) };
+      }
+
+      salvarRascunho();
+      atualizarInterfaceEtapa();
+      renderGaleria();
+
+      abrirModalDataEtapa(cfg.campo, cfg.titulo, dataInicial);
+      setSalvando(false);
+    } catch (err) {
+      console.error(err);
+      setSalvando(false);
+      mostrarAlerta('Erro ao salvar foto: ' + err.message);
+    }
+  }
+
+  async function buscarUsuarioPorEmail(cliente, email) {
+    try {
+      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora, nome').eq('email', email).maybeSingle();
+      if (!error && data) return data;
+    } catch (e) {}
+    try {
+      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora, nome').eq('email_usuario', email).maybeSingle();
+      if (!error && data) return data;
+    } catch (e) {}
+    return null;
+  }
+
+  function setUsuarioLogadoDados(userData, user) {
+    perfilUsuario = (userData?.perfil || '').trim().toLowerCase();
+    const status = (userData?.status || '').trim().toLowerCase();
+    transportadoraUsuario = obterTransportadoraFallback(userData);
+    nomeUsuarioLogado = userData?.nome || user?.user_metadata?.full_name || user?.email || 'Usuário';
+
+    const ehMaster = normalizarTexto(user?.email) === EMAIL_MASTER || perfilUsuario === 'master' || perfilUsuario === 'mestre';
+    ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
+    const ehTransportadora = !!transportadoraUsuario;
+
+    return { ehMaster, ehTransportadora };
+  }
+
+  async function verificarAcesso() {
+    const cliente = getCliente();
+    if (!cliente) return false;
+
+    const { data: { user } } = await cliente.auth.getUser();
+    if (!user) {
+      window.location.href = 'login.html';
+      return false;
+    }
+
+    usuarioLogado = user;
+    const isMasterEmail = normalizarTexto(user.email) === EMAIL_MASTER;
+    let userData = await buscarUsuarioPorEmail(cliente, user.email);
+
+    if (!userData && isMasterEmail) {
+      userData = {
+        perfil: 'master',
+        status: 'aprovado',
+        transportadora: 'Minerva Foods',
+        nome: user.user_metadata?.full_name || user.email
+      };
+    }
+
+    if (!userData) {
+      alert('Acesso negado.');
+      window.location.href = 'index.html';
+      return false;
+    }
+
+    const { ehMaster, ehTransportadora } = setUsuarioLogadoDados(userData, user);
+    if (!ehAdmin && !ehTransportadora && !ehMaster) {
+      alert('Acesso negado.');
+      window.location.href = 'index.html';
+      return false;
+    }
+
+    return true;
+  }
+
+  async function confirmarDataDeposito() {
+    const cliente = getCliente();
+    const dataEscolhida = document.getElementById('input-data-deposito').value;
+    if (!dataEscolhida) return alert('Selecione uma data.');
+    if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
+    if (!modalDataCampo) return alert('Erro: etapa não encontrada.');
+
+    try {
+      setSalvando(true);
+
+      const { data: { user } } = await cliente.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado.');
+
+      const dataValor = dataEscolhida;
+      const etapa = fotoPendenteEtapa || etapaFluxo;
+      const campoProcessado = modalDataCampo;
+
+      if (etapa === 'ric') {
+        const campos = obterValoresCampos();
+        const userData = await buscarUsuarioPorEmail(cliente, user.email);
+        nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
+        const transportadora = obterTransportadoraFallback(userData);
+
+        let localizacao = 'Sem GPS';
+        try {
+          const pos = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
+          });
+
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+          const data = await response.json();
+
+          if (data && data.address) {
+            const addr = data.address;
+            const rua = addr.road || '';
+            const num = addr.house_number || '';
+            const bairro = addr.suburb || addr.neighbourhood || '';
+            const cidadeGps = addr.city || addr.town || '';
+            const estado = addr.state || addr.state_district || '';
+            localizacao = [rua, num, bairro, cidadeGps, estado].filter(Boolean).join(' - ');
+          } else {
+            localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+          }
+        } catch (e) {
+          console.warn('GPS bloqueado ou falhou:', e);
+          localizacao = 'GPS Bloqueado';
+        }
+
+        const insertObj = {
+          email_usuario: user.email,
+          data_retirada: dataValor,
+          armador: campos.armador,
+          container: campos.container || 'N/A',
+          ordem: campos.ordem,
+          placa: campos.placa,
+          carga_pulmao: cargaPulmaoSelecionado,
+          foto_url: fotoPendenteNome,
+          localizacao,
+          transportadora,
+          status: 'ag. carregamento',
+          finalizado: false,
+          tipo_carga: tipoCargaSelecionado,
+          created_at: new Date().toISOString()
+        };
+
+        const { data: inserted, error: dbError } = await cliente.from('coletas').insert([insertObj]).select().single();
+        if (dbError) throw dbError;
+
+        registroId = inserted.id;
+        registroAtual = inserted;
+        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+        etapaFluxo = 'genset1';
+
+        fecharModalDeposito();
+        fotoAtualDataUrl = '';
+        fotoPendenteNome = '';
+        fotoPendenteEtapa = '';
+        salvarRascunho();
+        atualizarInterfaceEtapa();
+        renderGaleria();
+        await carregarRegistrosEmAndamento();
+
+        mostrarMensagemFotoSalva('RIC');
+        return;
+      }
+
+      if (!registroId) throw new Error('Registro não encontrado. Salve o RIC novamente.');
+
+      const updateObj = {};
+      if (campoProcessado === 'data_ag_carregamento') {
+        updateObj.genset = fotoPendenteNome;
+        updateObj.status = 'ag. carregamento';
+        updateObj.finalizado = false;
+        updateObj.data_ag_carregamento = dataValor;
+        etapaFluxo = 'genset2';
+        fotosSalvas.genset1 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+      if (campoProcessado === 'data_liberado') {
+        updateObj.liberado = fotoPendenteNome;
+        updateObj.status = 'liberado';
+        updateObj.finalizado = false;
+        updateObj.data_liberado = dataValor;
+        etapaFluxo = 'genset3';
+        fotosSalvas.genset2 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+      if (campoProcessado === 'data_finalizado') {
+        updateObj.depositado = fotoPendenteNome;
+        updateObj.status = 'depositado';
+        updateObj.finalizado = true;
+        updateObj.data_finalizado = dataValor;
+        fotosSalvas.genset3 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+
+      const { error } = await cliente.from('coletas').update(updateObj).eq('id', registroId);
+      if (error) throw error;
+
+      registroAtual = { ...(registroAtual || {}), ...updateObj, id: registroId };
+
+      fecharModalDeposito();
+      fotoAtualDataUrl = '';
+      fotoPendenteNome = '';
+      fotoPendenteEtapa = '';
+      salvarRascunho();
+      atualizarInterfaceEtapa();
+      renderGaleria();
+      await carregarRegistrosEmAndamento();
+
+      if (campoProcessado === 'data_ag_carregamento') {
+        mostrarMensagemFotoSalva('AG. CARREGAMENTO');
+        return;
+      }
+
+      if (campoProcessado === 'data_liberado') {
+        mostrarMensagemFotoSalva('LIBERADO');
+        return;
+      }
+
+      if (campoProcessado === 'data_finalizado') {
+        mostrarMensagemFotoSalva('DEPOSITADO', function () {
+          setTimeout(() => {
+            mostrarMensagemFinalizado();
+          }, 250);
+        });
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+      mostrarAlerta('Erro ao salvar data: ' + err.message);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function restaurarRascunho() {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) {
+      atualizarInterfaceEtapa();
+      return;
+    }
+
+    try {
+      const draft = JSON.parse(raw);
+      tipoCargaSelecionado = draft.tipoCargaSelecionado || '';
+      cargaPulmaoSelecionado = draft.cargaPulmaoSelecionado || '';
+      etapaFluxo = draft.etapaFluxo || 'ric';
+      registroId = draft.registroId || null;
+      registroAtual = draft.registroAtual || null;
+      fotoAtualDataUrl = draft.fotoAtualDataUrl || '';
+      fotoPendenteNome = draft.fotoPendenteNome || '';
+      fotoPendenteEtapa = draft.fotoPendenteEtapa || '';
+      modalDepositoAberto = !!draft.modalDepositoAberto;
+      modalDataCampo = draft.modalDataCampo || '';
+      modalDataTitulo = draft.modalDataTitulo || '';
+      fotosSalvas = draft.fotosSalvas || { ric: null, genset1: null, genset2: null, genset3: null };
+      termoBuscaAtual = draft.termoBuscaAtual || '';
+      registroSelecionadoId = draft.registroSelecionadoId || null;
+
+      if (draft.campos) preencherCamposRestaurados(draft.campos);
+
+      if (tipoCargaSelecionado) {
+        const map = { 'Resfriado': 'btnResfriado', 'Congelado com GenSet': 'btnCongeladoGenSet', 'Congelado': 'btnCongelado' };
+        const id = map[tipoCargaSelecionado];
+        if (id) document.getElementById(id).classList.add('active');
+      }
+
+      if (cargaPulmaoSelecionado) {
+        const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
+        if (id) document.getElementById(id).classList.add('active');
+      }
+
+      document.getElementById('buscaContainer').value = termoBuscaAtual || '';
+      await filtrarResultadosBusca();
+      atualizarInterfaceEtapa();
+      restaurarPreviewAtual();
+      renderGaleria();
+
+      if (modalDepositoAberto && modalDataCampo) {
+        setTimeout(() => abrirModalDataEtapa(modalDataCampo, modalDataTitulo || 'Selecione a data', obterDataInicialParaCampo(modalDataCampo)), 180);
+      }
+    } catch (e) {
+      console.warn('Falha ao restaurar rascunho:', e);
+      atualizarInterfaceEtapa();
+    }
+  }
+
   async function abrirRegistroParaContinuar(id) {
     try {
       const registroBruto = await buscarRegistroCompletoNoBanco(id);
@@ -2967,6 +2253,13 @@
     }
   }
 
+  function mostrarMensagemFinalizado() {
+    const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
+    mostrarAlerta(`Finalizado. ${nome} pode fazer um novo registro.`, function () {
+      limparFluxoCompleto();
+    });
+  }
+
   function novoRegistro() {
     const temAlgo = !!registroId || !!tipoCargaSelecionado || !!cargaPulmaoSelecionado || !!fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean);
     if (temAlgo) {
@@ -3009,7 +2302,9 @@
     }
   });
 
-  window.addEventListener('beforeunload', () => { salvarRascunho(); });
+  window.addEventListener('beforeunload', () => {
+    salvarRascunho();
+  });
 
   window.addEventListener('load', async () => {
     try {
