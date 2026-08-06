@@ -17,20 +17,11 @@
       --bg: #f2f2f2;
       --white: #ffffff;
       --grey: #6c757d;
+      --strong-red: #c62828;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
-
-    html, body {
-      width: 100%;
-      min-height: 100%;
-      overflow-x: hidden;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
 
     body {
       background: var(--bg);
@@ -42,9 +33,7 @@
       transition: background-color 0.18s ease, opacity 0.18s ease;
     }
 
-    body.is-updating {
-      background: #f6f6f6;
-    }
+    body.is-updating { background: #f6f6f6; }
 
     .header-card,
     .filter-bar,
@@ -115,6 +104,7 @@
       display: flex;
       flex-direction: column;
       min-width: 120px;
+      position: relative;
     }
 
     .filter-group label {
@@ -207,14 +197,8 @@
       animation: chipIn 0.18s ease;
     }
 
-    .chip:hover {
-      transform: translateY(-1px);
-    }
-
-    .chip span {
-      font-size: 11px;
-      line-height: 1;
-    }
+    .chip:hover { transform: translateY(-1px); }
+    .chip span { font-size: 11px; line-height: 1; }
 
     @keyframes chipIn {
       from { opacity: 0; transform: translateY(-4px); }
@@ -242,10 +226,7 @@
       width: 100%;
     }
 
-    .card-left {
-      height: 150px;
-    }
-
+    .card-left { height: 150px; }
     .card-right {
       grid-column: 2;
       grid-row: 1 / 4;
@@ -261,15 +242,8 @@
       margin-bottom: 2px;
     }
 
-    .card-left canvas {
-      height: 120px !important;
-      max-height: 120px;
-    }
-
-    .card-right canvas {
-      height: 100% !important;
-      max-height: 100%;
-    }
+    .card-left canvas { height: 120px !important; max-height: 120px; }
+    .card-right canvas { height: 100% !important; max-height: 100%; }
 
     .cost-card {
       margin-bottom: 6px;
@@ -279,9 +253,7 @@
       width: 100%;
     }
 
-    .cost-card canvas {
-      height: 100% !important;
-    }
+    .cost-card canvas { height: 100% !important; }
 
     .table-card {
       grid-column: span 2;
@@ -290,8 +262,8 @@
     }
 
     .table-wrapper {
-      max-height: calc(100vh - 740px);
-      min-height: 300px;
+      height: 290px;
+      max-height: 290px;
       overflow: auto;
       border-radius: 12px;
       margin-top: 4px;
@@ -300,7 +272,7 @@
 
     table {
       width: 100%;
-      min-width: 100%;
+      min-width: 1700px;
       border-collapse: separate;
       border-spacing: 0;
       table-layout: fixed;
@@ -316,19 +288,22 @@
     th {
       position: sticky;
       top: 0;
+      z-index: 20;
       background: var(--navy);
       color: white;
-      padding: 9px 6px;
+      padding: 8px 5px;
       text-align: center;
       font-weight: 700;
       text-transform: uppercase;
-      z-index: 20;
-      white-space: normal;
+      white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
+      text-overflow: clip;
+      line-height: 1.15;
+      font-size: 8.5px;
+      height: 46px;
+      min-height: 46px;
+      vertical-align: middle;
       border-bottom: 2px solid var(--navy);
-      line-height: 1.1;
-      font-size: 10px;
       backdrop-filter: blur(2px);
     }
 
@@ -348,21 +323,18 @@
       font-size: 10px;
     }
 
-    tr:nth-child(even) td {
-      background-color: #f9f9f9;
-    }
+    tr:nth-child(even) td { background-color: #f9f9f9; }
 
-    .row-appear {
-      animation: rowFade 0.22s ease both;
-    }
+    .row-appear { animation: rowFade 0.22s ease both; }
 
     @keyframes rowFade {
       from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .vencido-sim {
-      color: var(--red) !important;
+    .dias-vencidos {
+      color: var(--strong-red) !important;
+      font-weight: 800;
     }
 
     .sem-dados {
@@ -382,8 +354,7 @@
       color: #1e2f3a;
     }
 
-    .foto-link,
-    .loc-link {
+    .foto-link {
       color: var(--navy);
       cursor: pointer;
       text-decoration: underline;
@@ -396,12 +367,8 @@
       transition: transform 0.18s ease;
     }
 
-    .foto-link:hover,
-    .loc-link:hover {
-      transform: translateY(-1px);
-    }
+    .foto-link:hover { transform: translateY(-1px); }
 
-    #mapa-modal,
     #foto-modal {
       display: none;
       position: fixed;
@@ -413,7 +380,6 @@
       padding: 20px;
     }
 
-    .mapa-container,
     .foto-container {
       background: white;
       border-radius: 20px;
@@ -425,13 +391,6 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
     }
 
-    .mapa-container iframe {
-      width: 100%;
-      height: calc(100% - 40px);
-      border: none;
-      border-radius: 10px;
-    }
-
     .foto-container img {
       width: 100%;
       height: calc(100% - 40px);
@@ -440,7 +399,6 @@
       border-radius: 10px;
     }
 
-    .fechar-mapa,
     .fechar-foto {
       position: absolute;
       top: 10px;
@@ -477,17 +435,86 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .card-message {
+    .status-multiselect { position: relative; width: 100%; }
+
+    .status-btn {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--gold);
+      background: transparent;
+      color: var(--navy);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 0 5px;
+      text-align: left;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #888;
-      font-size: 11px;
-      font-weight: 700;
-      text-align: center;
-      padding: 12px;
+      justify-content: space-between;
+      gap: 8px;
     }
+
+    .status-btn:focus {
+      outline: none;
+      border-bottom-color: var(--navy);
+    }
+
+    .status-panel {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--gold);
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+      z-index: 2000;
+      padding: 6px;
+      display: none;
+    }
+
+    .status-panel.open { display: block; }
+
+    .status-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--navy);
+      user-select: none;
+    }
+
+    .status-option:hover { background: #f6f6f6; }
+
+    .status-option input {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+    }
+
+    .status-panel-footer {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .status-panel-footer button {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .status-panel-footer .btn-apply { background: var(--navy); color: white; }
+    .status-panel-footer .btn-clear { background: #eef2f7; color: var(--navy); }
 
     @media (max-width: 768px) {
       body { padding: 8px !important; }
@@ -554,14 +581,13 @@
       }
 
       .table-wrapper {
-        max-height: 60vh !important;
+        height: 55vh !important;
+        max-height: 55vh !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
       }
 
-      table {
-        min-width: 1400px !important;
-      }
+      table { min-width: 1850px !important; }
 
       th, td {
         padding: 6px 4px !important;
@@ -573,13 +599,9 @@
       body { padding: 6px !important; }
 
       .header-card { padding: 10px !important; }
-
       .header-title { font-size: 11px !important; }
-
       .filter-bar { padding: 8px !important; }
-
       .card { padding: 8px !important; border-radius: 14px !important; }
-
       .chart-title { font-size: 8px !important; }
 
       .card-left canvas,
@@ -589,13 +611,7 @@
         max-height: 160px !important;
       }
 
-      .table-wrapper {
-        max-height: 55vh !important;
-      }
-
-      th, td {
-        font-size: 8px !important;
-      }
+      th, td { font-size: 8px !important; }
     }
   </style>
 </head>
@@ -620,12 +636,30 @@
     </div>
     <div class="filter-group">
       <label>Status</label>
-      <select id="filtroStatus">
-        <option value="">Todos</option>
-        <option value="ag. carregamento">AG. CARREGAMENTO</option>
-        <option value="liberado">LIBERADO</option>
-        <option value="depositado">DEPOSITADO</option>
-      </select>
+      <div class="status-multiselect">
+        <button type="button" id="statusButton" class="status-btn" onclick="toggleStatusPanel()">
+          <span id="statusButtonLabel">Todos</span>
+          <span>▾</span>
+        </button>
+        <div id="statusPanel" class="status-panel">
+          <label class="status-option">
+            <input type="checkbox" value="ag. carregamento" onchange="syncStatusSelection()">
+            AG. CARREGAMENTO
+          </label>
+          <label class="status-option">
+            <input type="checkbox" value="liberado" onchange="syncStatusSelection()">
+            LIBERADO
+          </label>
+          <label class="status-option">
+            <input type="checkbox" value="depositado" onchange="syncStatusSelection()">
+            DEPOSITADO
+          </label>
+          <div class="status-panel-footer">
+            <button type="button" class="btn-clear" onclick="limparStatusFiltro()">Limpar</button>
+            <button type="button" class="btn-apply" onclick="fecharStatusPanel()">Fechar</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="filter-group">
       <label>Data Retirada</label>
@@ -635,12 +669,18 @@
       <label>Data Finalizado</label>
       <input type="date" id="filtroDataFim">
     </div>
+    <div class="filter-group">
+      <label>Transportadora</label>
+      <input type="text" id="filtroTransportadora" placeholder="Transportadora" list="listaTransportadora">
+      <datalist id="listaTransportadora"></datalist>
+    </div>
   </div>
 
   <div class="btn-group">
     <button class="btn-filtrar" onclick="aplicarFiltrosForm()">Filtrar</button>
     <button class="btn-limpar" onclick="limparTudo()">Limpar</button>
     <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
+    <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
   </div>
 </section>
 
@@ -678,64 +718,58 @@
 <div class="card table-card">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
     <div class="chart-title" style="margin:0;">Registros de Containers</div>
-    <button class="btn-excel-small" onclick="exportarExcel()">Exportar Excel</button>
   </div>
 
   <div class="table-wrapper">
     <table id="main-table">
       <colgroup>
-        <col style="width:7%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:9%">
-        <col style="width:9%">
-        <col style="width:7%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:7%">
-        <col style="width:7%">
-        <col style="width:7%">
-        <col style="width:8%">
-        <col style="width:6%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:8%">
+        <col style="width:85px">
+        <col style="width:95px">
+        <col style="width:95px">
+        <col style="width:115px">
+        <col style="width:115px">
+        <col style="width:95px">
+        <col style="width:105px">
+        <col style="width:95px">
+        <col style="width:105px">
+        <col style="width:110px">
+        <col style="width:110px">
+        <col style="width:70px">
+        <col style="width:80px">
+        <col style="width:80px">
+        <col style="width:95px">
+        <col style="width:95px">
+        <col style="width:110px">
+        <col style="width:110px">
+        <col style="width:110px">
+        <col style="width:110px">
       </colgroup>
       <thead>
         <tr>
           <th>Status</th>
-          <th>ORDEM</th>
-          <th>Retirada</th>
+          <th>Ordem</th>
+          <th>Placa</th>
           <th>Container</th>
           <th>Armador</th>
-          <th>Transp.</th>
-          <th>Placa</th>
+          <th>Retirada</th>
+          <th>AG. CARREG.</th>
+          <th>LIBER.</th>
+          <th>DEPOS.</th>
           <th>Carga/Pulmão</th>
-          <th>Tipo de Carga</th>
+          <th>Tipologia</th>
           <th>FT Total</th>
-          <th>Custo/Dia</th>
-          <th>Custo Total</th>
-          <th>Dias Rest.</th>
-          <th>Vencido?</th>
-          <th>Local</th>
-          <th>RIC</th>
-          <th>AG. CARREGAMENTO</th>
-          <th>LIBERADO</th>
-          <th>DEPOSITADO</th>
+          <th>FT Restante</th>
+          <th>Dias Venc.</th>
+          <th>Valor Diário</th>
+          <th>Valor Total</th>
+          <th>Foto RIC</th>
+          <th>Foto AG.</th>
+          <th>Foto LIB.</th>
+          <th>Foto DEP.</th>
         </tr>
       </thead>
       <tbody id="table-body"></tbody>
     </table>
-  </div>
-</div>
-
-<div id="mapa-modal">
-  <div class="mapa-container">
-    <span class="fechar-mapa" onclick="fecharMapa()">&times;</span>
-    <iframe id="mapa-iframe"></iframe>
   </div>
 </div>
 
@@ -776,7 +810,7 @@
   const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
 
   let dadosCompletos = [];
-  let filtroStatusAtivo = null;
+  let filtroStatusAtivos = [];
   let filtroFreeTimeAtivo = null;
   let filtroAtrasoAtivo = null;
   let filtroTransportadoraAtiva = null;
@@ -784,6 +818,11 @@
   let charts = {};
   let lastSignature = '';
   let carregandoInicial = true;
+
+  function getValue(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+  }
 
   function escapeHtml(texto) {
     return String(texto || '')
@@ -800,6 +839,20 @@
     window._softTransitionTimer = setTimeout(() => {
       document.body.classList.remove('is-updating');
     }, 180);
+  }
+
+  function parseDataValida(valor) {
+    if (!valor) return null;
+    const d = new Date(valor);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function obterDataReferenciaProcesso(d) {
+    if (d && d.finalizado && d.data_finalizado) {
+      const dt = parseDataValida(d.data_finalizado);
+      if (dt) return dt;
+    }
+    return new Date();
   }
 
   function getFreeTimeRuleCached(armador) {
@@ -825,6 +878,13 @@
     return s;
   }
 
+  function getEffectiveStatus(d) {
+    const s = normalizarStatus(d.status || '');
+    if (s === 'depositado' || d.finalizado || d.data_finalizado) return 'depositado';
+    if (s === 'liberado') return 'liberado';
+    return 'ag. carregamento';
+  }
+
   function getStatusColor(status) {
     const colors = {
       'ag. carregamento': '#FDE68A',
@@ -834,9 +894,263 @@
     return colors[normalizarStatus(status)] || '#F3F4F6';
   }
 
-  function getValue(id) {
-    const el = document.getElementById(id);
-    return el ? el.value : '';
+  function formatarDataISO(iso) {
+    if (!iso) return 'N/A';
+    const date = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
+    if (isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString('pt-BR');
+  }
+
+  function formatarMoedaUSD(valor) {
+    if (valor === null || valor === undefined || isNaN(valor)) return '-';
+    return 'US$ ' + Number(valor).toFixed(2);
+  }
+
+  function calcularDiasRestantes(dataRetirada, diasFreeTime, dataReferencia = new Date()) {
+    if (!dataRetirada || !diasFreeTime) return null;
+    const retirada = new Date(dataRetirada + 'T00:00:00');
+    const ref = dataReferencia instanceof Date ? dataReferencia : new Date(dataReferencia);
+    if (isNaN(retirada.getTime()) || isNaN(ref.getTime())) return null;
+
+    const diff = retirada.getTime() + (diasFreeTime * 86400000) - ref.getTime();
+    return Math.ceil(diff / 86400000);
+  }
+
+  function getTipoBadgeClass(tipo) {
+    const t = (tipo || '').toString().trim().toLowerCase();
+    if (t === 'resfriado') return 'badge-resfriado';
+    if (t === 'congelado com genset') return 'badge-congelado-genset';
+    if (t === 'congelado') return 'badge-congelado';
+    return 'badge-congelado';
+  }
+
+  function obterFiltroAtual() {
+    return {
+      dataInicio: getValue('filtroDataInicio'),
+      dataFim: getValue('filtroDataFim'),
+      dataRetirada: getValue('filtroDataRetirada'),
+      ordem: getValue('filtroOrdem').trim().toLowerCase(),
+      armador: getValue('filtroArmador').trim().toLowerCase(),
+      status: filtroStatusAtivos.slice(),
+      transportadora: getValue('filtroTransportadora').trim().toLowerCase()
+    };
+  }
+
+  function matchFilters(d, filtros, ignoreKey = null) {
+    const statusNorm = getEffectiveStatus(d);
+
+    if (ignoreKey !== 'ordem' && filtros.ordem && !(d.ordem || '').toLowerCase().includes(filtros.ordem)) return false;
+    if (ignoreKey !== 'armador' && filtros.armador && !(d.armador || '').toLowerCase().includes(filtros.armador)) return false;
+    if (ignoreKey !== 'status' && Array.isArray(filtros.status) && filtros.status.length > 0 && !filtros.status.includes(statusNorm)) return false;
+    if (ignoreKey !== 'dataRetirada' && filtros.dataRetirada && d.data_retirada !== filtros.dataRetirada) return false;
+    if (ignoreKey !== 'transportadora' && filtros.transportadora && !(d.transportadora || '').toLowerCase().includes(filtros.transportadora)) return false;
+
+    if (filtros.dataInicio || filtros.dataFim) {
+      const created = d.created_at ? new Date(d.created_at) : null;
+      if (!created) return false;
+
+      if (filtros.dataInicio && ignoreKey !== 'dataInicio') {
+        const ini = new Date(filtros.dataInicio + 'T00:00:00');
+        if (created < ini) return false;
+      }
+      if (filtros.dataFim && ignoreKey !== 'dataFim') {
+        const fim = new Date(filtros.dataFim + 'T23:59:59');
+        if (created > fim) return false;
+      }
+    }
+
+    if (filtroFreeTimeAtivo) {
+      const rule = getFreeTimeRuleCached(d.armador);
+      if (!rule || !d.data_retirada) return false;
+      const ref = obterDataReferenciaProcesso(d);
+      const rest = calcularDiasRestantes(d.data_retirada, rule.dias, ref);
+      if (rest === null) return false;
+      const pct = ((rule.dias - rest) / rule.dias) * 100;
+      const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
+      if (faixa !== filtroFreeTimeAtivo) return false;
+    }
+
+    if (filtroAtrasoAtivo) {
+      const isDepositado = statusNorm === 'depositado';
+      if (!isDepositado) return false;
+      const rule = getFreeTimeRuleCached(d.armador);
+      if (!rule || !d.data_retirada) return false;
+      const ref = obterDataReferenciaProcesso(d);
+      const rest = calcularDiasRestantes(d.data_retirada, rule.dias, ref);
+      const emAtraso = rest !== null && rest < 0;
+      if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
+      if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
+    }
+
+    if (filtroTransportadoraAtiva && ignoreKey !== 'transportadora' && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
+
+    return true;
+  }
+
+  function obterDadosFiltrados(ignoreKey = null) {
+    const filtros = obterFiltroAtual();
+    return dadosCompletos.filter(d => matchFilters(d, filtros, ignoreKey));
+  }
+
+  function atualizarDatalist(id, values) {
+    const datalist = document.getElementById(id);
+    if (!datalist) return;
+    datalist.innerHTML = '';
+    Array.from(new Set(values.filter(Boolean)))
+      .sort((a, b) => String(a).localeCompare(String(b)))
+      .forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        datalist.appendChild(opt);
+      });
+  }
+
+  function getStatusLabel(status) {
+    if (status === 'ag. carregamento') return 'AG. CARREGAMENTO';
+    if (status === 'liberado') return 'LIBERADO';
+    if (status === 'depositado') return 'DEPOSITADO';
+    return String(status || '').toUpperCase();
+  }
+
+  function atualizarStatusButton() {
+    const label = document.getElementById('statusButtonLabel');
+    if (!label) return;
+    if (filtroStatusAtivos.length === 0) {
+      label.textContent = 'Todos';
+      return;
+    }
+    if (filtroStatusAtivos.length === 1) {
+      label.textContent = getStatusLabel(filtroStatusAtivos[0]);
+      return;
+    }
+    label.textContent = `${filtroStatusAtivos.length} selecionados`;
+  }
+
+  function syncStatusCheckboxes() {
+    document.querySelectorAll('#statusPanel input[type="checkbox"]').forEach(cb => {
+      cb.checked = filtroStatusAtivos.includes(cb.value);
+    });
+    atualizarStatusButton();
+  }
+
+  function syncStatusSelection() {
+    const selected = [];
+    document.querySelectorAll('#statusPanel input[type="checkbox"]').forEach(cb => {
+      if (cb.checked) selected.push(cb.value);
+    });
+    filtroStatusAtivos = selected;
+    atualizarStatusButton();
+    atualizarTudo();
+  }
+
+  function toggleStatusPanel() {
+    const panel = document.getElementById('statusPanel');
+    if (!panel) return;
+    panel.classList.toggle('open');
+    syncStatusCheckboxes();
+  }
+
+  function fecharStatusPanel() {
+    const panel = document.getElementById('statusPanel');
+    if (panel) panel.classList.remove('open');
+  }
+
+  function limparStatusFiltro() {
+    filtroStatusAtivos = [];
+    syncStatusCheckboxes();
+    atualizarTudo();
+  }
+
+  function atualizarChips() {
+    const chipArea = document.getElementById('chips-area');
+    if (!chipArea) return;
+    chipArea.innerHTML = '';
+    const chips = [];
+    filtroStatusAtivos.forEach(s => chips.push({ label: getStatusLabel(s), key: `status-${s}` }));
+    if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
+    if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
+    if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
+
+    chips.forEach(c => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = `${c.label} <span>&times;</span>`;
+      chip.onclick = () => {
+        if (c.key.startsWith('status-')) {
+          const valor = c.key.replace('status-', '');
+          filtroStatusAtivos = filtroStatusAtivos.filter(x => x !== valor);
+        } else if (c.key === 'freeTime') {
+          filtroFreeTimeAtivo = null;
+        } else if (c.key === 'atraso') {
+          filtroAtrasoAtivo = null;
+        } else if (c.key === 'transp') {
+          filtroTransportadoraAtiva = null;
+        }
+        syncStatusCheckboxes();
+        atualizarTudo();
+      };
+      chipArea.appendChild(chip);
+    });
+  }
+
+  function atualizarFiltrosDinamicos() {
+    const filtros = obterFiltroAtual();
+
+    const baseArmador = dadosCompletos.filter(d => matchFilters(d, filtros, 'armador'));
+    const baseContainer = dadosCompletos.filter(d => matchFilters(d, filtros, 'container'));
+    const baseOrdem = dadosCompletos.filter(d => matchFilters(d, filtros, 'ordem'));
+    const basePlaca = dadosCompletos.filter(d => matchFilters(d, filtros, 'placa'));
+    const baseTransp = dadosCompletos.filter(d => matchFilters(d, filtros, 'transportadora'));
+    const baseStatus = dadosCompletos.filter(d => matchFilters(d, filtros, 'status'));
+
+    atualizarDatalist('listaArmador', baseArmador.map(d => d.armador || ''));
+    atualizarDatalist('listaContainer', baseContainer.map(d => d.container || ''));
+    atualizarDatalist('listaOrdem', baseOrdem.map(d => d.ordem || ''));
+    atualizarDatalist('listaPlaca', basePlaca.map(d => d.placa || ''));
+    atualizarDatalist('listaTransportadora', baseTransp.map(d => d.transportadora || ''));
+
+    const statusSelect = document.getElementById('filtroStatus');
+    if (statusSelect) {
+      const statusUnique = Array.from(new Set(baseStatus.map(d => getEffectiveStatus(d)))).filter(Boolean);
+      const current = (filtroStatusAtivos || []).slice();
+      statusSelect.innerHTML = `<option value="">Todos</option>`;
+      ['ag. carregamento', 'liberado', 'depositado'].forEach(s => {
+        if (statusUnique.includes(s) || current.includes(s)) {
+          const opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s.toUpperCase();
+          if (current.includes(s)) opt.selected = true;
+          statusSelect.appendChild(opt);
+        }
+      });
+    }
+  }
+
+  function urlFoto(valor) {
+    if (!valor) return null;
+    if (String(valor).startsWith('http') || String(valor).startsWith('data:')) return valor;
+    return STORAGE_BASE + valor;
+  }
+
+  function fotoLink(url, titulo) {
+    if (!url) return '-';
+    return `<span class="foto-link" data-url="${escapeHtml(url)}" data-titulo="${escapeHtml(titulo || '')}">${escapeHtml(titulo || '')}</span>`;
+  }
+
+  function abrirFoto(url, titulo) {
+    const modal = document.getElementById('foto-modal');
+    const img = document.getElementById('foto-img');
+    if (!modal || !img) return;
+    img.src = url;
+    img.alt = titulo || 'Foto';
+    modal.style.display = 'flex';
+  }
+
+  function fecharFoto() {
+    const modal = document.getElementById('foto-modal');
+    const img = document.getElementById('foto-img');
+    if (modal) modal.style.display = 'none';
+    if (img) img.src = '';
   }
 
   async function verificarAcesso() {
@@ -882,241 +1196,6 @@
     }
   }
 
-  function formatarDataISO(iso) {
-    if (!iso) return 'N/A';
-    const date = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
-    if (isNaN(date.getTime())) return 'N/A';
-    return date.toLocaleDateString('pt-BR');
-  }
-
-  function calcularDiasRestantes(dataRetirada, diasFreeTime) {
-    if (!dataRetirada || !diasFreeTime) return null;
-    const retirada = new Date(dataRetirada + 'T00:00:00');
-    const agora = new Date();
-    const diff = retirada.getTime() + (diasFreeTime * 86400000) - agora.getTime();
-    return Math.ceil(diff / 86400000);
-  }
-
-  function calcularCustoDia(armador) {
-    const rule = getFreeTimeRuleCached(armador);
-    return rule ? rule.custo : null;
-  }
-
-  function calcularCustoTotal(diasRestantes, custoDia) {
-    if (diasRestantes === null || custoDia === null) return null;
-    const atrasados = Math.max(0, -diasRestantes);
-    return atrasados * custoDia;
-  }
-
-  function formatarMoedaUSD(valor) {
-    if (valor === null || valor === undefined || isNaN(valor)) return '-';
-    return 'US$ ' + Number(valor).toFixed(2);
-  }
-
-  function getTipoBadgeClass(tipo) {
-    const t = (tipo || '').toString().trim().toLowerCase();
-    if (t === 'resfriado') return 'badge-resfriado';
-    if (t === 'congelado com genset') return 'badge-congelado-genset';
-    if (t === 'congelado') return 'badge-congelado';
-    return 'badge-congelado';
-  }
-
-  function obterFiltroAtual() {
-    return {
-      dataInicio: getValue('filtroDataInicio'),
-      dataFim: getValue('filtroDataFim'),
-      dataRetirada: getValue('filtroDataRetirada'),
-      ordem: getValue('filtroOrdem').trim().toLowerCase(),
-      armador: getValue('filtroArmador').trim().toLowerCase(),
-      status: getValue('filtroStatus'),
-      transportadora: getValue('filtroTransportadora').trim().toLowerCase()
-    };
-  }
-
-  function matchFilters(d, filtros, ignoreKey = null) {
-    const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
-
-    if (ignoreKey !== 'ordem' && filtros.ordem && !(d.ordem || '').toLowerCase().includes(filtros.ordem)) return false;
-    if (ignoreKey !== 'armador' && filtros.armador && !(d.armador || '').toLowerCase().includes(filtros.armador)) return false;
-    if (ignoreKey !== 'status' && filtros.status && statusNorm !== filtros.status) return false;
-    if (ignoreKey !== 'dataRetirada' && filtros.dataRetirada && d.data_retirada !== filtros.dataRetirada) return false;
-    if (ignoreKey !== 'transportadora' && filtros.transportadora && !(d.transportadora || '').toLowerCase().includes(filtros.transportadora)) return false;
-
-    if (filtros.dataInicio || filtros.dataFim) {
-      const created = d.created_at ? new Date(d.created_at) : null;
-      if (!created) return false;
-
-      if (filtros.dataInicio && ignoreKey !== 'dataInicio') {
-        const ini = new Date(filtros.dataInicio + 'T00:00:00');
-        if (created < ini) return false;
-      }
-      if (filtros.dataFim && ignoreKey !== 'dataFim') {
-        const fim = new Date(filtros.dataFim + 'T23:59:59');
-        if (created > fim) return false;
-      }
-    }
-
-    if (filtroStatusAtivo && ignoreKey !== 'status' && statusNorm !== filtroStatusAtivo) return false;
-
-    if (filtroFreeTimeAtivo) {
-      const rule = getFreeTimeRuleCached(d.armador);
-      if (!rule || !d.data_retirada) return false;
-      const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-      if (rest === null) return false;
-      const pct = ((rule.dias - rest) / rule.dias) * 100;
-      const faixa = pct >= 100 ? '≥100%' : pct >= 76 ? '76-99%' : pct >= 51 ? '51-75%' : pct >= 26 ? '26-50%' : '0-25%';
-      if (faixa !== filtroFreeTimeAtivo) return false;
-    }
-
-    if (filtroAtrasoAtivo) {
-      const isDepositado = statusNorm === 'depositado' || d.finalizado;
-      if (!isDepositado) return false;
-      const rule = getFreeTimeRuleCached(d.armador);
-      if (!rule || !d.data_retirada) return false;
-      const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
-      const emAtraso = rest !== null && rest < 0;
-      if (filtroAtrasoAtivo === 'em_atraso' && !emAtraso) return false;
-      if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
-    }
-
-    if (filtroTransportadoraAtiva && ignoreKey !== 'transportadora' && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
-
-    return true;
-  }
-
-  function obterDadosFiltrados(ignoreKey = null) {
-    const filtros = obterFiltroAtual();
-    return dadosCompletos.filter(d => matchFilters(d, filtros, ignoreKey));
-  }
-
-  function atualizarDatalist(id, values) {
-    const datalist = document.getElementById(id);
-    if (!datalist) return;
-    datalist.innerHTML = '';
-    Array.from(new Set(values.filter(Boolean)))
-      .sort((a, b) => String(a).localeCompare(String(b)))
-      .forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v;
-        datalist.appendChild(opt);
-      });
-  }
-
-  function atualizarChips() {
-    const chipArea = document.getElementById('chips-area');
-    if (!chipArea) return;
-    chipArea.innerHTML = '';
-    const chips = [];
-    if (filtroStatusAtivo) chips.push({ label: filtroStatusAtivo.toUpperCase(), key: 'status' });
-    if (filtroFreeTimeAtivo) chips.push({ label: 'FT: ' + filtroFreeTimeAtivo, key: 'freeTime' });
-    if (filtroAtrasoAtivo) chips.push({ label: filtroAtrasoAtivo === 'em_atraso' ? 'Dep. em Atraso' : 'Dep. no Prazo', key: 'atraso' });
-    if (filtroTransportadoraAtiva) chips.push({ label: filtroTransportadoraAtiva, key: 'transp' });
-
-    chips.forEach(c => {
-      const chip = document.createElement('div');
-      chip.className = 'chip';
-      chip.innerHTML = `${c.label} <span>&times;</span>`;
-      chip.onclick = () => {
-        if (c.key === 'status') filtroStatusAtivo = null;
-        else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
-        else if (c.key === 'atraso') filtroAtrasoAtivo = null;
-        else if (c.key === 'transp') filtroTransportadoraAtiva = null;
-        atualizarTudo();
-      };
-      chipArea.appendChild(chip);
-    });
-  }
-
-  function atualizarFiltrosDinamicos() {
-    const filtros = obterFiltroAtual();
-    const baseArmador = dadosCompletos.filter(d => matchFilters(d, filtros, 'armador'));
-    const baseTransp = dadosCompletos.filter(d => matchFilters(d, filtros, 'transportadora'));
-
-    atualizarDatalist('listaArmador', baseArmador.map(d => d.armador || ''));
-    atualizarDatalist('listaTransportadora', baseTransp.map(d => d.transportadora || ''));
-
-    const elStatus = document.getElementById('filtroStatus');
-    if (elStatus) elStatus.value = filtros.status || '';
-  }
-
-  function abrirFoto(url, titulo) {
-    const modal = document.getElementById('foto-modal');
-    const img = document.getElementById('foto-img');
-    if (!modal || !img) return;
-    img.src = url;
-    img.alt = titulo || 'Foto';
-    modal.style.display = 'flex';
-  }
-
-  function fecharFoto() {
-    const modal = document.getElementById('foto-modal');
-    const img = document.getElementById('foto-img');
-    if (modal) modal.style.display = 'none';
-    if (img) img.src = '';
-  }
-
-  function abrirMapa(query) {
-    const iframe = document.getElementById('mapa-iframe');
-    const modal = document.getElementById('mapa-modal');
-    if (!iframe || !modal) return;
-    iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
-    modal.style.display = 'flex';
-  }
-
-  function fecharMapa() {
-    const modal = document.getElementById('mapa-modal');
-    const iframe = document.getElementById('mapa-iframe');
-    if (modal) modal.style.display = 'none';
-    if (iframe) iframe.src = '';
-  }
-
-  function fotoLink(url, titulo) {
-    if (!url) return '-';
-    return `<span class="foto-link" data-url="${escapeHtml(url)}" data-titulo="${escapeHtml(titulo || '')}">${escapeHtml(titulo || '')}</span>`;
-  }
-
-  function renderLocalizacao(loc) {
-    if (!loc || loc === 'N/A' || loc === 'GPS Bloqueado' || loc === 'Sem GPS') return 'N/A';
-    return `<span class="loc-link" data-localizacao="${escapeHtml(loc)}">📍 Local</span>`;
-  }
-
-  async function carregarProcessos() {
-    if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
-
-    const { data: { user } } = await clienteSupabase.auth.getUser();
-    if (!user) {
-      window.location.href = 'login.html';
-      return;
-    }
-
-    const { data: userData } = await clienteSupabase
-      .from('usuarios')
-      .select('perfil, transportadora')
-      .eq('email', user.email)
-      .single();
-
-    const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
-    const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
-
-    let query = clienteSupabase.from('coletas').select('*');
-    if (!ehAdmin && userData?.transportadora) {
-      query = query.eq('transportadora', userData.transportadora);
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: false });
-    if (error) throw error;
-
-    const novoDado = data || [];
-    const novaAssinatura = novoDado.map(d => `${d.id}:${d.updated_at || d.created_at || ''}:${d.status || ''}:${d.ordem || ''}`).join('|');
-
-    if (novaAssinatura === lastSignature && !carregandoInicial) return;
-
-    lastSignature = novaAssinatura;
-    dadosCompletos = novoDado;
-    atualizarTudo();
-    carregandoInicial = false;
-  }
-
   function prepararGraficos(dados) {
     const transpMap = new Map();
     const statusCount = new Map(STATUS_FLUXO.map(s => [s, 0]));
@@ -1130,12 +1209,13 @@
       const t = d.transportadora || 'N/A';
       transpMap.set(t, (transpMap.get(t) || 0) + 1);
 
-      const st = normalizarStatus(d.status);
+      const st = getEffectiveStatus(d);
       if (statusCount.has(st)) statusCount.set(st, statusCount.get(st) + 1);
 
       const rule = getFreeTimeRuleCached(d.armador);
       if (rule && d.data_retirada) {
-        const rest = calcularDiasRestantes(d.data_retirada, rule.dias);
+        const ref = obterDataReferenciaProcesso(d);
+        const rest = calcularDiasRestantes(d.data_retirada, rule.dias, ref);
         if (rest !== null) {
           const pct = ((rule.dias - rest) / rule.dias) * 100;
           let faixa;
@@ -1146,15 +1226,15 @@
           else faixa = '0-25%';
           faixas[faixa]++;
 
-          const isDepositado = st === 'depositado' || d.finalizado;
+          const isDepositado = st === 'depositado';
           if (isDepositado) {
             if (rest < 0) {
               depositadosAtrasados++;
               const custo = Math.abs(rest) * rule.custo;
               custoTotalAtraso += custo;
 
-              const retDate = new Date(d.data_retirada + 'T00:00:00');
-              const mesAno = `${retDate.getFullYear()}-${String(retDate.getMonth() + 1).padStart(2, '0')}`;
+              const baseDate = d.finalizado && d.data_finalizado ? parseDataValida(d.data_finalizado) || ref : ref;
+              const mesAno = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}`;
               custoMensalMap.set(mesAno, (custoMensalMap.get(mesAno) || 0) + custo);
             } else {
               depositadosNoPrazo++;
@@ -1174,7 +1254,6 @@
 
     const transpLabels = Array.from(transpMap.keys()).sort((a,b) => transpMap.get(b) - transpMap.get(a));
     const transpValues = transpLabels.map(k => transpMap.get(k));
-
     const statusLabels = STATUS_FLUXO.map(s => s.substring(0,3).toUpperCase());
     const statusValues = STATUS_FLUXO.map(s => statusCount.get(s));
 
@@ -1206,7 +1285,12 @@
           if (!elements.length) return;
           const idx = elements[0].index;
           const status = STATUS_FLUXO[idx];
-          filtroStatusAtivo = (filtroStatusAtivo === status) ? null : status;
+          if (filtroStatusAtivos.includes(status)) {
+            filtroStatusAtivos = filtroStatusAtivos.filter(s => s !== status);
+          } else {
+            filtroStatusAtivos.push(status);
+          }
+          syncStatusCheckboxes();
           atualizarTudo();
         },
         plugins: {
@@ -1382,43 +1466,56 @@
     tbody.innerHTML = '';
 
     if (dados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="19" class="sem-dados">Nenhum container encontrado.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="20" class="sem-dados">Nenhum container encontrado.</td></tr>';
       return;
     }
 
     dados.forEach(d => {
       const rule = getFreeTimeRuleCached(d.armador);
-      const diasTotal = rule ? rule.dias : '-';
-      const custoDia = calcularCustoDia(d.armador);
-      const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
-      const custoTotal = calcularCustoTotal(diasRest, custoDia);
-      const vencido = diasRest !== null && diasRest < 0;
-      const statusNorm = normalizarStatus(d.status || 'ag. carregamento');
+      const ftTotal = rule ? rule.dias : '-';
+      const valorDiario = rule ? rule.custo : null;
+      const ref = obterDataReferenciaProcesso(d);
+      const diasRestRaw = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias, ref) : null;
+      const ftRestante = diasRestRaw === null ? '-' : Math.max(0, diasRestRaw);
+      const diasVencidos = diasRestRaw === null ? '-' : Math.max(0, -diasRestRaw);
+      const valorTotal = (valorDiario !== null && diasRestRaw !== null) ? Math.max(0, -diasRestRaw) * valorDiario : null;
+      const statusNorm = getEffectiveStatus(d);
       const statusText = statusNorm.toUpperCase();
       const statusColor = getStatusColor(statusNorm);
+
+      const dataRetirada = d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A';
+      const dataAg = d.data_ag_carregamento || d.ag_carregamento_data || d.data_ag ? formatarDataISO(d.data_ag_carregamento || d.ag_carregamento_data || d.data_ag) : 'N/A';
+      const dataLiberado = d.data_liberado || d.liberado_data ? formatarDataISO(d.data_liberado || d.liberado_data) : 'N/A';
+      const dataDepositado = d.data_depositado || d.depositado_data || d.data_finalizado ? formatarDataISO(d.data_depositado || d.depositado_data || d.data_finalizado) : 'N/A';
+
+      const fotoRic = urlFoto(d.foto_url);
+      const fotoAg = urlFoto(d.genset);
+      const fotoLiberado = urlFoto(d.liberado);
+      const fotoDepositado = urlFoto(d.depositado);
 
       const tr = document.createElement('tr');
       tr.className = 'row-appear';
       tr.innerHTML = `
         <td><span class="status-badge" style="background-color:${statusColor};">${statusText}</span></td>
         <td>${d.ordem || 'N/A'}</td>
-        <td>${d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A'}</td>
+        <td>${d.placa || 'N/A'}</td>
         <td>${d.container || 'N/A'}</td>
         <td>${d.armador || 'N/A'}</td>
-        <td>${d.transportadora || 'N/A'}</td>
-        <td>${d.placa || 'N/A'}</td>
+        <td>${dataRetirada}</td>
+        <td>${dataAg}</td>
+        <td>${dataLiberado}</td>
+        <td>${dataDepositado}</td>
         <td><span class="badge-tipo ${d.carga_pulmao === 'Carga' ? 'badge-resfriado' : 'badge-congelado'}">${d.carga_pulmao || 'N/A'}</span></td>
         <td><span class="badge-tipo ${getTipoBadgeClass(d.tipo_carga)}">${d.tipo_carga || 'N/A'}</span></td>
-        <td>${diasTotal}</td>
-        <td>${custoDia !== null ? formatarMoedaUSD(custoDia) : '-'}</td>
-        <td>${custoTotal !== null ? formatarMoedaUSD(custoTotal) : '-'}</td>
-        <td>${diasRest !== null ? diasRest : '-'}</td>
-        <td class="${vencido ? 'vencido-sim' : ''}">${vencido ? 'SIM' : 'NÃO'}</td>
-        <td>${renderLocalizacao(d.localizacao || '')}</td>
-        <td>${fotoLink(d.foto_url ? `${STORAGE_BASE}${d.foto_url}` : null, 'RIC')}</td>
-        <td>${fotoLink(d.genset ? `${STORAGE_BASE}${d.genset}` : null, 'AG. CARREGAMENTO')}</td>
-        <td>${fotoLink(d.liberado ? `${STORAGE_BASE}${d.liberado}` : null, 'LIBERADO')}</td>
-        <td>${fotoLink(d.depositado ? `${STORAGE_BASE}${d.depositado}` : null, 'DEPOSITADO')}</td>
+        <td>${ftTotal}</td>
+        <td>${ftRestante}</td>
+        <td class="${diasVencidos > 0 ? 'dias-vencidos' : ''}">${diasVencidos}</td>
+        <td>${valorDiario !== null ? formatarMoedaUSD(valorDiario) : '-'}</td>
+        <td>${valorTotal !== null ? formatarMoedaUSD(valorTotal) : '-'}</td>
+        <td>${fotoLink(fotoRic, 'RIC')}</td>
+        <td>${fotoLink(fotoAg, 'AG.')}</td>
+        <td>${fotoLink(fotoLiberado, 'LIB.')}</td>
+        <td>${fotoLink(fotoDepositado, 'DEP.')}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -1434,18 +1531,17 @@
   }
 
   function aplicarFiltrosForm() {
+    fecharStatusPanel();
     atualizarTudo();
   }
 
   function limparTudo() {
-    document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(el => {
-      if (el.tagName === 'SELECT') el.selectedIndex = 0;
-      else el.value = '';
-    });
-    filtroStatusAtivo = null;
+    document.querySelectorAll('.filter-bar input').forEach(el => { el.value = ''; });
+    filtroStatusAtivos = [];
     filtroFreeTimeAtivo = null;
     filtroAtrasoAtivo = null;
     filtroTransportadoraAtiva = null;
+    syncStatusCheckboxes();
     atualizarTudo();
   }
 
@@ -1459,31 +1555,34 @@
 
       const exportData = dados.map(d => {
         const rule = getFreeTimeRuleCached(d.armador);
-        const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
-        const custoDia = rule ? rule.custo : null;
-        const custoTotal = calcularCustoTotal(diasRest, custoDia);
-        const vencido = diasRest !== null && diasRest < 0;
+        const ref = obterDataReferenciaProcesso(d);
+        const diasRestRaw = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias, ref) : null;
+        const ftRestante = diasRestRaw === null ? '' : Math.max(0, diasRestRaw);
+        const diasVencidos = diasRestRaw === null ? '' : Math.max(0, -diasRestRaw);
+        const valorDiario = rule ? rule.custo : null;
+        const valorTotal = (valorDiario !== null && diasRestRaw !== null) ? Math.max(0, -diasRestRaw) * valorDiario : '';
 
         return {
-          Status: normalizarStatus(d.status).toUpperCase(),
-          ORDEM: d.ordem || '',
-          Retirada: d.data_retirada ? formatarDataISO(d.data_retirada) : '',
+          Status: getEffectiveStatus(d).toUpperCase(),
+          Ordem: d.ordem || '',
+          Placa: d.placa || '',
           Container: d.container || '',
           Armador: d.armador || '',
-          Transportadora: d.transportadora || '',
-          Placa: d.placa || '',
+          Retirada: d.data_retirada ? formatarDataISO(d.data_retirada) : '',
+          'AG. CARREGAMENTO': d.data_ag_carregamento || d.ag_carregamento_data || d.data_ag || '',
+          LIBERADO: d.data_liberado || d.liberado_data || '',
+          DEPOSITADO: d.data_depositado || d.depositado_data || d.data_finalizado || '',
           'Carga/Pulmão': d.carga_pulmao || '',
-          'Tipo de Carga': d.tipo_carga || '',
+          'Tipologia da Carga': d.tipo_carga || '',
           'FT Total': rule ? rule.dias : '',
-          'Custo/Dia (USD)': custoDia !== null ? custoDia : '',
-          'Custo Total (USD)': custoTotal !== null ? custoTotal : '',
-          'Dias Rest': diasRest,
-          Vencido: vencido ? 'SIM' : 'NÃO',
-          Localização: d.localizacao || '',
-          RIC: d.foto_url || '',
-          'AG. CARREGAMENTO': d.genset || '',
-          LIBERADO: d.liberado || '',
-          DEPOSITADO: d.depositado || ''
+          'FT Restante': ftRestante,
+          'Dias Vencidos': diasVencidos,
+          'Valor Diário': valorDiario !== null ? valorDiario : '',
+          'Valor Total': valorTotal,
+          'Foto RIC': d.foto_url || '',
+          'Foto AG. CARREG.': d.genset || '',
+          'Foto LIBER.': d.liberado || '',
+          'Foto DEPOS.': d.depositado || ''
         };
       });
 
@@ -1542,6 +1641,7 @@
   window.onload = async () => {
     if (await verificarAcesso()) {
       initCharts();
+      syncStatusCheckboxes();
       await carregarTodos();
 
       if (refreshInterval) clearInterval(refreshInterval);
@@ -1566,22 +1666,22 @@
       return;
     }
 
-    const alvo = e.target.closest('.loc-link');
-    if (alvo && alvo.dataset && alvo.dataset.localizacao) {
-      abrirMapa(alvo.dataset.localizacao);
+    const panel = document.getElementById('statusPanel');
+    const btn = document.getElementById('statusButton');
+    if (panel && panel.classList.contains('open')) {
+      if (!panel.contains(e.target) && !btn.contains(e.target)) {
+        fecharStatusPanel();
+      }
     }
   });
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       const fotoModal = document.getElementById('foto-modal');
-      const mapaModal = document.getElementById('mapa-modal');
-
       if (fotoModal && fotoModal.style.display === 'flex') {
         fecharFoto();
-      } else if (mapaModal && mapaModal.style.display === 'flex') {
-        fecharMapa();
       }
+      fecharStatusPanel();
     }
   });
 
@@ -1591,28 +1691,14 @@
     }
   });
 
-  document.getElementById('mapa-modal').addEventListener('click', function (e) {
-    if (e.target === this) {
-      fecharMapa();
-    }
-  });
-
   document.querySelector('.foto-container').addEventListener('click', function (e) {
     e.stopPropagation();
   });
 
-  document.querySelector('.mapa-container').addEventListener('click', function (e) {
-    e.stopPropagation();
+  ['filtroDataInicio','filtroDataFim','filtroDataRetirada'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', atualizarTudo);
   });
-
-  const elDataInicio = document.getElementById('filtroDataInicio');
-  if (elDataInicio) elDataInicio.addEventListener('change', atualizarTudo);
-
-  const elDataFim = document.getElementById('filtroDataFim');
-  if (elDataFim) elDataFim.addEventListener('change', atualizarTudo);
-
-  const elDataRetirada = document.getElementById('filtroDataRetirada');
-  if (elDataRetirada) elDataRetirada.addEventListener('change', atualizarTudo);
 
   const elArmador = document.getElementById('filtroArmador');
   if (elArmador) {
@@ -1630,11 +1716,11 @@
     });
   }
 
-  const elStatus = document.getElementById('filtroStatus');
-  if (elStatus) {
-    elStatus.addEventListener('change', () => {
-      filtroStatusAtivo = document.getElementById('filtroStatus').value || null;
-      atualizarTudo();
+  const elTransportadora = document.getElementById('filtroTransportadora');
+  if (elTransportadora) {
+    elTransportadora.addEventListener('input', () => {
+      clearTimeout(window._tTransp);
+      window._tTransp = setTimeout(atualizarTudo, 120);
     });
   }
 </script>

@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -6,783 +7,796 @@
   <title>Registro | ColetaWeb</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; }:root {
-  --panel-radius: 16px;
-}
-
-body {
-  margin: 0;
-  padding: 14px;
-  background: var(--bg);
-  color: var(--navy);
-  font-family: 'Inter', sans-serif;
-}
-
-.page-shell {
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-.page-header {
-  background: var(--white);
-  border: 1px solid var(--gold);
-  border-radius: 18px;
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-minerva {
-  justify-self: start;
-  font-weight: 800;
-  font-size: 18px;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.logo-minerva .m { color: var(--navy); }
-.logo-minerva .f { color: var(--red); }
-
-.page-header h2 {
-  margin: 0;
-  font-size: 16px;
-  color: var(--navy);
-  text-transform: uppercase;
-  font-weight: 800;
-  letter-spacing: .2px;
-  white-space: nowrap;
-  justify-self: center;
-  text-align: center;
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-self: end;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 12px;
-  align-items: start;
-}
-
-.card-panel {
-  background: var(--white);
-  border: 1px solid var(--gold);
-  border-radius: var(--panel-radius);
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-.search-panel {
-  position: sticky;
-  top: 14px;
-  max-height: calc(100vh - 28px);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.search-panel h3 {
-  margin: 0 0 8px 0;
-  color: var(--navy);
-  font-size: 14px;
-  text-transform: uppercase;
-  font-weight: 800;
-  letter-spacing: .2px;
-}
-
-.search-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.search-row input {
-  width: 100%;
-  border: none;
-  border-bottom: 1px solid var(--gold);
-  padding: 7px 3px;
-  font-size: 12px;
-  outline: none;
-  color: var(--navy);
-  background: transparent;
-  font-weight: 600;
-}
-
-.search-row button {
-  white-space: nowrap;
-  min-width: 60px;
-  padding: 7px 9px !important;
-  font-size: 9px !important;
-}
-
-.search-small-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-.search-small-actions .btn-main {
-  flex: 1;
-  min-width: 0;
-  padding: 7px 9px !important;
-  font-size: 9px !important;
-}
-
-.search-selected {
-  margin-top: 10px;
-  padding: 8px 9px;
-  border-radius: 11px;
-  background: #fbfbfb;
-  border: 1px dashed var(--gold);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--navy);
-  line-height: 1.35;
-}
-
-.search-count {
-  margin-top: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--navy);
-}
-
-.results-list {
-  margin-top: 8px;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding-right: 3px;
-  flex: 1;
-  min-height: 0;
-}
-
-.result-item {
-  border: 1px solid #e8e0c8;
-  border-radius: 12px;
-  padding: 8px 9px;
-  cursor: pointer;
-  background: #fff;
-  transition: all 0.15s ease;
-}
-
-.result-item:hover {
-  transform: translateY(-1px);
-  border-color: var(--navy);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
-
-.result-item.active {
-  border-color: var(--navy);
-  background: #f5f9fc;
-}
-
-.result-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.result-container {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--navy);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.result-badge {
-  padding: 3px 6px;
-  border-radius: 99px;
-  font-size: 9px;
-  font-weight: 800;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.badge-ric { background: #FDE68A; }
-.badge-genset1 { background: #DBEAFE; }
-.badge-genset2 { background: #C7F9CC; }
-.badge-genset3 { background: #DDD6FE; }
-.badge-final { background: #D1FAE5; }
-
-.result-meta {
-  font-size: 10px;
-  color: #556;
-  line-height: 1.4;
-}
-
-.result-meta strong {
-  color: var(--navy);
-}
-
-.form-panel {
-  min-width: 0;
-  padding: 12px;
-}
-
-.form-title {
-  color: var(--navy);
-  margin: 0 0 6px 0;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .2px;
-}
-
-.option-buttons-container {
-  display: flex;
-  gap: 7px;
-  margin-bottom: 5px;
-  flex-wrap: wrap;
-}
-
-.btn-option {
-  flex: 1;
-  min-width: 110px;
-  padding: 8px 12px;
-  border-radius: 99px;
-  font-weight: 700;
-  font-size: 10px;
-  text-transform: uppercase;
-  cursor: pointer;
-  border: 2px solid var(--gold);
-  background: transparent;
-  color: var(--navy);
-  transition: all 0.2s;
-  text-align: center;
-  line-height: 1.15;
-}
-
-.btn-option.active {
-  background: var(--navy);
-  color: white;
-  border-color: var(--navy);
-}
-
-.btn-option:hover {
-  background: #f0f0f0;
-}
-
-.btn-option.active:hover {
-  background: var(--navy);
-}
-
-.form-group label {
-  text-align: center;
-  display: block;
-  font-weight: 800;
-  font-size: 9px;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 4px;
-  letter-spacing: .2px;
-}
-
-.btn-salvar-loading {
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.bloqueado {
-  opacity: 0.55;
-  pointer-events: none;
-}
-
-.etapa-box {
-  margin: 7px 0 10px;
-  padding: 7px 9px;
-  border: 1px dashed var(--gold);
-  border-radius: 11px;
-  background: #fcfcfc;
-  color: var(--navy);
-  font-size: 10px;
-  line-height: 1.3;
-  font-weight: 700;
-  display: none;
-}
-
-.fields-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px 10px;
-  margin-bottom: 12px;
-}
-
-.fields-grid .form-group input,
-.fields-grid .form-group select {
-  width: 100%;
-  border: none;
-  border-bottom: 1px solid var(--navy);
-  padding: 6px 0;
-  font-size: 12px;
-  color: var(--navy);
-  background: transparent;
-  outline: none;
-  font-weight: 600;
-}
-
-.fields-grid .form-group input::placeholder {
-  color: #8a8a8a;
-}
-
-.thumbs-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 7px;
-  margin-top: 10px;
-  align-items: start;
-  justify-items: center;
-}
-
-.thumb-card {
-  width: 100%;
-  max-width: 138px;
-  border: 1px solid var(--gold);
-  border-radius: 11px;
-  padding: 5px;
-  background: white;
-  text-align: center;
-  cursor: pointer;
-  min-height: 128px;
-}
-
-.thumb-card.empty {
-  border-style: dashed;
-  color: #999;
-  cursor: default;
-}
-
-.thumb-card img {
-  width: 100%;
-  height: 76px;
-  object-fit: cover;
-  border-radius: 8px;
-  display: block;
-}
-
-.thumb-card small {
-  display: block;
-  margin-top: 4px;
-  font-size: 8px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--navy);
-  line-height: 1.1;
-}
-
-.preview-mini {
-  max-width: 100%;
-  max-height: 140px;
-  object-fit: cover;
-  border-radius: 9px;
-  border: 1px solid var(--gold);
-  cursor: pointer;
-}
-
-.foto-bloco {
-  margin-top: 12px;
-  border-top: 1px solid #eee;
-  padding-top: 10px;
-}
-
-.foto-bloco h3 {
-  font-size: 12px;
-  color: var(--navy);
-  margin-bottom: 8px;
-  text-align: center;
-  font-weight: 800;
-}
-
-.botao-salvar {
-  display: block;
-  width: 160px;
-  margin: 12px auto 0;
-  padding: 8px 14px;
-  font-size: 11px;
-}
-
-.btn-main {
-  border: none;
-  color: white;
-  border-radius: 99px;
-  font-weight: 800;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-main:hover {
-  filter: brightness(0.96);
-  transform: translateY(-1px);
-}
-
-#modal-data-deposito,
-#modal-foto {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 3000;
-  background: rgba(0,0,0,0.7);
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-#modal-foto {
-  z-index: 4000;
-  background: rgba(0,0,0,0.85);
-}
-
-.foto-box {
-  background: white;
-  border-radius: 18px;
-  padding: 14px;
-  width: fit-content;
-  height: fit-content;
-  max-width: 96vw;
-  max-height: 92vh;
-  position: relative;
-  box-shadow: 0 10px 35px rgba(0,0,0,0.35);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: hidden;
-}
-
-.foto-stage {
-  flex: 0 0 auto;
-  width: auto;
-  height: auto;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #f8f8f8;
-  position: relative;
-  touch-action: none;
-  cursor: grab;
-  display: block;
-}
-
-.foto-stage:active {
-  cursor: grabbing;
-}
-
-#foto-ampliada {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center center;
-  display: block;
-  user-select: none;
-  -webkit-user-drag: none;
-  transform-origin: center center;
-  will-change: transform;
-  pointer-events: none;
-  border-radius: 12px;
-  background: transparent;
-  image-orientation: from-image;
-}
-
-.foto-titulo {
-  text-align: center;
-  font-weight: 800;
-  color: var(--navy);
-  font-size: 13px;
-  padding-bottom: 2px;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--gold);
-  border-top-color: var(--navy);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.confirm-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 5000;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
-}
-
-.confirm-card {
-  background: var(--white);
-  border: 1px solid var(--gold);
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.22);
-  width: min(92vw, 520px);
-  padding: 18px 18px 16px;
-}
-
-.confirm-card p {
-  margin: 0;
-  color: var(--navy);
-  font-size: 13px;
-  line-height: 1.45;
-  text-align: center;
-  font-weight: 600;
-}
-
-.confirm-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-.confirm-actions .btn-main {
-  min-width: 110px;
-  padding: 9px 14px;
-  font-size: 10px;
-}
-
-@media (max-width: 1300px) {
-  .fields-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1100px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .search-panel {
-    position: relative;
-    top: 0;
-    max-height: none;
-  }
-
-  .page-header {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .logo-minerva,
-  .page-header h2,
-  .header-actions {
-    justify-self: center;
-  }
-}
-
-@media (max-width: 768px) {
-  body {
-    padding: 10px;
-  }
-
-  .page-header h2 {
-    font-size: 15px;
-  }
-
-  .header-actions {
-    justify-content: center;
-  }
-
-  .thumbs-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .thumb-card {
-    max-width: none;
-  }
-
-  .option-buttons-container {
-    flex-direction: column;
-  }
-
-  .btn-option {
-    min-width: 100%;
-  }
-
-  .search-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-row button,
-  .search-small-actions button {
-    width: 100%;
-  }
-
-  .fields-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .confirm-actions {
-    flex-direction: column;
-  }
-
-  .confirm-actions .btn-main {
-    width: 100%;
-  }
-
-  .foto-box {
-    width: 96vw !important;
-    height: 88vh !important;
-  }
-}
+    * { box-sizing: border-box; }
+    :root { --panel-radius: 16px; }
+
+    body {
+      margin: 0;
+      padding: 14px;
+      background: var(--bg);
+      color: var(--navy);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .page-shell {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-minerva {
+      justify-self: start;
+      font-weight: 800;
+      font-size: 18px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .logo-minerva .m { color: var(--navy); }
+    .logo-minerva .f { color: var(--red); }
+
+    .page-header h2 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--navy);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: .2px;
+      white-space: nowrap;
+      justify-self: center;
+      text-align: center;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-self: end;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .card-panel {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: var(--panel-radius);
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .search-panel {
+      position: sticky;
+      top: 14px;
+      max-height: calc(100vh - 28px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-panel h3 {
+      margin: 0 0 8px 0;
+      color: var(--navy);
+      font-size: 14px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .search-row input {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--gold);
+      padding: 7px 3px;
+      font-size: 12px;
+      outline: none;
+      color: var(--navy);
+      background: transparent;
+      font-weight: 600;
+    }
+
+    .search-row button {
+      white-space: nowrap;
+      min-width: 60px;
+      padding: 7px 9px !important;
+      font-size: 9px !important;
+    }
+
+    .search-small-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .search-small-actions .btn-main {
+      flex: 1;
+      min-width: 0;
+      padding: 7px 9px !important;
+      font-size: 9px !important;
+    }
+
+    .search-selected {
+      margin-top: 10px;
+      padding: 8px 9px;
+      border-radius: 11px;
+      background: #fbfbfb;
+      border: 1px dashed var(--gold);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.35;
+    }
+
+    .search-count {
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .results-list {
+      margin-top: 8px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding-right: 3px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .result-item {
+      border: 1px solid #e8e0c8;
+      border-radius: 12px;
+      padding: 8px 9px;
+      cursor: pointer;
+      background: #fff;
+      transition: all 0.15s ease;
+    }
+
+    .result-item:hover {
+      transform: translateY(-1px);
+      border-color: var(--navy);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .result-item.active {
+      border-color: var(--navy);
+      background: #f5f9fc;
+    }
+
+    .result-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .result-container {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--navy);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .result-badge {
+      padding: 3px 6px;
+      border-radius: 99px;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-ric { background: #FDE68A; }
+    .badge-genset1 { background: #DBEAFE; }
+    .badge-genset2 { background: #C7F9CC; }
+    .badge-genset3 { background: #DDD6FE; }
+    .badge-final { background: #D1FAE5; }
+
+    .result-meta {
+      font-size: 10px;
+      color: #556;
+      line-height: 1.4;
+    }
+
+    .result-meta strong {
+      color: var(--navy);
+    }
+
+    .form-panel {
+      min-width: 0;
+      padding: 12px;
+    }
+
+    .form-title {
+      color: var(--navy);
+      margin: 0 0 6px 0;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .2px;
+    }
+
+    .option-buttons-container {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+
+    .btn-option {
+      flex: 1;
+      min-width: 110px;
+      padding: 8px 12px;
+      border-radius: 99px;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 2px solid var(--gold);
+      background: transparent;
+      color: var(--navy);
+      transition: all 0.2s;
+      text-align: center;
+      line-height: 1.15;
+    }
+
+    .btn-option.active {
+      background: var(--navy);
+      color: white;
+      border-color: var(--navy);
+    }
+
+    .btn-option:hover {
+      background: #f0f0f0;
+    }
+
+    .btn-option.active:hover {
+      background: var(--navy);
+    }
+
+    .form-group label {
+      text-align: center;
+      display: block;
+      font-weight: 800;
+      font-size: 9px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 4px;
+      letter-spacing: .2px;
+    }
+
+    .btn-salvar-loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .bloqueado {
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .etapa-box {
+      margin: 7px 0 10px;
+      padding: 7px 9px;
+      border: 1px dashed var(--gold);
+      border-radius: 11px;
+      background: #fcfcfc;
+      color: var(--navy);
+      font-size: 10px;
+      line-height: 1.3;
+      font-weight: 700;
+      display: none;
+    }
+
+    .fields-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px 10px;
+      margin-bottom: 12px;
+    }
+
+    .fields-grid .form-group input,
+    .fields-grid .form-group select {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--navy);
+      padding: 6px 0;
+      font-size: 12px;
+      color: var(--navy);
+      background: transparent;
+      outline: none;
+      font-weight: 600;
+    }
+
+    .fields-grid .form-group input::placeholder {
+      color: #8a8a8a;
+    }
+
+    .thumbs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 10px;
+      align-items: start;
+      justify-items: center;
+    }
+
+    .thumb-card {
+      width: 100%;
+      max-width: 138px;
+      border: 1px solid var(--gold);
+      border-radius: 11px;
+      padding: 5px;
+      background: white;
+      text-align: center;
+      cursor: pointer;
+      min-height: 128px;
+    }
+
+    .thumb-card.empty {
+      border-style: dashed;
+      color: #999;
+      cursor: default;
+    }
+
+    .thumb-card img {
+      width: 100%;
+      height: 76px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .thumb-card small {
+      display: block;
+      margin-top: 4px;
+      font-size: 8px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--navy);
+      line-height: 1.1;
+    }
+
+    .preview-mini {
+      max-width: 100%;
+      max-height: 140px;
+      object-fit: cover;
+      border-radius: 9px;
+      border: 1px solid var(--gold);
+      cursor: pointer;
+    }
+
+    .foto-bloco {
+      margin-top: 12px;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+
+    .foto-bloco h3 {
+      font-size: 12px;
+      color: var(--navy);
+      margin-bottom: 8px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .botao-salvar {
+      display: block;
+      width: 160px;
+      margin: 12px auto 0;
+      padding: 8px 14px;
+      font-size: 11px;
+    }
+
+    .btn-main {
+      border: none;
+      color: white;
+      border-radius: 99px;
+      font-weight: 800;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-main:hover {
+      filter: brightness(0.96);
+      transform: translateY(-1px);
+    }
+
+    #modal-data-deposito,
+    #modal-foto {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #modal-foto {
+      z-index: 4000;
+      background: rgba(0,0,0,0.85);
+    }
+
+    .foto-box {
+      background: white;
+      border-radius: 18px;
+      padding: 14px;
+      width: fit-content;
+      height: fit-content;
+      max-width: 96vw;
+      max-height: 92vh;
+      position: relative;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .foto-stage {
+      flex: 0 0 auto;
+      width: auto;
+      height: auto;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #f8f8f8;
+      position: relative;
+      touch-action: none;
+      cursor: grab;
+      display: block;
+    }
+
+    .foto-stage:active {
+      cursor: grabbing;
+    }
+
+    #foto-modal-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      transform-origin: center center;
+      will-change: transform;
+      pointer-events: none;
+      border-radius: 12px;
+      background: transparent;
+      image-orientation: from-image;
+    }
+
+    .foto-titulo {
+      text-align: center;
+      font-weight: 800;
+      color: var(--navy);
+      font-size: 13px;
+      padding-bottom: 2px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--gold);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 5000;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .confirm-card {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+      width: min(92vw, 520px);
+      padding: 18px 18px 16px;
+    }
+
+    .confirm-card p {
+      margin: 0;
+      color: var(--navy);
+      font-size: 13px;
+      line-height: 1.45;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .confirm-actions .btn-main {
+      min-width: 110px;
+      padding: 9px 14px;
+      font-size: 10px;
+    }
+
+    @media (max-width: 1300px) {
+      .fields-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .search-panel {
+        position: relative;
+        top: 0;
+        max-height: none;
+      }
+
+      .page-header {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .logo-minerva,
+      .page-header h2,
+      .header-actions {
+        justify-self: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .page-header h2 {
+        font-size: 15px;
+      }
+
+      .header-actions {
+        justify-content: center;
+      }
+
+      .thumbs-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .thumb-card {
+        max-width: none;
+      }
+
+      .option-buttons-container {
+        flex-direction: column;
+      }
+
+      .btn-option {
+        min-width: 100%;
+      }
+
+      .search-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-row button,
+      .search-small-actions button {
+        width: 100%;
+      }
+
+      .fields-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .confirm-actions {
+        flex-direction: column;
+      }
+
+      .confirm-actions .btn-main {
+        width: 100%;
+      }
+
+      .foto-box {
+        width: 96vw !important;
+        height: 88vh !important;
+      }
+    }
   </style>
 </head>
 <body>
-<div class="page-shell">  <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center;">
+<div class="page-shell">
+  <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center;">
     <div class="spinner"></div>
-  </div>  <div class="page-header">
+  </div>
+
+  <div class="page-header">
     <div class="logo-minerva">
       <span class="m">minerva</span><span class="f">foods</span>
-    </div><h2>Registro | ColetaWeb</h2>
+    </div>
+    <h2>Registro | ColetaWeb</h2>
 
-<div class="header-actions">
-  <button type="button" class="btn-main" style="background:#6c757d; padding:9px 16px; font-size:11px;" onclick="novoRegistro()">NOVO REGISTRO</button>
-  <button type="button" class="btn-main" style="background:#2d4b5e; padding:9px 16px; font-size:11px;" onclick="voltar()">VOLTAR</button>
-</div>
-  </div>  <div class="layout">
+    <div class="header-actions">
+      <button type="button" class="btn-main" style="background:#6c757d; padding:9px 16px; font-size:11px;" onclick="novoRegistro()">NOVO REGISTRO</button>
+      <button type="button" class="btn-main" style="background:#2d4b5e; padding:9px 16px; font-size:11px;" onclick="voltar()">VOLTAR</button>
+    </div>
+  </div>
+
+  <div class="layout">
     <section class="card-panel form-panel">
-      <h2 class="form-title">NOVO REGISTRO / RETOMAR PROCESSO</h2>  <div id="resumoRegistroAtual" class="etapa-box">Nenhum registro aberto.</div>
-  <div id="infoEtapa" class="etapa-box">1) Selecione o tipo de carga.</div>
+      <h2 class="form-title">NOVO REGISTRO / RETOMAR PROCESSO</h2>
 
-  <div class="form-group">
-    <label>TIPO DE CARGA</label>
-    <div class="option-buttons-container">
-      <button id="btnResfriado" type="button" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
-      <button id="btnCongeladoGenSet" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado com GenSet', this)">Congelado com GenSet</button>
-      <button id="btnCongelado" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
-    </div>
-  </div>
+      <div id="resumoRegistroAtual" class="etapa-box">Nenhum registro aberto.</div>
+      <div id="infoEtapa" class="etapa-box">1) Selecione o tipo de carga.</div>
 
-  <div class="form-group" id="grupoCargaPulmao" style="display:none;">
-    <label>CARGA OU PULMÃO</label>
-    <div class="option-buttons-container">
-      <button id="btnCarga" type="button" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
-      <button id="btnPulmao" type="button" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
-    </div>
-  </div>
-
-  <div id="blocoCampos" style="display:block;">
-    <div class="fields-grid">
       <div class="form-group">
-        <label>DATA DA RETIRADA</label>
-        <input type="date" id="dataRetirada" disabled>
+        <label>TIPO DE CARGA</label>
+        <div class="option-buttons-container">
+          <button id="btnResfriado" type="button" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
+          <button id="btnCongeladoGenSet" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado com GenSet', this)">Congelado com GenSet</button>
+          <button id="btnCongelado" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
+        </div>
       </div>
-      <div class="form-group">
-        <label>ARMADOR</label>
-        <select id="armador" disabled>
-          <option value="">SELECIONE...</option>
-          <option value="PIL">PIL</option>
-          <option value="HAPAG LLOYD">HAPAG LLOYD</option>
-          <option value="ONE">ONE</option>
-          <option value="ALPHA SHIPPING">ALPHA SHIPPING</option>
-          <option value="CMA CGM">CMA CGM</option>
-          <option value="YANG MING">YANG MING</option>
-          <option value="HMM">HMM</option>
-          <option value="MAERSK">MAERSK</option>
-          <option value="MSC">MSC</option>
-          <option value="COSCO">COSCO</option>
-          <option value="EVERGREEN">EVERGREEN</option>
-          <option value="ZIM">ZIM</option>
-          <option value="INTERTRANS">INTERTRANS</option>
-          <option value="BR-X CARGO">BR-X CARGO</option>
-        </select>
+
+      <div class="form-group" id="grupoCargaPulmao" style="display:none;">
+        <label>CARGA OU PULMÃO</label>
+        <div class="option-buttons-container">
+          <button id="btnCarga" type="button" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
+          <button id="btnPulmao" type="button" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
+        </div>
       </div>
-      <div class="form-group">
-        <label>CONTAINER</label>
-        <input type="text" id="containerInput" placeholder="Digite o número do container" disabled>
+
+      <div id="blocoCampos" style="display:block;">
+        <div class="fields-grid">
+          <div class="form-group">
+            <label>DATA DA RETIRADA</label>
+            <input type="date" id="dataRetirada" disabled>
+          </div>
+          <div class="form-group">
+            <label>ARMADOR</label>
+            <select id="armador" disabled>
+              <option value="">SELECIONE...</option>
+              <option value="PIL">PIL</option>
+              <option value="HAPAG LLOYD">HAPAG LLOYD</option>
+              <option value="ONE">ONE</option>
+              <option value="ALPHA SHIPPING">ALPHA SHIPPING</option>
+              <option value="CMA CGM">CMA CGM</option>
+              <option value="YANG MING">YANG MING</option>
+              <option value="HMM">HMM</option>
+              <option value="MAERSK">MAERSK</option>
+              <option value="MSC">MSC</option>
+              <option value="COSCO">COSCO</option>
+              <option value="EVERGREEN">EVERGREEN</option>
+              <option value="ZIM">ZIM</option>
+              <option value="INTERTRANS">INTERTRANS</option>
+              <option value="BR-X CARGO">BR-X CARGO</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>CONTAINER</label>
+            <input type="text" id="containerInput" placeholder="Digite o número do container" disabled>
+          </div>
+          <div class="form-group">
+            <label>ORDEM</label>
+            <input type="text" id="ordem" placeholder="Digite a ORDEM (aceita letras, números e símbolos)" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          </div>
+          <div class="form-group">
+            <label>PLACA</label>
+            <input type="text" id="placa" placeholder="Digite a placa" disabled>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>ORDEM</label>
-        <input type="text" id="ordem" placeholder="Digite a ORDEM (aceita letras, números e símbolos)" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+      <div id="blocoRic" class="foto-bloco" style="display:none;">
+        <h3 id="labelRic">ETAPA 1/4 - FOTO DO RIC</h3>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+        <button type="button" id="btnRicCapture" class="btn-main" onclick="acionarCamera('cameraInput')"
+          style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
+          <span style="font-size:17px;">📷</span> TIRAR FOTO (RIC)
+        </button>
+        <div id="statusRic" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
+        <img id="preview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização RIC">
       </div>
-      <div class="form-group">
-        <label>PLACA</label>
-        <input type="text" id="placa" placeholder="Digite a placa" disabled>
+
+      <div id="genset-section" class="foto-bloco" style="display:none;">
+        <h3 id="labelGenset">ETAPA 2/4 - FOTO DO GENSET</h3>
+        <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display:none;">
+        <button type="button" id="btnGensetCapture" class="btn-main" onclick="acionarCamera('gensetInput')"
+          style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
+          <span style="font-size:17px;">📷</span> TIRAR FOTO (PAINEL GENSET)
+        </button>
+        <div id="statusGenset" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
+        <img id="gensetPreview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização GENSET">
       </div>
-    </div>
+
+      <div id="galeriaFotos" class="thumbs-grid" style="display:none;"></div>
+
+      <button class="btn-main botao-salvar" id="btnSalvar" style="background:#E84D53;" onclick="salvarColeta()" disabled>SALVAR</button>
+    </section>
+
+    <aside class="card-panel search-panel">
+      <h3>Retomar registro</h3>
+
+      <div class="search-row">
+        <input type="text" id="buscaContainer" placeholder="Digite o container..." autocomplete="off">
+        <button type="button" class="btn-main" style="background:var(--navy);" onclick="buscarContainers()">BUSCAR</button>
+      </div>
+
+      <div class="search-small-actions">
+        <button type="button" class="btn-main" style="background:#6c757d;" onclick="limparBusca()">LIMPAR BUSCA</button>
+      </div>
+
+      <div class="search-selected" id="registroSelecionadoInfo">Nenhum processo selecionado.</div>
+      <div class="search-count" id="resultadoBuscaCount">0 registros em andamento.</div>
+      <div class="results-list" id="listaResultados"></div>
+    </aside>
   </div>
 
-  <div id="blocoRic" class="foto-bloco" style="display:none;">
-    <h3 id="labelRic">ETAPA 1/4 - FOTO DO RIC</h3>
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-    <button type="button" id="btnRicCapture" class="btn-main" onclick="acionarCamera('cameraInput')"
-      style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
-      <span style="font-size:17px;">📷</span> TIRAR FOTO (RIC)
-    </button>
-    <div id="statusRic" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
-    <img id="preview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização RIC">
-  </div>
-
-  <div id="genset-section" class="foto-bloco" style="display:none;">
-    <h3 id="labelGenset">ETAPA 2/4 - FOTO DO GENSET</h3>
-    <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display:none;">
-    <button type="button" id="btnGensetCapture" class="btn-main" onclick="acionarCamera('gensetInput')"
-      style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
-      <span style="font-size:17px;">📷</span> TIRAR FOTO (PAINEL GENSET)
-    </button>
-    <div id="statusGenset" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
-    <img id="gensetPreview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização GENSET">
-  </div>
-
-  <div id="galeriaFotos" class="thumbs-grid" style="display:none;"></div>
-
-  <button class="btn-main botao-salvar" id="btnSalvar" style="background:#E84D53;" onclick="salvarColeta()" disabled>SALVAR</button>
-</section>
-
-<aside class="card-panel search-panel">
-  <h3>Retomar registro</h3>
-
-  <div class="search-row">
-    <input type="text" id="buscaContainer" placeholder="Digite o container..." autocomplete="off">
-    <button type="button" class="btn-main" style="background:var(--navy);" onclick="buscarContainers()">BUSCAR</button>
-  </div>
-
-  <div class="search-small-actions">
-    <button type="button" class="btn-main" style="background:#6c757d;" onclick="limparBusca()">LIMPAR BUSCA</button>
-  </div>
-
-  <div class="search-selected" id="registroSelecionadoInfo">Nenhum processo selecionado.</div>
-  <div class="search-count" id="resultadoBuscaCount">0 registros em andamento.</div>
-  <div class="results-list" id="listaResultados"></div>
-</aside>
-  </div>  <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center; padding:18px;">
+  <div id="custom-alert" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center; padding:18px;">
     <div style="background:white; padding:26px 30px; border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; max-width:340px; width:90%;">
       <p style="font-size:1rem; font-weight:bold; color:#2d4b5e; margin-bottom:18px;" id="custom-alert-msg">Registro salvo com sucesso!</p>
       <button onclick="fecharAlerta()" style="background:#2d4b5e; color:white; border:none; padding:10px 24px; border-radius:99px; font-weight:bold; cursor:pointer; text-transform:uppercase;">OK</button>
     </div>
-  </div>  <div id="modal-data-deposito" style="display:none; position:fixed; z-index:3000; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
+  </div>
+
+  <div id="modal-data-deposito" style="display:none; position:fixed; z-index:3000; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
     <div style="background:white; padding:24px 24px; border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,0.3); text-align:center; border:1px solid var(--gold); width:min(92vw, 400px);">
-      <p style="font-weight:700; margin-bottom:14px; color:var(--navy); font-size:17px;">Selecione a data do depósito</p>
+      <p id="titulo-modal-data" style="font-weight:700; margin-bottom:14px; color:var(--navy); font-size:17px;">Selecione a data</p>
       <input type="date" id="input-data-deposito" style="padding:10px 12px; border-radius:10px; border:1px solid var(--navy); font-weight:600; font-size:15px; text-align:center; outline:none; width:100%;">
       <div style="margin-top:18px; display:flex; gap:8px; justify-content:center;">
         <button class="btn-main" style="background:#6c757d; padding:9px 16px;" onclick="fecharModalDeposito()">Cancelar</button>
         <button class="btn-main" style="background:var(--navy); padding:9px 16px;" onclick="confirmarDataDeposito()">Confirmar</button>
       </div>
     </div>
-  </div>  <div id="modal-foto" style="display:none; position:fixed; inset:0; z-index:4000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; padding:20px;">
+  </div>
+
+  <div id="modal-foto" style="display:none; position:fixed; inset:0; z-index:4000; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; padding:20px;">
     <div class="foto-box" id="foto-box">
       <button onclick="fecharModalFoto()" style="position:absolute; top:8px; right:10px; border:none; background:none; font-size:34px; cursor:pointer; color:var(--navy); z-index:2;">&times;</button>
       <div id="foto-stage" class="foto-stage">
@@ -790,7 +804,9 @@ body {
       </div>
       <div id="foto-modal-title" class="foto-titulo"></div>
     </div>
-  </div>  <div id="confirmNovoRegistro" class="confirm-overlay">
+  </div>
+
+  <div id="confirmNovoRegistro" class="confirm-overlay">
     <div class="confirm-card">
       <p id="confirmNovoRegistroMsg">Deseja iniciar um novo registro? O processo atual será limpo da tela.</p>
       <div class="confirm-actions">
@@ -798,957 +814,980 @@ body {
         <button class="btn-main" style="background:#6c757d;" onclick="responderConfirmNovoRegistro(false)">Cancelar</button>
       </div>
     </div>
-  </div>  <script src="script.js"></script>  <script>
-    const DRAFT_KEY = 'coletaweb_draft_v12';
-    const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
-    const ETAPAS = ['ric', 'genset1', 'genset2', 'genset3'];
+  </div>
+</div>
 
-    let tipoCargaSelecionado = '';
-    let cargaPulmaoSelecionado = '';
-    let etapaFluxo = 'ric';
-    let registroId = null;
-    let fotoAtualDataUrl = '';
-    let fotoPendenteNome = '';
-    let modalDepositoAberto = false;
-    let salvando = false;
+<script src="script.js"></script>
+<script>
+  const DRAFT_KEY = 'coletaweb_draft_v13';
+  const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
+  const ETAPAS = ['ric', 'genset1', 'genset2', 'genset3'];
 
-    let fotosSalvas = {
-      ric: null,
-      genset1: null,
-      genset2: null,
-      genset3: null
+  let tipoCargaSelecionado = '';
+  let cargaPulmaoSelecionado = '';
+  let etapaFluxo = 'ric';
+  let registroId = null;
+  let registroAtual = null;
+  let fotoAtualDataUrl = '';
+  let fotoPendenteNome = '';
+  let fotoPendenteEtapa = '';
+  let modalDataCampo = '';
+  let modalDataTitulo = '';
+  let modalDepositoAberto = false;
+  let salvando = false;
+
+  let fotosSalvas = {
+    ric: null,
+    genset1: null,
+    genset2: null,
+    genset3: null
+  };
+
+  let usuarioLogado = null;
+  let perfilUsuario = '';
+  let transportadoraUsuario = '';
+  let ehAdmin = false;
+
+  let registrosEmAndamento = [];
+  let resultadosFiltrados = [];
+  let termoBuscaAtual = '';
+  let registroSelecionadoId = null;
+  let debounceBusca = null;
+
+  let confirmNovoRegistroCallback = null;
+
+  let fotoZoom = 1;
+  let fotoPanX = 0;
+  let fotoPanY = 0;
+  let fotoIsDragging = false;
+  let fotoDragStartX = 0;
+  let fotoDragStartY = 0;
+  let fotoStartPanX = 0;
+  let fotoStartPanY = 0;
+  let fotoTouchLastDist = null;
+  let fotoTouchStartZoom = 1;
+
+  function escapeHtml(texto) {
+    return String(texto || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function normalizarTexto(texto) {
+    return String(texto || '').trim().toLowerCase();
+  }
+
+  function isFinalizado(valor) {
+    return valor === true || valor === 1 || valor === '1' || valor === 'true' || valor === 'TRUE';
+  }
+
+  function tipoExigeOrdem() {
+    const t = normalizarTexto(tipoCargaSelecionado);
+    return t === 'resfriado' || t === 'congelado com genset' || t === 'congelado';
+  }
+
+  function obterUrlFoto(nomeOuUrl) {
+    if (!nomeOuUrl) return '';
+    if (nomeOuUrl.startsWith('http') || nomeOuUrl.startsWith('data:')) return nomeOuUrl;
+    return STORAGE_BASE + nomeOuUrl;
+  }
+
+  function textoEtapa(etapa) {
+    if (etapa === 'ric') return 'ETAPA 1/4 - FOTO DO RIC';
+    if (etapa === 'genset1') return 'ETAPA 2/4 - FOTO DO PAINEL GENSET (AG. CARREGAMENTO)';
+    if (etapa === 'genset2') return 'ETAPA 3/4 - FOTO DO PAINEL GENSET (LIBERADO)';
+    if (etapa === 'genset3') return 'ETAPA 4/4 - FOTO DO PAINEL GENSET (DEPOSITADO / FINALIZAÇÃO)';
+    return '';
+  }
+
+  function textoBotaoFoto(etapa) {
+    return etapa === 'ric' ? 'TIRAR FOTO (RIC)' : 'TIRAR FOTO (PAINEL GENSET)';
+  }
+
+  function obterEtapaDoRegistro(reg) {
+    if (!reg) return 'ric';
+    if (!reg.foto_url) return 'ric';
+    if (!reg.genset) return 'genset1';
+    if (!reg.liberado) return 'genset2';
+    if (!reg.depositado) return 'genset3';
+    return 'genset3';
+  }
+
+  function obterResumoBusca(reg) {
+    if (!reg) return 'N/A';
+    if (isFinalizado(reg.finalizado)) return 'FINALIZADO';
+    if (reg.depositado && !isFinalizado(reg.finalizado)) return 'AG. DEPÓSITO';
+    if (reg.liberado) return 'LIBERADO';
+    if (reg.genset) return 'AG. LIBERADO';
+    if (reg.foto_url) return 'AG. CARREGAMENTO';
+    return 'RIC';
+  }
+
+  function classeResumoBusca(reg) {
+    if (isFinalizado(reg.finalizado)) return 'badge-final';
+    if (reg.depositado && !isFinalizado(reg.finalizado)) return 'badge-genset3';
+    if (reg.liberado) return 'badge-genset2';
+    if (reg.genset) return 'badge-genset1';
+    if (reg.foto_url) return 'badge-ric';
+    return 'badge-ric';
+  }
+
+  function camposObrigatoriosPreenchidos() {
+    const ids = ['dataRetirada', 'armador', 'placa', 'containerInput'];
+    if (tipoExigeOrdem()) ids.push('ordem');
+    return ids.every(id => (document.getElementById(id)?.value || '').trim() !== '');
+  }
+
+  function obterValoresCampos() {
+    return {
+      data_retirada: document.getElementById('dataRetirada').value,
+      armador: document.getElementById('armador').value.trim(),
+      placa: document.getElementById('placa').value.trim(),
+      container: document.getElementById('containerInput').value.trim(),
+      ordem: document.getElementById('ordem').value.trim()
     };
+  }
 
-    let usuarioLogado = null;
-    let perfilUsuario = '';
-    let transportadoraUsuario = '';
-    let ehAdmin = false;
+  function formatarDataInput(valor) {
+    if (!valor) return new Date().toISOString().split('T')[0];
+    const d = new Date(String(valor).includes('T') ? valor : `${valor}T00:00:00`);
+    if (isNaN(d.getTime())) return new Date().toISOString().split('T')[0];
+    return d.toISOString().split('T')[0];
+  }
 
-    let registrosEmAndamento = [];
-    let resultadosFiltrados = [];
-    let termoBuscaAtual = '';
-    let registroSelecionadoId = null;
-    let debounceBusca = null;
+  function obterDataInicialParaCampo(campo) {
+    const reg = registroAtual || {};
+    if (campo === 'data_retirada') return formatarDataInput(document.getElementById('dataRetirada').value || reg.data_retirada || new Date().toISOString().split('T')[0]);
+    if (campo === 'data_ag_carregamento') return formatarDataInput(reg.data_ag_carregamento || new Date().toISOString().split('T')[0]);
+    if (campo === 'data_liberado') return formatarDataInput(reg.data_liberado || new Date().toISOString().split('T')[0]);
+    if (campo === 'data_finalizado') return formatarDataInput(reg.data_finalizado || new Date().toISOString().split('T')[0]);
+    return new Date().toISOString().split('T')[0];
+  }
 
-    let confirmNovoRegistroCallback = null;
-
-    let fotoZoom = 1;
-    let fotoPanX = 0;
-    let fotoPanY = 0;
-    let fotoIsDragging = false;
-    let fotoDragStartX = 0;
-    let fotoDragStartY = 0;
-    let fotoStartPanX = 0;
-    let fotoStartPanY = 0;
-    let fotoTouchLastDist = null;
-    let fotoTouchStartZoom = 1;
-
-    function escapeHtml(texto) {
-      return String(texto || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
+  function salvarRascunho() {
+    const payload = {
+      tipoCargaSelecionado,
+      cargaPulmaoSelecionado,
+      etapaFluxo,
+      registroId,
+      registroAtual,
+      fotoAtualDataUrl,
+      fotoPendenteNome,
+      fotoPendenteEtapa,
+      modalDepositoAberto,
+      modalDataCampo,
+      modalDataTitulo,
+      fotosSalvas,
+      termoBuscaAtual,
+      registroSelecionadoId,
+      campos: obterValoresCampos()
+    };
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+    } catch (e) {
+      console.warn('Não foi possível salvar o rascunho no localStorage:', e);
     }
+  }
 
-    function normalizarTexto(texto) {
-      return String(texto || '').trim().toLowerCase();
+  function limparRascunho() {
+    localStorage.removeItem(DRAFT_KEY);
+  }
+
+  function setSalvando(ativar) {
+    const btn = document.getElementById('btnSalvar');
+    if (!btn) return;
+
+    if (ativar) {
+      btn.innerText = 'SALVANDO...';
+      btn.classList.add('btn-salvar-loading');
+      btn.disabled = true;
+      salvando = true;
+    } else {
+      btn.classList.remove('btn-salvar-loading');
+      salvando = false;
+      btn.disabled = !fotoAtualDataUrl || modalDepositoAberto;
+      btn.innerText = 'SALVAR';
     }
+  }
 
-    function tipoExigeOrdem() {
-      const t = normalizarTexto(tipoCargaSelecionado);
-      return t === 'resfriado' || t === 'congelado com genset' || t === 'congelado';
+  function mostrarAlerta(mensagem, callback) {
+    document.getElementById('custom-alert-msg').textContent = mensagem;
+    document.getElementById('custom-alert').style.display = 'flex';
+    window._callbackAlerta = callback || null;
+  }
+
+  function fecharAlerta() {
+    document.getElementById('custom-alert').style.display = 'none';
+    if (typeof window._callbackAlerta === 'function') {
+      const cb = window._callbackAlerta;
+      window._callbackAlerta = null;
+      cb();
     }
+  }
 
-    function obterUrlFoto(nomeOuUrl) {
-      if (!nomeOuUrl) return '';
-      if (nomeOuUrl.startsWith('http') || nomeOuUrl.startsWith('data:')) return nomeOuUrl;
-      return STORAGE_BASE + nomeOuUrl;
+  function abrirModalConfirmacaoNovoRegistro(callback) {
+    confirmNovoRegistroCallback = callback || null;
+    document.getElementById('confirmNovoRegistro').style.display = 'flex';
+  }
+
+  function responderConfirmNovoRegistro(aceitar) {
+    document.getElementById('confirmNovoRegistro').style.display = 'none';
+    if (aceitar && typeof confirmNovoRegistroCallback === 'function') {
+      const cb = confirmNovoRegistroCallback;
+      confirmNovoRegistroCallback = null;
+      cb();
+    } else {
+      confirmNovoRegistroCallback = null;
     }
+  }
 
-    function textoEtapa(etapa) {
-      if (etapa === 'ric') return 'ETAPA 1/4 - FOTO DO RIC';
-      if (etapa === 'genset1') return 'ETAPA 2/4 - FOTO DO PAINEL GENSET (AG. CARREGAMENTO)';
-      if (etapa === 'genset2') return 'ETAPA 3/4 - FOTO DO PAINEL GENSET (LIBERADO)';
-      if (etapa === 'genset3') return 'ETAPA 4/4 - FOTO DO PAINEL GENSET (DEPOSITADO / FINALIZAÇÃO)';
-      return '';
-    }
+  function abrirModalDataEtapa(campo, titulo, dataInicial) {
+    modalDataCampo = campo;
+    modalDataTitulo = titulo || 'Selecione a data';
 
-    function textoBotaoFoto(etapa) {
-      return etapa === 'ric' ? 'TIRAR FOTO (RIC)' : 'TIRAR FOTO (PAINEL GENSET)';
-    }
+    const modal = document.getElementById('modal-data-deposito');
+    const tituloEl = document.getElementById('titulo-modal-data');
+    const input = document.getElementById('input-data-deposito');
 
-    function obterEtapaDoRegistro(reg) {
-      if (!reg) return 'ric';
-      if (!reg.foto_url) return 'ric';
-      if (!reg.genset) return 'genset1';
-      if (!reg.liberado) return 'genset2';
-      if (!reg.depositado) return 'genset3';
-      return 'genset3';
-    }
+    tituloEl.textContent = modalDataTitulo;
+    input.value = formatarDataInput(dataInicial);
 
-    function obterResumoBusca(reg) {
-      if (!reg) return 'N/A';
-      if (reg.finalizado) return 'FINALIZADO';
-      if (reg.depositado && !reg.finalizado) return 'AG. DEPÓSITO';
-      if (reg.liberado) return 'LIBERADO';
-      if (reg.genset) return 'AG. LIBERADO';
-      if (reg.foto_url) return 'AG. CARREGAMENTO';
-      return 'RIC';
-    }
+    modal.style.display = 'flex';
+    modalDepositoAberto = true;
+    salvarRascunho();
+    atualizarInterfaceEtapa();
+  }
 
-    function classeResumoBusca(reg) {
-      if (reg.finalizado) return 'badge-final';
-      if (reg.depositado && !reg.finalizado) return 'badge-genset3';
-      if (reg.liberado) return 'badge-genset2';
-      if (reg.genset) return 'badge-genset1';
-      if (reg.foto_url) return 'badge-ric';
-      return 'badge-ric';
-    }
+  function fecharModalDeposito() {
+    document.getElementById('modal-data-deposito').style.display = 'none';
+    modalDepositoAberto = false;
+    modalDataCampo = '';
+    modalDataTitulo = '';
+    fotoPendenteNome = '';
+    fotoPendenteEtapa = '';
+    salvarRascunho();
+    atualizarInterfaceEtapa();
+  }
 
-    function camposObrigatoriosPreenchidos() {
-      const ids = ['dataRetirada', 'armador', 'placa', 'containerInput'];
-      if (tipoExigeOrdem()) ids.push('ordem');
-      return ids.every(id => (document.getElementById(id)?.value || '').trim() !== '');
-    }
+  function acionarCamera(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input || input.disabled) return;
+    input.click();
+  }
 
-    function obterValoresCampos() {
-      return {
-        data_retirada: document.getElementById('dataRetirada').value,
-        armador: document.getElementById('armador').value.trim(),
-        placa: document.getElementById('placa').value.trim(),
-        container: document.getElementById('containerInput').value.trim(),
-        ordem: document.getElementById('ordem').value.trim()
-      };
-    }
+  async function comprimirImagem(file) {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
 
-    function salvarRascunho() {
-      const payload = {
-        tipoCargaSelecionado,
-        cargaPulmaoSelecionado,
-        etapaFluxo,
-        registroId,
-        fotoAtualDataUrl,
-        fotoPendenteNome,
-        modalDepositoAberto,
-        fotosSalvas,
-        termoBuscaAtual,
-        registroSelecionadoId,
-        campos: obterValoresCampos()
-      };
-      try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
-      } catch (e) {
-        console.warn('Não foi possível salvar o rascunho no localStorage:', e);
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = dataUrl;
+    });
+
+    const maxWidth = 1280;
+    const maxHeight = 720;
+    let { width, height } = img;
+
+    const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+    width = Math.round(width * ratio);
+    height = Math.round(height * ratio);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, width, height);
+
+    return canvas.toDataURL('image/jpeg', 0.82);
+  }
+
+  function dataURLtoBlob(dataUrl) {
+    const arr = dataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], { type: mime });
+  }
+
+  async function uploadFoto(dataUrl, sufixo) {
+    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+    const { data: { user } } = await cliente.auth.getUser();
+    const blob = dataURLtoBlob(dataUrl);
+    const fileName = `${Date.now()}_${user.email}_${registroId || 'novo'}_${sufixo}.jpg`.replace(/[^a-zA-Z0-9._@-]/g, '_');
+
+    const { error } = await cliente.storage
+      .from('coletas-fotos')
+      .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
+
+    if (error) throw error;
+    return fileName;
+  }
+
+  function limparPreviewRic() {
+    const img = document.getElementById('preview');
+    img.src = '';
+    img.style.display = 'none';
+    img.onclick = null;
+  }
+
+  function limparPreviewGenset() {
+    const img = document.getElementById('gensetPreview');
+    img.src = '';
+    img.style.display = 'none';
+    img.onclick = null;
+  }
+
+  function getUrlEtapaAtual() {
+    if (fotoAtualDataUrl) return fotoAtualDataUrl;
+    const item = fotosSalvas[etapaFluxo];
+    return item?.url || '';
+  }
+
+  function renderGaleria() {
+    const galeria = document.getElementById('galeriaFotos');
+    galeria.innerHTML = '';
+
+    const itens = [
+      { etapa: 'ric', titulo: 'RIC' },
+      { etapa: 'genset1', titulo: 'GENSET 1' },
+      { etapa: 'genset2', titulo: 'GENSET 2' },
+      { etapa: 'genset3', titulo: 'GENSET 3' }
+    ];
+
+    itens.forEach(item => {
+      let url = '';
+
+      if (item.etapa === etapaFluxo && fotoAtualDataUrl) {
+        url = fotoAtualDataUrl;
+      } else if (fotosSalvas[item.etapa]?.url) {
+        url = fotosSalvas[item.etapa].url;
       }
-    }
 
-    function limparRascunho() {
-      localStorage.removeItem(DRAFT_KEY);
-    }
+      const card = document.createElement('div');
+      card.className = 'thumb-card' + (url ? '' : ' empty');
 
-    function setSalvando(ativar) {
-      const btn = document.getElementById('btnSalvar');
-      if (!btn) return;
-
-      if (ativar) {
-        btn.innerText = 'SALVANDO...';
-        btn.classList.add('btn-salvar-loading');
-        btn.disabled = true;
-        salvando = true;
+      if (url) {
+        card.innerHTML = `<img src="${url}" alt="${item.titulo}"><small>${item.titulo}</small>`;
+        card.onclick = () => abrirModalFoto(url, item.titulo);
       } else {
-        btn.classList.remove('btn-salvar-loading');
-        salvando = false;
-        btn.disabled = !fotoAtualDataUrl || modalDepositoAberto;
-        btn.innerText = 'SALVAR';
-      }
-    }
-
-    function mostrarAlerta(mensagem, callback) {
-      document.getElementById('custom-alert-msg').textContent = mensagem;
-      document.getElementById('custom-alert').style.display = 'flex';
-      window._callbackAlerta = callback || null;
-    }
-
-    function fecharAlerta() {
-      document.getElementById('custom-alert').style.display = 'none';
-      if (typeof window._callbackAlerta === 'function') {
-        const cb = window._callbackAlerta;
-        window._callbackAlerta = null;
-        cb();
-      }
-    }
-
-    function abrirModalConfirmacaoNovoRegistro(callback) {
-      confirmNovoRegistroCallback = callback || null;
-      document.getElementById('confirmNovoRegistro').style.display = 'flex';
-    }
-
-    function responderConfirmNovoRegistro(aceitar) {
-      document.getElementById('confirmNovoRegistro').style.display = 'none';
-      if (aceitar && typeof confirmNovoRegistroCallback === 'function') {
-        const cb = confirmNovoRegistroCallback;
-        confirmNovoRegistroCallback = null;
-        cb();
-      } else {
-        confirmNovoRegistroCallback = null;
-      }
-    }
-
-    function fecharModalDeposito() {
-      document.getElementById('modal-data-deposito').style.display = 'none';
-      modalDepositoAberto = false;
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-    }
-
-    function abrirModalDeposito() {
-      const modal = document.getElementById('modal-data-deposito');
-      const input = document.getElementById('input-data-deposito');
-      input.value = new Date().toISOString().split('T')[0];
-      modal.style.display = 'flex';
-      modalDepositoAberto = true;
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-    }
-
-    function abrirModalFoto(src, titulo) {
-      const img = document.getElementById('foto-modal-img');
-      const label = document.getElementById('foto-modal-title');
-
-      label.textContent = titulo || '';
-      img.src = src;
-
-      fotoZoom = 1;
-      fotoPanX = 0;
-      fotoPanY = 0;
-      fotoTouchLastDist = null;
-      fotoTouchStartZoom = 1;
-
-      document.getElementById('modal-foto').style.display = 'flex';
-
-      img.onload = () => {
-        requestAnimationFrame(() => ajustarFotoParaTela());
-      };
-
-      setTimeout(() => {
-        if (img.complete) ajustarFotoParaTela();
-      }, 120);
-    }
-
-    function fecharModalFoto() {
-      document.getElementById('modal-foto').style.display = 'none';
-      const img = document.getElementById('foto-modal-img');
-      img.src = '';
-      fotoZoom = 1;
-      fotoPanX = 0;
-      fotoPanY = 0;
-      fotoIsDragging = false;
-      fotoTouchLastDist = null;
-    }
-
-    function acionarCamera(inputId) {
-      const input = document.getElementById(inputId);
-      if (!input || input.disabled) return;
-      input.click();
-    }
-
-    async function comprimirImagem(file) {
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const img = await new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = reject;
-        image.src = dataUrl;
-      });
-
-      const maxWidth = 1280;
-      const maxHeight = 720;
-      let { width, height } = img;
-
-      const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
-      width = Math.round(width * ratio);
-      height = Math.round(height * ratio);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-
-      return canvas.toDataURL('image/jpeg', 0.82);
-    }
-
-    function dataURLtoBlob(dataUrl) {
-      const arr = dataUrl.split(',');
-      const mime = arr[0].match(/:(.*?);/)[1];
-      const bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8arr = new Uint8Array(n);
-      while (n--) u8arr[n] = bstr.charCodeAt(n);
-      return new Blob([u8arr], { type: mime });
-    }
-
-    async function uploadFoto(dataUrl, sufixo) {
-      const { data: { user } } = await clienteSupabase.auth.getUser();
-      const blob = dataURLtoBlob(dataUrl);
-      const fileName = `${Date.now()}_${user.email}_${registroId || 'novo'}_${sufixo}.jpg`.replace(/[^a-zA-Z0-9._@-]/g, '_');
-
-      const { error } = await clienteSupabase.storage
-        .from('coletas-fotos')
-        .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
-
-      if (error) throw error;
-      return fileName;
-    }
-
-    function limparPreviewRic() {
-      const img = document.getElementById('preview');
-      img.src = '';
-      img.style.display = 'none';
-      img.onclick = null;
-    }
-
-    function limparPreviewGenset() {
-      const img = document.getElementById('gensetPreview');
-      img.src = '';
-      img.style.display = 'none';
-      img.onclick = null;
-    }
-
-    function renderGaleria() {
-      const galeria = document.getElementById('galeriaFotos');
-      galeria.innerHTML = '';
-
-      const itens = [
-        { etapa: 'ric', titulo: 'RIC' },
-        { etapa: 'genset1', titulo: 'GENSET 1' },
-        { etapa: 'genset2', titulo: 'GENSET 2' },
-        { etapa: 'genset3', titulo: 'GENSET 3' }
-      ];
-
-      itens.forEach(item => {
-        let url = '';
-
-        if (item.etapa === etapaFluxo && fotoAtualDataUrl) {
-          url = fotoAtualDataUrl;
-        } else if (fotosSalvas[item.etapa]?.url) {
-          url = fotosSalvas[item.etapa].url;
-        }
-
-        const card = document.createElement('div');
-        card.className = 'thumb-card' + (url ? '' : ' empty');
-
-        if (url) {
-          card.innerHTML = `<img src="${url}" alt="${item.titulo}"><small>${item.titulo}</small>`;
-          card.onclick = () => abrirModalFoto(url, item.titulo);
-        } else {
-          card.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:76px; font-size:10px; font-weight:800;">SEM FOTO</div><small>${item.titulo}</small>`;
-        }
-
-        galeria.appendChild(card);
-      });
-
-      galeria.style.display = 'grid';
-    }
-
-    function getUrlEtapaAtual() {
-      if (fotoAtualDataUrl) return fotoAtualDataUrl;
-      const item = fotosSalvas[etapaFluxo];
-      return item?.url || '';
-    }
-
-    function aplicarTransformFoto() {
-      const img = document.getElementById('foto-modal-img');
-      if (!img) return;
-      const scale = 1 * fotoZoom;
-      img.style.transform = `translate(${fotoPanX}px, ${fotoPanY}px) scale(${scale})`;
-    }
-
-    function ajustarFotoParaTela() {
-      const img = document.getElementById('foto-modal-img');
-      const stage = document.getElementById('foto-stage');
-      if (!img || !stage || !img.naturalWidth || !img.naturalHeight) return;
-
-      const maxW = Math.floor(window.innerWidth * 0.92);
-      const maxH = Math.floor(window.innerHeight * 0.82);
-      const ratio = img.naturalWidth / img.naturalHeight;
-
-      let w = maxW;
-      let h = Math.floor(w / ratio);
-
-      if (h > maxH) {
-        h = maxH;
-        w = Math.floor(h * ratio);
+        card.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:76px; font-size:10px; font-weight:800;">SEM FOTO</div><small>${item.titulo}</small>`;
       }
 
-      w = Math.max(180, w);
-      h = Math.max(180, h);
+      galeria.appendChild(card);
+    });
 
-      stage.style.width = w + 'px';
-      stage.style.height = h + 'px';
+    galeria.style.display = 'grid';
+  }
 
-      fotoZoom = 1;
-      fotoPanX = 0;
-      fotoPanY = 0;
-      aplicarTransformFoto();
+  function aplicarTransformFoto() {
+    const img = document.getElementById('foto-modal-img');
+    if (!img) return;
+    const scale = 1 * fotoZoom;
+    img.style.transform = `translate(${fotoPanX}px, ${fotoPanY}px) scale(${scale})`;
+  }
+
+  function ajustarFotoParaTela() {
+    const img = document.getElementById('foto-modal-img');
+    const stage = document.getElementById('foto-stage');
+    if (!img || !stage || !img.naturalWidth || !img.naturalHeight) return;
+
+    const maxW = Math.floor(window.innerWidth * 0.92);
+    const maxH = Math.floor(window.innerHeight * 0.82);
+    const ratio = img.naturalWidth / img.naturalHeight;
+
+    let w = maxW;
+    let h = Math.floor(w / ratio);
+
+    if (h > maxH) {
+      h = maxH;
+      w = Math.floor(h * ratio);
     }
 
-    function resetarZoomFoto() {
-      fotoZoom = 1;
+    w = Math.max(180, w);
+    h = Math.max(180, h);
+
+    stage.style.width = w + 'px';
+    stage.style.height = h + 'px';
+
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    aplicarTransformFoto();
+  }
+
+  function resetarZoomFoto() {
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    aplicarTransformFoto();
+  }
+
+  function zoomFoto(delta) {
+    const novoZoom = Math.max(1, Math.min(5, fotoZoom + delta));
+    fotoZoom = novoZoom;
+    if (fotoZoom === 1) {
       fotoPanX = 0;
       fotoPanY = 0;
-      aplicarTransformFoto();
     }
+    aplicarTransformFoto();
+  }
 
-    function zoomFoto(delta) {
-      const novoZoom = Math.max(1, Math.min(5, fotoZoom + delta));
-      fotoZoom = novoZoom;
+  function iniciarDragFoto(e) {
+    if (fotoZoom <= 1) return;
+    fotoIsDragging = true;
+    fotoDragStartX = e.clientX;
+    fotoDragStartY = e.clientY;
+    fotoStartPanX = fotoPanX;
+    fotoStartPanY = fotoPanY;
+    e.preventDefault();
+  }
+
+  function moverDragFoto(e) {
+    if (!fotoIsDragging) return;
+    fotoPanX = fotoStartPanX + (e.clientX - fotoDragStartX);
+    fotoPanY = fotoStartPanY + (e.clientY - fotoDragStartY);
+    aplicarTransformFoto();
+  }
+
+  function finalizarDragFoto() {
+    fotoIsDragging = false;
+  }
+
+  function getDistanceTouch(t1, t2) {
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function iniciarPinchFoto(e) {
+    if (e.touches.length === 2) {
+      fotoTouchLastDist = getDistanceTouch(e.touches[0], e.touches[1]);
+      fotoTouchStartZoom = fotoZoom;
+    }
+  }
+
+  function moverPinchFoto(e) {
+    if (e.touches.length === 2 && fotoTouchLastDist) {
+      const newDist = getDistanceTouch(e.touches[0], e.touches[1]);
+      const ratio = newDist / fotoTouchLastDist;
+      fotoZoom = Math.max(1, Math.min(5, fotoTouchStartZoom * ratio));
       if (fotoZoom === 1) {
         fotoPanX = 0;
         fotoPanY = 0;
       }
       aplicarTransformFoto();
-    }
-
-    function iniciarDragFoto(e) {
-      if (fotoZoom <= 1) return;
-      fotoIsDragging = true;
-      fotoDragStartX = e.clientX;
-      fotoDragStartY = e.clientY;
-      fotoStartPanX = fotoPanX;
-      fotoStartPanY = fotoPanY;
       e.preventDefault();
     }
+  }
 
-    function moverDragFoto(e) {
-      if (!fotoIsDragging) return;
-      fotoPanX = fotoStartPanX + (e.clientX - fotoDragStartX);
-      fotoPanY = fotoStartPanY + (e.clientY - fotoDragStartY);
-      aplicarTransformFoto();
-    }
+  function finalizarPinchFoto() {
+    fotoTouchLastDist = null;
+  }
 
-    function finalizarDragFoto() {
-      fotoIsDragging = false;
-    }
+  function registrarEventosZoom() {
+    const stage = document.getElementById('foto-stage');
+    const img = document.getElementById('foto-modal-img');
+    if (!stage || !img) return;
 
-    function getDistanceTouch(t1, t2) {
-      const dx = t1.clientX - t2.clientX;
-      const dy = t1.clientY - t2.clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
+    stage.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.15 : -0.15;
+      zoomFoto(delta);
+    }, { passive: false });
 
-    function iniciarPinchFoto(e) {
-      if (e.touches.length === 2) {
-        fotoTouchLastDist = getDistanceTouch(e.touches[0], e.touches[1]);
-        fotoTouchStartZoom = fotoZoom;
+    stage.addEventListener('mousedown', iniciarDragFoto);
+    window.addEventListener('mousemove', moverDragFoto);
+    window.addEventListener('mouseup', finalizarDragFoto);
+
+    stage.addEventListener('touchstart', function(e) {
+      if (e.touches.length === 1 && fotoZoom > 1) {
+        fotoIsDragging = true;
+        fotoDragStartX = e.touches[0].clientX;
+        fotoDragStartY = e.touches[0].clientY;
+        fotoStartPanX = fotoPanX;
+        fotoStartPanY = fotoPanY;
       }
-    }
+      if (e.touches.length === 2) {
+        iniciarPinchFoto(e);
+      }
+    }, { passive: false });
 
-    function moverPinchFoto(e) {
-      if (e.touches.length === 2 && fotoTouchLastDist) {
-        const newDist = getDistanceTouch(e.touches[0], e.touches[1]);
-        const ratio = newDist / fotoTouchLastDist;
-        fotoZoom = Math.max(1, Math.min(5, fotoTouchStartZoom * ratio));
-        if (fotoZoom === 1) {
-          fotoPanX = 0;
-          fotoPanY = 0;
-        }
+    stage.addEventListener('touchmove', function(e) {
+      if (e.touches.length === 1 && fotoIsDragging) {
+        fotoPanX = fotoStartPanX + (e.touches[0].clientX - fotoDragStartX);
+        fotoPanY = fotoStartPanY + (e.touches[0].clientY - fotoDragStartY);
         aplicarTransformFoto();
         e.preventDefault();
+      } else if (e.touches.length === 2) {
+        moverPinchFoto(e);
       }
-    }
+    }, { passive: false });
 
-    function finalizarPinchFoto() {
-      fotoTouchLastDist = null;
-    }
-
-    function registrarEventosZoom() {
-      const stage = document.getElementById('foto-stage');
-      const img = document.getElementById('foto-modal-img');
-
-      stage.addEventListener('wheel', function(e) {
-        e.preventDefault();
-        const delta = e.deltaY < 0 ? 0.15 : -0.15;
-        zoomFoto(delta);
-      }, { passive: false });
-
-      stage.addEventListener('mousedown', iniciarDragFoto);
-      window.addEventListener('mousemove', moverDragFoto);
-      window.addEventListener('mouseup', finalizarDragFoto);
-
-      stage.addEventListener('touchstart', function(e) {
-        if (e.touches.length === 1 && fotoZoom > 1) {
-          fotoIsDragging = true;
-          fotoDragStartX = e.touches[0].clientX;
-          fotoDragStartY = e.touches[0].clientY;
-          fotoStartPanX = fotoPanX;
-          fotoStartPanY = fotoPanY;
-        }
-        if (e.touches.length === 2) {
-          iniciarPinchFoto(e);
-        }
-      }, { passive: false });
-
-      stage.addEventListener('touchmove', function(e) {
-        if (e.touches.length === 1 && fotoIsDragging) {
-          fotoPanX = fotoStartPanX + (e.touches[0].clientX - fotoDragStartX);
-          fotoPanY = fotoStartPanY + (e.touches[0].clientY - fotoDragStartY);
-          aplicarTransformFoto();
-          e.preventDefault();
-        } else if (e.touches.length === 2) {
-          moverPinchFoto(e);
-        }
-      }, { passive: false });
-
-      stage.addEventListener('touchend', function() {
-        fotoIsDragging = false;
-        finalizarPinchFoto();
-      });
-
-      img.addEventListener('dblclick', function() {
-        if (fotoZoom === 1) zoomFoto(1);
-        else resetarZoomFoto();
-      });
-    }
-
-    function atualizarMensagemEtapa() {
-      const info = document.getElementById('infoEtapa');
-      if (!info) return;
-      info.style.display = 'none';
-    }
-
-    function atualizarResumoRegistroAtual() {
-      const el = document.getElementById('resumoRegistroAtual');
-      if (!el) return;
-      el.style.display = 'none';
-    }
-
-    function atualizarBloqueiosCampos() {
-      const liberado = !!tipoCargaSelecionado && !!cargaPulmaoSelecionado;
-      ['dataRetirada', 'armador', 'placa', 'containerInput', 'ordem'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = !liberado;
-      });
-
-      document.getElementById('grupoCargaPulmao').style.display = tipoCargaSelecionado ? 'block' : 'none';
-    }
-
-    function aplicarBotoesAtivos() {
-      document.getElementById('btnResfriado').classList.remove('active');
-      document.getElementById('btnCongelado').classList.remove('active');
-      document.getElementById('btnCongeladoGenSet').classList.remove('active');
-
-      const mapa = {
-        'Resfriado': 'btnResfriado',
-        'Congelado': 'btnCongelado',
-        'Congelado com GenSet': 'btnCongeladoGenSet'
-      };
-
-      if (tipoCargaSelecionado && mapa[tipoCargaSelecionado]) {
-        document.getElementById(mapa[tipoCargaSelecionado]).classList.add('active');
-      }
-
-      document.getElementById('btnCarga').classList.remove('active');
-      document.getElementById('btnPulmao').classList.remove('active');
-
-      if (cargaPulmaoSelecionado === 'Carga') document.getElementById('btnCarga').classList.add('active');
-      if (cargaPulmaoSelecionado === 'Pulmão') document.getElementById('btnPulmao').classList.add('active');
-    }
-
-    function atualizarInterfaceEtapa() {
-      atualizarBloqueiosCampos();
-      atualizarMensagemEtapa();
-      atualizarResumoRegistroAtual();
-      renderGaleria();
-
-      const blocoRic = document.getElementById('blocoRic');
-      const blocoGenset = document.getElementById('genset-section');
-      const btnSalvar = document.getElementById('btnSalvar');
-      const btnRicCapture = document.getElementById('btnRicCapture');
-      const btnGensetCapture = document.getElementById('btnGensetCapture');
-      const labelRic = document.getElementById('labelRic');
-      const labelGenset = document.getElementById('labelGenset');
-      const statusRic = document.getElementById('statusRic');
-      const statusGenset = document.getElementById('statusGenset');
-
-      const ready = tipoCargaSelecionado && cargaPulmaoSelecionado && camposObrigatoriosPreenchidos();
-
-      if (!ready) {
-        blocoRic.style.display = 'none';
-        blocoGenset.style.display = 'none';
-        btnSalvar.disabled = true;
-        btnSalvar.innerText = 'SALVAR';
-        statusRic.textContent = '';
-        statusGenset.textContent = '';
-        return;
-      }
-
-      btnRicCapture.innerHTML = `<span style="font-size:17px;">📷</span> ${textoBotaoFoto('ric')}`;
-      btnGensetCapture.innerHTML = `<span style="font-size:17px;">📷</span> ${textoBotaoFoto(etapaFluxo)}`;
-
-      if (etapaFluxo === 'ric') {
-        blocoRic.style.display = 'block';
-        blocoGenset.style.display = 'none';
-        labelRic.textContent = textoEtapa('ric');
-        statusRic.textContent = textoEtapa('ric');
-        statusGenset.textContent = '';
-        btnRicCapture.classList.toggle('bloqueado', modalDepositoAberto);
-      } else {
-        blocoRic.style.display = 'none';
-        blocoGenset.style.display = 'block';
-
-        if (etapaFluxo === 'genset1') labelGenset.textContent = textoEtapa('genset1');
-        if (etapaFluxo === 'genset2') labelGenset.textContent = textoEtapa('genset2');
-        if (etapaFluxo === 'genset3') labelGenset.textContent = textoEtapa('genset3');
-
-        statusRic.textContent = '';
-        statusGenset.textContent = textoEtapa(etapaFluxo);
-        btnGensetCapture.classList.toggle('bloqueado', modalDepositoAberto);
-      }
-
-      btnSalvar.disabled = !fotoAtualDataUrl || salvando || modalDepositoAberto;
-      btnSalvar.innerText = 'SALVAR';
-    }
-
-    function selecionarTipoCarga(tipo, btn) {
-      if (tipoCargaSelecionado && tipoCargaSelecionado !== tipo && (registroId || fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean))) {
-        abrirModalConfirmacaoNovoRegistro(() => {
-          limparFluxoCompleto();
-          document.getElementById('btnResfriado').classList.remove('active');
-          document.getElementById('btnCongelado').classList.remove('active');
-          document.getElementById('btnCongeladoGenSet').classList.remove('active');
-          btn.classList.add('active');
-          tipoCargaSelecionado = tipo;
-          etapaFluxo = 'ric';
-          salvarRascunho();
-          atualizarInterfaceEtapa();
-        });
-        return;
-      }
-
-      document.getElementById('btnResfriado').classList.remove('active');
-      document.getElementById('btnCongelado').classList.remove('active');
-      document.getElementById('btnCongeladoGenSet').classList.remove('active');
-      btn.classList.add('active');
-
-      tipoCargaSelecionado = tipo;
-      etapaFluxo = 'ric';
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-    }
-
-    function selecionarCargaPulmao(valor, btn) {
-      document.getElementById('btnCarga').classList.remove('active');
-      document.getElementById('btnPulmao').classList.remove('active');
-      btn.classList.add('active');
-      cargaPulmaoSelecionado = valor;
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-    }
-
-    function preencherCamposRestaurados(campos) {
-      if (!campos) return;
-      document.getElementById('dataRetirada').value = campos.data_retirada || '';
-      document.getElementById('armador').value = campos.armador || '';
-      document.getElementById('placa').value = campos.placa || '';
-      document.getElementById('containerInput').value = campos.container || '';
-      document.getElementById('ordem').value = campos.ordem || '';
-    }
-
-    function restaurarPreviewAtual() {
-      const url = getUrlEtapaAtual();
-      if (!url) {
-        limparPreviewRic();
-        limparPreviewGenset();
-        return;
-      }
-
-      if (etapaFluxo === 'ric') {
-        const img = document.getElementById('preview');
-        img.src = url;
-        img.style.display = 'block';
-        img.onclick = () => abrirModalFoto(url, 'RIC');
-      } else {
-        const img = document.getElementById('gensetPreview');
-        img.src = url;
-        img.style.display = 'block';
-        img.onclick = () => abrirModalFoto(url, textoEtapa(etapaFluxo));
-      }
-    }
-
-    function filtrarResultadosBusca() {
-      const termo = normalizarTexto(termoBuscaAtual);
-
-      resultadosFiltrados = registrosEmAndamento.filter(reg => {
-        if (reg.finalizado) return false;
-        const container = normalizarTexto(reg.container);
-        if (!termo) return true;
-        return container.includes(termo);
-      });
-
-      renderResultadosBusca();
-    }
-
-    function renderResultadosBusca() {
-      const lista = document.getElementById('listaResultados');
-      const count = document.getElementById('resultadoBuscaCount');
-      const info = document.getElementById('registroSelecionadoInfo');
-
-      lista.innerHTML = '';
-
-      if (count) count.textContent = `${resultadosFiltrados.length} registro(s) em andamento.`;
-
-      const selecionado = registrosEmAndamento.find(r => String(r.id) === String(registroSelecionadoId));
-      if (info) {
-        info.textContent = selecionado
-          ? `Selecionado: ${selecionado.container || 'N/A'} | ${obterResumoBusca(selecionado)}`
-          : 'Nenhum processo selecionado.';
-      }
-
-      if (!resultadosFiltrados.length) {
-        lista.innerHTML = '<div style="padding:12px; text-align:center; color:#888; font-weight:700;">Nenhum registro encontrado.</div>';
-        return;
-      }
-
-      resultadosFiltrados.forEach(reg => {
-        const item = document.createElement('div');
-        item.className = 'result-item' + (String(reg.id) === String(registroSelecionadoId) ? ' active' : '');
-
-        const etapa = obterResumoBusca(reg);
-        const classe = classeResumoBusca(reg);
-        const container = escapeHtml(reg.container || 'N/A');
-        const armador = escapeHtml(reg.armador || 'N/A');
-        const cidade = escapeHtml(reg.cidade || 'N/A');
-        const retirada = reg.data_retirada ? new Date(reg.data_retirada + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
-
-        item.innerHTML = `
-          <div class="result-top">
-            <div class="result-container">${container}</div>
-            <span class="result-badge ${classe}">${etapa}</span>
-          </div>
-          <div class="result-meta">
-            <strong>Armador:</strong> ${armador}<br>
-            <strong>Cidade:</strong> ${cidade}<br>
-            <strong>Retirada:</strong> ${retirada}<br>
-            <strong>Status:</strong> ${escapeHtml((reg.status || 'N/A').toString().toUpperCase())}
-          </div>
-        `;
-
-        item.onclick = () => abrirRegistroParaContinuar(reg.id);
-        lista.appendChild(item);
-      });
-    }
-
-    async function carregarRegistrosEmAndamento() {
-      try {
-        if (!clienteSupabase) return;
-
-        let query = clienteSupabase.from('coletas').select('*').order('created_at', { ascending: false });
-
-        if (!ehAdmin && transportadoraUsuario) {
-          query = query.eq('transportadora', transportadoraUsuario.trim());
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-
-        registrosEmAndamento = (data || []).filter(r => !r.finalizado);
-
-        if (registroSelecionadoId) {
-          const existe = registrosEmAndamento.find(r => String(r.id) === String(registroSelecionadoId));
-          if (!existe) registroSelecionadoId = null;
-        }
-
-        filtrarResultadosBusca();
-      } catch (err) {
-        console.error('Erro ao carregar registros em andamento:', err);
-        mostrarAlerta('Erro ao carregar registros: ' + err.message);
-      }
-    }
-
-    async function abrirRegistroParaContinuar(id) {
-      const registro = registrosEmAndamento.find(r => String(r.id) === String(id));
-      if (!registro) {
-        mostrarAlerta('Registro não encontrado.');
-        return;
-      }
-
-      registroSelecionadoId = id;
-      termoBuscaAtual = document.getElementById('buscaContainer').value || '';
-      filtrarResultadosBusca();
-
-      tipoCargaSelecionado = registro.tipo_carga || '';
-      cargaPulmaoSelecionado = registro.carga_pulmao || '';
-      etapaFluxo = obterEtapaDoRegistro(registro);
-      registroId = registro.id;
-      fotoAtualDataUrl = '';
-      fotoPendenteNome = '';
-      modalDepositoAberto = !!(registro.depositado && !registro.finalizado);
-      fotosSalvas = {
-        ric: registro.foto_url ? { nome: registro.foto_url, url: obterUrlFoto(registro.foto_url) } : null,
-        genset1: registro.genset ? { nome: registro.genset, url: obterUrlFoto(registro.genset) } : null,
-        genset2: registro.liberado ? { nome: registro.liberado, url: obterUrlFoto(registro.liberado) } : null,
-        genset3: registro.depositado ? { nome: registro.depositado, url: obterUrlFoto(registro.depositado) } : null
-      };
-
-      aplicarBotoesAtivos();
-      preencherCamposRestaurados({
-        data_retirada: registro.data_retirada,
-        armador: registro.armador,
-        placa: registro.placa,
-        container: registro.container,
-        ordem: registro.ordem
-      });
-
-      atualizarInterfaceEtapa();
-      restaurarPreviewAtual();
-      renderGaleria();
-      salvarRascunho();
-
-      document.querySelector('.form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      if (modalDepositoAberto) {
-        setTimeout(() => abrirModalDeposito(), 180);
-      }
-    }
-
-    document.getElementById('cameraInput').addEventListener('change', async function(e) {
-      if (etapaFluxo !== 'ric') return;
-      const file = e.target.files[0];
-      if (!file) return;
-
-      fotoAtualDataUrl = await comprimirImagem(file);
-      salvarRascunho();
-
-      const img = document.getElementById('preview');
-      img.src = fotoAtualDataUrl;
-      img.style.display = 'block';
-      img.onclick = () => abrirModalFoto(fotoAtualDataUrl, 'RIC');
-      atualizarInterfaceEtapa();
+    stage.addEventListener('touchend', function() {
+      fotoIsDragging = false;
+      finalizarPinchFoto();
     });
 
-    document.getElementById('gensetInput').addEventListener('change', async function(e) {
-      if (etapaFluxo === 'ric') return;
-      const file = e.target.files[0];
-      if (!file) return;
-
-      fotoAtualDataUrl = await comprimirImagem(file);
-      salvarRascunho();
-
-      const img = document.getElementById('gensetPreview');
-      img.src = fotoAtualDataUrl;
-      img.style.display = 'block';
-      img.onclick = () => abrirModalFoto(fotoAtualDataUrl, textoEtapa(etapaFluxo));
-      atualizarInterfaceEtapa();
+    img.addEventListener('dblclick', function() {
+      if (fotoZoom === 1) zoomFoto(1);
+      else resetarZoomFoto();
     });
+  }
 
+  function atualizarMensagemEtapa() {
+    const info = document.getElementById('infoEtapa');
+    if (!info) return;
+    info.style.display = 'none';
+  }
+
+  function atualizarResumoRegistroAtual() {
+    const el = document.getElementById('resumoRegistroAtual');
+    if (!el) return;
+    el.style.display = 'none';
+  }
+
+  function atualizarBloqueiosCampos() {
+    const liberado = !!tipoCargaSelecionado && !!cargaPulmaoSelecionado;
     ['dataRetirada', 'armador', 'placa', 'containerInput', 'ordem'].forEach(id => {
       const el = document.getElementById(id);
-      el.addEventListener('input', () => {
-        salvarRascunho();
-        atualizarInterfaceEtapa();
-      });
-      el.addEventListener('change', () => {
-        salvarRascunho();
-        atualizarInterfaceEtapa();
-      });
+      if (el) el.disabled = !liberado;
     });
 
-    document.getElementById('buscaContainer').addEventListener('input', function() {
-      termoBuscaAtual = this.value || '';
-      salvarRascunho();
-      clearTimeout(debounceBusca);
-      debounceBusca = setTimeout(() => {
-        filtrarResultadosBusca();
-      }, 150);
-    });
+    document.getElementById('grupoCargaPulmao').style.display = tipoCargaSelecionado ? 'block' : 'none';
+  }
 
-    document.getElementById('buscaContainer').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (resultadosFiltrados.length === 1) {
-          abrirRegistroParaContinuar(resultadosFiltrados[0].id);
-        } else {
-          buscarContainers();
-        }
-      }
-    });
+  function aplicarBotoesAtivos() {
+    document.getElementById('btnResfriado').classList.remove('active');
+    document.getElementById('btnCongelado').classList.remove('active');
+    document.getElementById('btnCongeladoGenSet').classList.remove('active');
 
-    function limparFluxoCompleto() {
-      tipoCargaSelecionado = '';
-      cargaPulmaoSelecionado = '';
-      etapaFluxo = 'ric';
-      registroId = null;
-      fotoAtualDataUrl = '';
-      fotoPendenteNome = '';
-      modalDepositoAberto = false;
-      fotosSalvas = { ric: null, genset1: null, genset2: null, genset3: null };
-      registroSelecionadoId = null;
+    const mapa = {
+      'Resfriado': 'btnResfriado',
+      'Congelado': 'btnCongelado',
+      'Congelado com GenSet': 'btnCongeladoGenSet'
+    };
 
-      document.getElementById('btnResfriado').classList.remove('active');
-      document.getElementById('btnCongelado').classList.remove('active');
-      document.getElementById('btnCongeladoGenSet').classList.remove('active');
-      document.getElementById('btnCarga').classList.remove('active');
-      document.getElementById('btnPulmao').classList.remove('active');
-
-      document.getElementById('dataRetirada').value = '';
-      document.getElementById('armador').value = '';
-      document.getElementById('placa').value = '';
-      document.getElementById('containerInput').value = '';
-      document.getElementById('ordem').value = '';
-
-      document.getElementById('cameraInput').value = '';
-      document.getElementById('gensetInput').value = '';
-      limparPreviewRic();
-      limparPreviewGenset();
-
-      document.getElementById('grupoCargaPulmao').style.display = 'none';
-      document.getElementById('blocoRic').style.display = 'none';
-      document.getElementById('genset-section').style.display = 'none';
-      document.getElementById('galeriaFotos').innerHTML = '';
-      document.getElementById('galeriaFotos').style.display = 'none';
-
-      document.getElementById('btnSalvar').disabled = true;
-      document.getElementById('btnSalvar').innerText = 'SALVAR';
-
-      limparRascunho();
-      atualizarResumoRegistroAtual();
-      atualizarMensagemEtapa();
-      filtrarResultadosBusca();
+    if (tipoCargaSelecionado && mapa[tipoCargaSelecionado]) {
+      document.getElementById(mapa[tipoCargaSelecionado]).classList.add('active');
     }
 
-    async function salvarColeta() {
-      if (salvando) return;
+    document.getElementById('btnCarga').classList.remove('active');
+    document.getElementById('btnPulmao').classList.remove('active');
 
-      if (!clienteSupabase) {
-        mostrarAlerta('Erro: O sistema ainda está carregando.');
-        return;
+    if (cargaPulmaoSelecionado === 'Carga') document.getElementById('btnCarga').classList.add('active');
+    if (cargaPulmaoSelecionado === 'Pulmão') document.getElementById('btnPulmao').classList.add('active');
+  }
+
+  function atualizarInterfaceEtapa() {
+    atualizarBloqueiosCampos();
+    atualizarMensagemEtapa();
+    atualizarResumoRegistroAtual();
+    renderGaleria();
+
+    const blocoRic = document.getElementById('blocoRic');
+    const blocoGenset = document.getElementById('genset-section');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const btnRicCapture = document.getElementById('btnRicCapture');
+    const btnGensetCapture = document.getElementById('btnGensetCapture');
+    const labelRic = document.getElementById('labelRic');
+    const labelGenset = document.getElementById('labelGenset');
+    const statusRic = document.getElementById('statusRic');
+    const statusGenset = document.getElementById('statusGenset');
+
+    const ready = tipoCargaSelecionado && cargaPulmaoSelecionado && camposObrigatoriosPreenchidos();
+
+    if (!ready) {
+      blocoRic.style.display = 'none';
+      blocoGenset.style.display = 'none';
+      btnSalvar.disabled = true;
+      btnSalvar.innerText = 'SALVAR';
+      statusRic.textContent = '';
+      statusGenset.textContent = '';
+      return;
+    }
+
+    btnRicCapture.innerHTML = `<span style="font-size:17px;">📷</span> ${textoBotaoFoto('ric')}`;
+    btnGensetCapture.innerHTML = `<span style="font-size:17px;">📷</span> ${textoBotaoFoto(etapaFluxo)}`;
+
+    if (etapaFluxo === 'ric') {
+      blocoRic.style.display = 'block';
+      blocoGenset.style.display = 'none';
+      labelRic.textContent = textoEtapa('ric');
+      statusRic.textContent = textoEtapa('ric');
+      statusGenset.textContent = '';
+      btnRicCapture.classList.toggle('bloqueado', modalDepositoAberto);
+    } else {
+      blocoRic.style.display = 'none';
+      blocoGenset.style.display = 'block';
+
+      if (etapaFluxo === 'genset1') labelGenset.textContent = textoEtapa('genset1');
+      if (etapaFluxo === 'genset2') labelGenset.textContent = textoEtapa('genset2');
+      if (etapaFluxo === 'genset3') labelGenset.textContent = textoEtapa('genset3');
+
+      statusRic.textContent = '';
+      statusGenset.textContent = textoEtapa(etapaFluxo);
+      btnGensetCapture.classList.toggle('bloqueado', modalDepositoAberto);
+    }
+
+    btnSalvar.disabled = !fotoAtualDataUrl || salvando || modalDepositoAberto;
+    btnSalvar.innerText = 'SALVAR';
+  }
+
+  function selecionarTipoCarga(tipo, btn) {
+    if (tipoCargaSelecionado && tipoCargaSelecionado !== tipo && (registroId || fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean))) {
+      abrirModalConfirmacaoNovoRegistro(() => {
+        limparFluxoCompleto();
+        document.getElementById('btnResfriado').classList.remove('active');
+        document.getElementById('btnCongelado').classList.remove('active');
+        document.getElementById('btnCongeladoGenSet').classList.remove('active');
+        btn.classList.add('active');
+        tipoCargaSelecionado = tipo;
+        etapaFluxo = 'ric';
+        salvarRascunho();
+        atualizarInterfaceEtapa();
+      });
+      return;
+    }
+
+    document.getElementById('btnResfriado').classList.remove('active');
+    document.getElementById('btnCongelado').classList.remove('active');
+    document.getElementById('btnCongeladoGenSet').classList.remove('active');
+    btn.classList.add('active');
+
+    tipoCargaSelecionado = tipo;
+    etapaFluxo = 'ric';
+    salvarRascunho();
+    atualizarInterfaceEtapa();
+  }
+
+  function selecionarCargaPulmao(valor, btn) {
+    document.getElementById('btnCarga').classList.remove('active');
+    document.getElementById('btnPulmao').classList.remove('active');
+    btn.classList.add('active');
+    cargaPulmaoSelecionado = valor;
+    salvarRascunho();
+    atualizarInterfaceEtapa();
+  }
+
+  function preencherCamposRestaurados(campos) {
+    if (!campos) return;
+    document.getElementById('dataRetirada').value = campos.data_retirada || '';
+    document.getElementById('armador').value = campos.armador || '';
+    document.getElementById('placa').value = campos.placa || '';
+    document.getElementById('containerInput').value = campos.container || '';
+    document.getElementById('ordem').value = campos.ordem || '';
+  }
+
+  function restaurarPreviewAtual() {
+    const url = getUrlEtapaAtual();
+    if (!url) {
+      limparPreviewRic();
+      limparPreviewGenset();
+      return;
+    }
+
+    if (etapaFluxo === 'ric') {
+      const img = document.getElementById('preview');
+      img.src = url;
+      img.style.display = 'block';
+      img.onclick = () => abrirModalFoto(url, 'RIC');
+    } else {
+      const img = document.getElementById('gensetPreview');
+      img.src = url;
+      img.style.display = 'block';
+      img.onclick = () => abrirModalFoto(url, textoEtapa(etapaFluxo));
+    }
+  }
+
+  function filtrarResultadosBusca() {
+    const termo = normalizarTexto(termoBuscaAtual);
+
+    resultadosFiltrados = registrosEmAndamento.filter(reg => {
+      if (isFinalizado(reg.finalizado)) return false;
+      const container = normalizarTexto(reg.container);
+      if (!termo) return true;
+      return container.includes(termo);
+    });
+
+    renderResultadosBusca();
+  }
+
+  function renderResultadosBusca() {
+    const lista = document.getElementById('listaResultados');
+    const count = document.getElementById('resultadoBuscaCount');
+    const info = document.getElementById('registroSelecionadoInfo');
+
+    lista.innerHTML = '';
+
+    if (count) count.textContent = `${resultadosFiltrados.length} registro(s) em andamento.`;
+
+    const selecionado = registrosEmAndamento.find(r => String(r.id) === String(registroSelecionadoId));
+    if (info) {
+      info.textContent = selecionado
+        ? `Selecionado: ${selecionado.container || 'N/A'} | ${obterResumoBusca(selecionado)}`
+        : 'Nenhum processo selecionado.';
+    }
+
+    if (!resultadosFiltrados.length) {
+      lista.innerHTML = '<div style="padding:12px; text-align:center; color:#888; font-weight:700;">Nenhum registro encontrado.</div>';
+      return;
+    }
+
+    resultadosFiltrados.forEach(reg => {
+      const item = document.createElement('div');
+      item.className = 'result-item' + (String(reg.id) === String(registroSelecionadoId) ? ' active' : '');
+
+      const etapa = obterResumoBusca(reg);
+      const classe = classeResumoBusca(reg);
+      const container = escapeHtml(reg.container || 'N/A');
+      const armador = escapeHtml(reg.armador || 'N/A');
+      const cidade = escapeHtml(reg.cidade || 'N/A');
+      const retirada = reg.data_retirada ? new Date(reg.data_retirada + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+
+      item.innerHTML = `
+        <div class="result-top">
+          <div class="result-container">${container}</div>
+          <span class="result-badge ${classe}">${etapa}</span>
+        </div>
+        <div class="result-meta">
+          <strong>Armador:</strong> ${armador}<br>
+          <strong>Cidade:</strong> ${cidade}<br>
+          <strong>Retirada:</strong> ${retirada}<br>
+          <strong>Status:</strong> ${escapeHtml((getEffectiveStatus(reg) || 'N/A').toString().toUpperCase())}
+        </div>
+      `;
+
+      item.onclick = () => abrirRegistroParaContinuar(reg.id);
+      lista.appendChild(item);
+    });
+  }
+
+  async function carregarRegistrosEmAndamento() {
+    try {
+      const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+      if (!cliente) return;
+
+      let query = cliente.from('coletas').select('*').order('created_at', { ascending: false });
+
+      if (!ehAdmin && transportadoraUsuario) {
+        query = query.ilike('transportadora', transportadoraUsuario.trim());
       }
 
-      if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
-      if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
-      if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
-      if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
-      if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
+      const { data, error } = await query;
+      if (error) throw error;
 
-      const { data: { user } } = await clienteSupabase.auth.getUser();
-      if (!user) return mostrarAlerta('Usuário não autenticado!');
+      console.log('Registros retornados do Supabase:', data);
 
-      try {
-        setSalvando(true);
+      registrosEmAndamento = (data || []).filter(r => !isFinalizado(r.finalizado));
 
+      if (registroSelecionadoId) {
+        const existe = registrosEmAndamento.find(r => String(r.id) === String(registroSelecionadoId));
+        if (!existe) registroSelecionadoId = null;
+      }
+
+      filtrarResultadosBusca();
+    } catch (err) {
+      console.error('Erro ao carregar registros em andamento:', err);
+      mostrarAlerta('Erro ao carregar registros: ' + err.message);
+    }
+  }
+
+  async function abrirRegistroParaContinuar(id) {
+    const registro = registrosEmAndamento.find(r => String(r.id) === String(id));
+    if (!registro) {
+      mostrarAlerta('Registro não encontrado.');
+      return;
+    }
+
+    registroSelecionadoId = id;
+    termoBuscaAtual = document.getElementById('buscaContainer').value || '';
+    filtrarResultadosBusca();
+
+    tipoCargaSelecionado = registro.tipo_carga || '';
+    cargaPulmaoSelecionado = registro.carga_pulmao || '';
+    etapaFluxo = obterEtapaDoRegistro(registro);
+    registroId = registro.id;
+    registroAtual = registro;
+    fotoAtualDataUrl = '';
+    fotoPendenteNome = '';
+    fotoPendenteEtapa = '';
+    modalDepositoAberto = !!(registro.depositado && !isFinalizado(registro.finalizado));
+    fotosSalvas = {
+      ric: registro.foto_url ? { nome: registro.foto_url, url: obterUrlFoto(registro.foto_url) } : null,
+      genset1: registro.genset ? { nome: registro.genset, url: obterUrlFoto(registro.genset) } : null,
+      genset2: registro.liberado ? { nome: registro.liberado, url: obterUrlFoto(registro.liberado) } : null,
+      genset3: registro.depositado ? { nome: registro.depositado, url: obterUrlFoto(registro.depositado) } : null
+    };
+
+    aplicarBotoesAtivos();
+    preencherCamposRestaurados({
+      data_retirada: registro.data_retirada,
+      armador: registro.armador,
+      placa: registro.placa,
+      container: registro.container,
+      ordem: registro.ordem
+    });
+
+    atualizarInterfaceEtapa();
+    restaurarPreviewAtual();
+    renderGaleria();
+    salvarRascunho();
+
+    document.querySelector('.form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    if (modalDepositoAberto) {
+      setTimeout(() => abrirModalDataEtapa('data_finalizado', 'Selecione a data do depósito', registro.data_finalizado || new Date().toISOString().split('T')[0]), 180);
+    }
+  }
+
+  function limparFluxoCompleto() {
+    tipoCargaSelecionado = '';
+    cargaPulmaoSelecionado = '';
+    etapaFluxo = 'ric';
+    registroId = null;
+    registroAtual = null;
+    fotoAtualDataUrl = '';
+    fotoPendenteNome = '';
+    fotoPendenteEtapa = '';
+    modalDepositoAberto = false;
+    modalDataCampo = '';
+    modalDataTitulo = '';
+    fotosSalvas = { ric: null, genset1: null, genset2: null, genset3: null };
+    registroSelecionadoId = null;
+
+    document.getElementById('btnResfriado').classList.remove('active');
+    document.getElementById('btnCongelado').classList.remove('active');
+    document.getElementById('btnCongeladoGenSet').classList.remove('active');
+    document.getElementById('btnCarga').classList.remove('active');
+    document.getElementById('btnPulmao').classList.remove('active');
+
+    document.getElementById('dataRetirada').value = '';
+    document.getElementById('armador').value = '';
+    document.getElementById('placa').value = '';
+    document.getElementById('containerInput').value = '';
+    document.getElementById('ordem').value = '';
+
+    document.getElementById('cameraInput').value = '';
+    document.getElementById('gensetInput').value = '';
+    limparPreviewRic();
+    limparPreviewGenset();
+
+    document.getElementById('grupoCargaPulmao').style.display = 'none';
+    document.getElementById('blocoRic').style.display = 'none';
+    document.getElementById('genset-section').style.display = 'none';
+    document.getElementById('galeriaFotos').innerHTML = '';
+    document.getElementById('galeriaFotos').style.display = 'none';
+
+    document.getElementById('btnSalvar').disabled = true;
+    document.getElementById('btnSalvar').innerText = 'SALVAR';
+
+    limparRascunho();
+    atualizarResumoRegistroAtual();
+    atualizarMensagemEtapa();
+    filtrarResultadosBusca();
+  }
+
+  async function salvarColeta() {
+    if (salvando) return;
+
+    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+
+    if (!cliente) {
+      mostrarAlerta('Erro: O sistema ainda está carregando.');
+      return;
+    }
+
+    if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
+    if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
+    if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
+    if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
+    if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
+
+    const { data: { user } } = await cliente.auth.getUser();
+    if (!user) return mostrarAlerta('Usuário não autenticado!');
+
+    try {
+      setSalvando(true);
+
+      const etapaOrigem = etapaFluxo;
+      const suffix = etapaOrigem === 'ric' ? 'ric' : etapaOrigem;
+      const fileName = await uploadFoto(fotoAtualDataUrl, suffix);
+
+      fotoPendenteNome = fileName;
+      fotoPendenteEtapa = etapaOrigem;
+
+      const defaults = {
+        ric: { campo: 'data_retirada', titulo: 'Selecione a data da retirada' },
+        genset1: { campo: 'data_ag_carregamento', titulo: 'Selecione a data da AG. CARREGAMENTO' },
+        genset2: { campo: 'data_liberado', titulo: 'Selecione a data da LIBERAÇÃO' },
+        genset3: { campo: 'data_finalizado', titulo: 'Selecione a data do depósito' }
+      };
+
+      const cfg = defaults[etapaOrigem];
+      const dataInicial = obterDataInicialParaCampo(cfg.campo);
+
+      if (etapaOrigem === 'ric') {
+        fotosSalvas.ric = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset1') {
+        fotosSalvas.genset1 = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset2') {
+        fotosSalvas.genset2 = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset3') {
+        fotosSalvas.genset3 = { nome: fileName, url: obterUrlFoto(fileName) };
+      }
+
+      salvarRascunho();
+      atualizarInterfaceEtapa();
+      renderGaleria();
+
+      abrirModalDataEtapa(cfg.campo, cfg.titulo, dataInicial);
+      setSalvando(false);
+    } catch (err) {
+      console.error(err);
+      setSalvando(false);
+      mostrarAlerta('Erro ao salvar foto: ' + err.message);
+    }
+  }
+
+  async function confirmarDataDeposito() {
+    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+    const dataEscolhida = document.getElementById('input-data-deposito').value;
+    if (!dataEscolhida) return alert('Selecione uma data.');
+    if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
+    if (!modalDataCampo) return alert('Erro: etapa não encontrada.');
+
+    try {
+      setSalvando(true);
+
+      const { data: { user } } = await cliente.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado.');
+
+      const dataValor = dataEscolhida;
+      const etapa = fotoPendenteEtapa || etapaFluxo;
+
+      if (etapa === 'ric') {
         const campos = obterValoresCampos();
+        const { data: userData } = await cliente
+          .from('usuarios')
+          .select('transportadora')
+          .eq('email', user.email)
+          .single();
 
+        const transportadora = userData ? userData.transportadora : 'N/A';
         let localizacao = 'Sem GPS';
+
         try {
           const pos = await new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -1778,294 +1817,417 @@ body {
           localizacao = 'GPS Bloqueado';
         }
 
-        const { data: userData } = await clienteSupabase
-          .from('usuarios')
-          .select('transportadora')
-          .eq('email', user.email)
-          .single();
+        const insertObj = {
+          email_usuario: user.email,
+          data_retirada: dataValor,
+          armador: campos.armador,
+          container: campos.container || 'N/A',
+          ordem: campos.ordem,
+          placa: campos.placa,
+          carga_pulmao: cargaPulmaoSelecionado,
+          foto_url: fotoPendenteNome,
+          localizacao: localizacao,
+          transportadora: transportadora,
+          status: 'ag. carregamento',
+          finalizado: false,
+          tipo_carga: tipoCargaSelecionado,
+          created_at: new Date().toISOString()
+        };
 
-        const transportadora = userData ? userData.transportadora : 'N/A';
+        const { data: inserted, error: dbError } = await cliente.from('coletas').insert([insertObj]).select().single();
+        if (dbError) throw dbError;
 
-        if (etapaFluxo === 'ric') {
-          const fileNameRIC = await uploadFoto(fotoAtualDataUrl, 'ric');
-
-          const insertObj = {
-            email_usuario: user.email,
-            data_retirada: campos.data_retirada,
-            armador: campos.armador,
-            container: campos.container || 'N/A',
-            ordem: campos.ordem,
-            placa: campos.placa,
-            carga_pulmao: cargaPulmaoSelecionado,
-            foto_url: fileNameRIC,
-            localizacao: localizacao,
-            transportadora: transportadora,
-            status: 'ag. carregamento',
-            finalizado: false,
-            tipo_carga: tipoCargaSelecionado,
-            created_at: new Date().toISOString()
-          };
-
-          const { data: inserted, error: dbError } = await clienteSupabase.from('coletas').insert([insertObj]).select().single();
-          if (dbError) throw dbError;
-
-          registroId = inserted.id;
-          fotosSalvas.ric = { nome: fileNameRIC, url: obterUrlFoto(fileNameRIC) };
-          fotoAtualDataUrl = '';
-          etapaFluxo = 'genset1';
-          salvarRascunho();
-          atualizarInterfaceEtapa();
-          renderGaleria();
-          await carregarRegistrosEmAndamento();
-
-          mostrarAlerta('RIC salvo com sucesso.');
-          return;
-        }
-
-        if (!registroId) {
-          return mostrarAlerta('Erro: registro não encontrado. Salve o RIC novamente.');
-        }
-
-        if (etapaFluxo === 'genset1') {
-          const fileName = await uploadFoto(fotoAtualDataUrl, 'genset_1');
-          const { error } = await clienteSupabase.from('coletas').update({
-            genset: fileName,
-            status: 'ag. carregamento',
-            finalizado: false
-          }).eq('id', registroId);
-
-          if (error) throw error;
-
-          fotosSalvas.genset1 = { nome: fileName, url: obterUrlFoto(fileName) };
-          fotoAtualDataUrl = '';
-          etapaFluxo = 'genset2';
-          salvarRascunho();
-          atualizarInterfaceEtapa();
-          renderGaleria();
-          await carregarRegistrosEmAndamento();
-
-          mostrarAlerta('Foto salva.');
-          return;
-        }
-
-        if (etapaFluxo === 'genset2') {
-          const fileName = await uploadFoto(fotoAtualDataUrl, 'genset_2');
-          const { error } = await clienteSupabase.from('coletas').update({
-            liberado: fileName,
-            status: 'liberado',
-            finalizado: false
-          }).eq('id', registroId);
-
-          if (error) throw error;
-
-          fotosSalvas.genset2 = { nome: fileName, url: obterUrlFoto(fileName) };
-          fotoAtualDataUrl = '';
-          etapaFluxo = 'genset3';
-          salvarRascunho();
-          atualizarInterfaceEtapa();
-          renderGaleria();
-          await carregarRegistrosEmAndamento();
-
-          mostrarAlerta('Foto salva.');
-          return;
-        }
-
-        if (etapaFluxo === 'genset3') {
-          const fileName = await uploadFoto(fotoAtualDataUrl, 'genset_3');
-          const { error } = await clienteSupabase.from('coletas').update({
-            depositado: fileName
-          }).eq('id', registroId);
-
-          if (error) throw error;
-
-          fotosSalvas.genset3 = { nome: fileName, url: obterUrlFoto(fileName) };
-          fotoPendenteNome = fileName;
-          fotoAtualDataUrl = '';
-          salvarRascunho();
-          atualizarInterfaceEtapa();
-          renderGaleria();
-          await carregarRegistrosEmAndamento();
-          abrirModalDeposito();
-          return;
-        }
-      } catch (err) {
-        console.error(err);
-        mostrarAlerta('Erro ao salvar: ' + err.message);
-      } finally {
-        setSalvando(false);
-      }
-    }
-
-    async function confirmarDataDeposito() {
-      const dataEscolhida = document.getElementById('input-data-deposito').value;
-      if (!dataEscolhida) return alert('Selecione uma data.');
-      if (!registroId || !fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
-
-      try {
-        const { error } = await clienteSupabase.from('coletas').update({
-          status: 'depositado',
-          finalizado: true,
-          data_finalizado: new Date(dataEscolhida + 'T12:00:00').toISOString()
-        }).eq('id', registroId);
-
-        if (error) throw error;
+        registroId = inserted.id;
+        registroAtual = inserted;
+        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+        etapaFluxo = 'genset1';
 
         fecharModalDeposito();
+        fotoAtualDataUrl = '';
+        fotoPendenteNome = '';
+        fotoPendenteEtapa = '';
+        salvarRascunho();
+        atualizarInterfaceEtapa();
+        renderGaleria();
         await carregarRegistrosEmAndamento();
 
+        mostrarAlerta('RIC salvo com sucesso.');
+        return;
+      }
+
+      if (!registroId) {
+        throw new Error('Registro não encontrado. Salve o RIC novamente.');
+      }
+
+      const updateObj = {};
+
+      if (modalDataCampo === 'data_ag_carregamento') {
+        updateObj.genset = fotoPendenteNome;
+        updateObj.status = 'ag. carregamento';
+        updateObj.finalizado = false;
+        updateObj.data_ag_carregamento = dataValor;
+        etapaFluxo = 'genset2';
+        fotosSalvas.genset1 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+
+      if (modalDataCampo === 'data_liberado') {
+        updateObj.liberado = fotoPendenteNome;
+        updateObj.status = 'liberado';
+        updateObj.finalizado = false;
+        updateObj.data_liberado = dataValor;
+        etapaFluxo = 'genset3';
+        fotosSalvas.genset2 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+
+      if (modalDataCampo === 'data_finalizado') {
+        updateObj.depositado = fotoPendenteNome;
+        updateObj.status = 'depositado';
+        updateObj.finalizado = true;
+        updateObj.data_finalizado = dataValor;
+        fotosSalvas.genset3 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+
+      const { error } = await cliente.from('coletas').update(updateObj).eq('id', registroId);
+      if (error) throw error;
+
+      registroAtual = { ...(registroAtual || {}), ...updateObj, id: registroId };
+
+      fecharModalDeposito();
+      fotoAtualDataUrl = '';
+      fotoPendenteNome = '';
+      fotoPendenteEtapa = '';
+      salvarRascunho();
+      atualizarInterfaceEtapa();
+      renderGaleria();
+      await carregarRegistrosEmAndamento();
+
+      if (modalDataCampo === 'data_ag_carregamento') {
+        mostrarAlerta('Data da AG. CARREGAMENTO salva com sucesso.');
+        return;
+      }
+
+      if (modalDataCampo === 'data_liberado') {
+        mostrarAlerta('Data da LIBERAÇÃO salva com sucesso.');
+        return;
+      }
+
+      if (modalDataCampo === 'data_finalizado') {
         mostrarAlerta('Registro finalizado com sucesso. Pronto para um novo registro.', function () {
           limparFluxoCompleto();
         });
-      } catch (err) {
-        console.error(err);
-        mostrarAlerta('Erro ao salvar depósito: ' + err.message);
-      }
-    }
-
-    function novoRegistro() {
-      const temAlgo = !!registroId || !!tipoCargaSelecionado || !!cargaPulmaoSelecionado || !!fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean);
-      if (temAlgo) {
-        abrirModalConfirmacaoNovoRegistro(() => {
-          limparFluxoCompleto();
-        });
         return;
       }
-      limparFluxoCompleto();
+    } catch (err) {
+      console.error(err);
+      mostrarAlerta('Erro ao salvar data: ' + err.message);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  function novoRegistro() {
+    const temAlgo = !!registroId || !!tipoCargaSelecionado || !!cargaPulmaoSelecionado || !!fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean);
+    if (temAlgo) {
+      abrirModalConfirmacaoNovoRegistro(() => {
+        limparFluxoCompleto();
+      });
+      return;
+    }
+    limparFluxoCompleto();
+  }
+
+  function voltar() {
+    salvarRascunho();
+    window.location.href = 'index.html';
+  }
+
+  function buscarContainers() {
+    termoBuscaAtual = document.getElementById('buscaContainer').value || '';
+    salvarRascunho();
+    filtrarResultadosBusca();
+  }
+
+  function limparBusca() {
+    termoBuscaAtual = '';
+    registroSelecionadoId = null;
+    document.getElementById('buscaContainer').value = '';
+    salvarRascunho();
+    filtrarResultadosBusca();
+  }
+
+  async function restaurarRascunho() {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) {
+      atualizarInterfaceEtapa();
+      return;
     }
 
-    function voltar() {
-      salvarRascunho();
+    try {
+      const draft = JSON.parse(raw);
+      tipoCargaSelecionado = draft.tipoCargaSelecionado || '';
+      cargaPulmaoSelecionado = draft.cargaPulmaoSelecionado || '';
+      etapaFluxo = draft.etapaFluxo || 'ric';
+      registroId = draft.registroId || null;
+      registroAtual = draft.registroAtual || null;
+      fotoAtualDataUrl = draft.fotoAtualDataUrl || '';
+      fotoPendenteNome = draft.fotoPendenteNome || '';
+      fotoPendenteEtapa = draft.fotoPendenteEtapa || '';
+      modalDepositoAberto = !!draft.modalDepositoAberto;
+      modalDataCampo = draft.modalDataCampo || '';
+      modalDataTitulo = draft.modalDataTitulo || '';
+      fotosSalvas = draft.fotosSalvas || { ric: null, genset1: null, genset2: null, genset3: null };
+      termoBuscaAtual = draft.termoBuscaAtual || '';
+      registroSelecionadoId = draft.registroSelecionadoId || null;
+
+      if (draft.campos) preencherCamposRestaurados(draft.campos);
+
+      if (tipoCargaSelecionado) {
+        const map = {
+          'Resfriado': 'btnResfriado',
+          'Congelado com GenSet': 'btnCongeladoGenSet',
+          'Congelado': 'btnCongelado'
+        };
+        const id = map[tipoCargaSelecionado];
+        if (id) document.getElementById(id).classList.add('active');
+      }
+
+      if (cargaPulmaoSelecionado) {
+        const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
+        if (id) document.getElementById(id).classList.add('active');
+      }
+
+      document.getElementById('buscaContainer').value = termoBuscaAtual || '';
+      filtrarResultadosBusca();
+
+      atualizarInterfaceEtapa();
+      restaurarPreviewAtual();
+      renderGaleria();
+
+      if (modalDepositoAberto && modalDataCampo) {
+        setTimeout(() => abrirModalDataEtapa(modalDataCampo, modalDataTitulo || 'Selecione a data', obterDataInicialParaCampo(modalDataCampo)), 180);
+      }
+    } catch (e) {
+      console.warn('Falha ao restaurar rascunho:', e);
+      atualizarInterfaceEtapa();
+    }
+  }
+
+  async function verificarAcesso() {
+    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+    if (!cliente) return false;
+
+    const { data: { user } } = await cliente.auth.getUser();
+    if (!user) {
+      window.location.href = 'login.html';
+      return false;
+    }
+
+    usuarioLogado = user;
+
+    const { data: userData } = await cliente
+      .from('usuarios')
+      .select('perfil, status, transportadora')
+      .eq('email', user.email)
+      .single();
+
+    if (!userData) {
+      alert('Acesso negado.');
       window.location.href = 'index.html';
+      return false;
     }
 
-    function buscarContainers() {
-      termoBuscaAtual = document.getElementById('buscaContainer').value || '';
+    perfilUsuario = (userData.perfil || '').trim().toLowerCase();
+    const status = (userData.status || '').trim().toLowerCase();
+    transportadoraUsuario = (userData.transportadora || '').trim();
+
+    const ehMaster = perfilUsuario === 'master' || perfilUsuario === 'mestre';
+    ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
+    const ehTransportadora = !!transportadoraUsuario;
+
+    if (!ehAdmin && !ehTransportadora) {
+      alert('Acesso negado.');
+      window.location.href = 'index.html';
+      return false;
+    }
+
+    return true;
+  }
+
+  function fecharModalFoto() {
+    document.getElementById('modal-foto').style.display = 'none';
+    const img = document.getElementById('foto-modal-img');
+    img.src = '';
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    fotoIsDragging = false;
+    fotoTouchLastDist = null;
+  }
+
+  function abrirModalFoto(src, titulo) {
+    const img = document.getElementById('foto-modal-img');
+    const label = document.getElementById('foto-modal-title');
+
+    label.textContent = titulo || '';
+    img.src = src;
+
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    fotoTouchLastDist = null;
+    fotoTouchStartZoom = 1;
+
+    document.getElementById('modal-foto').style.display = 'flex';
+
+    img.onload = () => {
+      requestAnimationFrame(() => ajustarFotoParaTela());
+    };
+
+    setTimeout(() => {
+      if (img.complete) ajustarFotoParaTela();
+    }, 120);
+  }
+
+  function dataAtualInput() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  function sincronizarBotaoSalvar() {
+    const btn = document.getElementById('btnSalvar');
+    btn.disabled = !fotoAtualDataUrl || salvando || modalDepositoAberto;
+  }
+
+  function limparTextoBusca() {
+    limparBusca();
+  }
+
+  function onFileChangeRic(e) {
+    return (async function() {
+      if (etapaFluxo !== 'ric') return;
+      const file = e.target.files[0];
+      if (!file) return;
+
+      fotoAtualDataUrl = await comprimirImagem(file);
       salvarRascunho();
-      filtrarResultadosBusca();
-    }
 
-    function limparBusca() {
-      termoBuscaAtual = '';
-      registroSelecionadoId = null;
-      document.getElementById('buscaContainer').value = '';
+      const img = document.getElementById('preview');
+      img.src = fotoAtualDataUrl;
+      img.style.display = 'block';
+      img.onclick = () => abrirModalFoto(fotoAtualDataUrl, 'RIC');
+      atualizarInterfaceEtapa();
+    })();
+  }
+
+  function onFileChangeGenset(e) {
+    return (async function() {
+      if (etapaFluxo === 'ric') return;
+      const file = e.target.files[0];
+      if (!file) return;
+
+      fotoAtualDataUrl = await comprimirImagem(file);
       salvarRascunho();
-      filtrarResultadosBusca();
-    }
 
-    async function restaurarRascunho() {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) {
+      const img = document.getElementById('gensetPreview');
+      img.src = fotoAtualDataUrl;
+      img.style.display = 'block';
+      img.onclick = () => abrirModalFoto(fotoAtualDataUrl, textoEtapa(etapaFluxo));
+      atualizarInterfaceEtapa();
+    })();
+  }
+
+  function ajustarEventosArquivo() {
+    document.getElementById('cameraInput').addEventListener('change', onFileChangeRic);
+    document.getElementById('gensetInput').addEventListener('change', onFileChangeGenset);
+  }
+
+  function sincronizarCamposInput() {
+    ['dataRetirada', 'armador', 'placa', 'containerInput', 'ordem'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => {
+        salvarRascunho();
         atualizarInterfaceEtapa();
-        return;
-      }
+      });
+      el.addEventListener('change', () => {
+        salvarRascunho();
+        atualizarInterfaceEtapa();
+      });
+    });
+  }
 
-      try {
-        const draft = JSON.parse(raw);
-        tipoCargaSelecionado = draft.tipoCargaSelecionado || '';
-        cargaPulmaoSelecionado = draft.cargaPulmaoSelecionado || '';
-        etapaFluxo = draft.etapaFluxo || 'ric';
-        registroId = draft.registroId || null;
-        fotoAtualDataUrl = draft.fotoAtualDataUrl || '';
-        fotoPendenteNome = draft.fotoPendenteNome || '';
-        modalDepositoAberto = !!draft.modalDepositoAberto;
-        fotosSalvas = draft.fotosSalvas || { ric: null, genset1: null, genset2: null, genset3: null };
-        termoBuscaAtual = draft.termoBuscaAtual || '';
-        registroSelecionadoId = draft.registroSelecionadoId || null;
-
-        if (draft.campos) preencherCamposRestaurados(draft.campos);
-
-        if (tipoCargaSelecionado) {
-          const map = {
-            'Resfriado': 'btnResfriado',
-            'Congelado com GenSet': 'btnCongeladoGenSet',
-            'Congelado': 'btnCongelado'
-          };
-          const id = map[tipoCargaSelecionado];
-          if (id) document.getElementById(id).classList.add('active');
-        }
-
-        if (cargaPulmaoSelecionado) {
-          const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
-          document.getElementById(id).classList.add('active');
-        }
-
-        document.getElementById('buscaContainer').value = termoBuscaAtual || '';
+  function sincronizarBusca() {
+    document.getElementById('buscaContainer').addEventListener('input', function() {
+      termoBuscaAtual = this.value || '';
+      salvarRascunho();
+      clearTimeout(debounceBusca);
+      debounceBusca = setTimeout(() => {
         filtrarResultadosBusca();
+      }, 150);
+    });
 
-        atualizarInterfaceEtapa();
-        restaurarPreviewAtual();
-        renderGaleria();
-
-        if (modalDepositoAberto && fotoPendenteNome) {
-          setTimeout(() => abrirModalDeposito(), 180);
+    document.getElementById('buscaContainer').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (resultadosFiltrados.length === 1) {
+          abrirRegistroParaContinuar(resultadosFiltrados[0].id);
+        } else {
+          buscarContainers();
         }
-      } catch (e) {
-        console.warn('Falha ao restaurar rascunho:', e);
-        atualizarInterfaceEtapa();
       }
+    });
+  }
+
+  function vincularModalFoto() {
+    const modal = document.getElementById('modal-foto');
+    const box = document.getElementById('foto-box');
+    if (!modal || !box) return;
+
+    box.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+  }
+
+  function getEffectiveStatus(reg) {
+    if (isFinalizado(reg.finalizado)) return 'depositado';
+    const st = normalizarTexto(reg.status);
+    if (st === 'depositado' || st === 'liberado' || st === 'ag. carregamento') return st;
+    if (!reg.foto_url) return 'ag. carregamento';
+    if (reg.foto_url && !reg.genset) return 'ag. carregamento';
+    if (reg.genset && !reg.liberado) return 'ag. carregamento';
+    if (reg.liberado && !reg.depositado) return 'liberado';
+    if (reg.depositado) return 'depositado';
+    return st || 'ag. carregamento';
+  }
+
+  function fecharModalDepositoAntigo() {
+    fecharModalDeposito();
+  }
+
+  window.addEventListener('click', function(e) {
+    if (e.target === document.getElementById('modal-foto')) fecharModalFoto();
+    if (e.target === document.getElementById('modal-data-deposito')) fecharModalDeposito();
+    if (e.target === document.getElementById('confirmNovoRegistro')) responderConfirmNovoRegistro(false);
+  });
+
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      fecharModalFoto();
+      fecharModalDeposito();
+      responderConfirmNovoRegistro(false);
     }
+  });
 
-    async function verificarAcesso() {
-      if (!clienteSupabase) return false;
+  window.addEventListener('beforeunload', () => {
+    salvarRascunho();
+  });
 
-      const { data: { user } } = await clienteSupabase.auth.getUser();
-      if (!user) {
-        window.location.href = 'login.html';
-        return false;
-      }
-
-      usuarioLogado = user;
-
-      const { data: userData } = await clienteSupabase
-        .from('usuarios')
-        .select('perfil, status, transportadora')
-        .eq('email', user.email)
-        .single();
-
-      if (!userData) {
-        alert('Acesso negado.');
-        window.location.href = 'index.html';
-        return false;
-      }
-
-      perfilUsuario = (userData.perfil || '').trim().toLowerCase();
-      const status = (userData.status || '').trim().toLowerCase();
-      transportadoraUsuario = (userData.transportadora || '').trim();
-
-      const ehMaster = perfilUsuario === 'master' || perfilUsuario === 'mestre';
-      ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
-      const ehTransportadora = !!transportadoraUsuario;
-
-      if (!ehAdmin && !ehTransportadora) {
-        alert('Acesso negado.');
-        window.location.href = 'index.html';
-        return false;
-      }
-
-      return true;
-    }
-
-    window.addEventListener('click', function(e) {
-      if (e.target === document.getElementById('modal-foto')) fecharModalFoto();
-      if (e.target === document.getElementById('modal-data-deposito')) fecharModalDeposito();
-      if (e.target === document.getElementById('confirmNovoRegistro')) responderConfirmNovoRegistro(false);
-    });
-
-    window.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        fecharModalFoto();
-        fecharModalDeposito();
-        responderConfirmNovoRegistro(false);
-      }
-    });
-
-    window.addEventListener('beforeunload', () => {
-      salvarRascunho();
-    });
-
-    window.addEventListener('load', async () => {
+  window.addEventListener('load', async () => {
+    try {
       document.getElementById('buscaContainer').value = '';
       registrarEventosZoom();
+      ajustarEventosArquivo();
+      sincronizarCamposInput();
+      sincronizarBusca();
+      vincularModalFoto();
 
       if (await verificarAcesso()) {
         await carregarRegistrosEmAndamento();
@@ -2080,7 +2242,25 @@ body {
           }
         }, 20000);
       }
-    });
-  </script></div>
+    } catch (err) {
+      console.error('Erro ao iniciar a tela:', err);
+      mostrarAlerta('Erro ao iniciar a tela: ' + err.message);
+    }
+  });
+
+  window.novoRegistro = novoRegistro;
+  window.voltar = voltar;
+  window.selecionarTipoCarga = selecionarTipoCarga;
+  window.selecionarCargaPulmao = selecionarCargaPulmao;
+  window.acionarCamera = acionarCamera;
+  window.salvarColeta = salvarColeta;
+  window.confirmarDataDeposito = confirmarDataDeposito;
+  window.fecharModalDeposito = fecharModalDeposito;
+  window.fecharModalFoto = fecharModalFoto;
+  window.buscarContainers = buscarContainers;
+  window.limparBusca = limparBusca;
+  window.fecharAlerta = fecharAlerta;
+  window.responderConfirmNovoRegistro = responderConfirmNovoRegistro;
+</script>
 </body>
 </html>
