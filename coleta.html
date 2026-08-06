@@ -1697,8 +1697,9 @@
     filtrarResultadosBusca();
   }
 
-  function mostrarMensagemFotoSalva(msg, callback) {
-    mostrarAlerta(msg || 'Foto salva com sucesso.', callback);
+  function mostrarMensagemFotoSalva(etapaNome, callback) {
+    const etapaTexto = (etapaNome || '').toUpperCase();
+    mostrarAlerta(`Foto salva com sucesso (${etapaTexto}).`, callback);
   }
 
   async function salvarColeta() {
@@ -1850,9 +1851,7 @@
         renderGaleria();
         await carregarRegistrosEmAndamento();
 
-        mostrarMensagemFotoSalva('Foto salva com sucesso.', function () {
-          // continua normalmente para a próxima etapa
-        });
+        mostrarMensagemFotoSalva('RIC');
         return;
       }
 
@@ -1903,18 +1902,18 @@
       await carregarRegistrosEmAndamento();
 
       if (modalDataCampo === 'data_ag_carregamento') {
-        mostrarMensagemFotoSalva('Foto salva com sucesso. Próxima etapa liberada.');
+        mostrarMensagemFotoSalva('AG. CARREGAMENTO');
         return;
       }
 
       if (modalDataCampo === 'data_liberado') {
-        mostrarMensagemFotoSalva('Foto salva com sucesso. Próxima etapa liberada.');
+        mostrarMensagemFotoSalva('LIBERADO');
         return;
       }
 
       if (modalDataCampo === 'data_finalizado') {
-        mostrarMensagemFotoSalva('Foto salva com sucesso.', function () {
-          mostrarAlerta('Registro finalizado com sucesso. Você já pode começar um novo registro.', function () {
+        mostrarMensagemFotoSalva('DEPOSITADO', function () {
+          mostrarAlerta('Você já pode fazer um novo registro.', function () {
             limparFluxoCompleto();
           });
         });
@@ -1996,7 +1995,7 @@
 
       if (cargaPulmaoSelecionado) {
         const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
-        document.getElementById(id).classList.add('active');
+        if (id) document.getElementById(id).classList.add('active');
       }
 
       document.getElementById('buscaContainer').value = termoBuscaAtual || '';
