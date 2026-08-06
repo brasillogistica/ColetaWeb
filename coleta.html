@@ -1691,10 +1691,22 @@
     }
 
     usuarioLogado = user;
-    const isMasterEmail = normalizarTexto(user.email) === EMAIL_MASTER;
+
+    const emailNormalizado = normalizarTexto(user.email);
+    const isMasterEmail = emailNormalizado === EMAIL_MASTER;
     let userData = await buscarUsuarioPorEmail(cliente, user.email);
 
-    if (!userData && isMasterEmail) {
+    // Fallbacks para não bloquear usuários que antes acessavam
+    if (!userData) {
+      userData = {
+        perfil: user.user_metadata?.perfil || 'administrador',
+        status: user.user_metadata?.status || 'aprovado',
+        transportadora: user.user_metadata?.transportadora || 'Minerva Foods',
+        nome: user.user_metadata?.full_name || user.email
+      };
+    }
+
+    if (isMasterEmail) {
       userData = {
         perfil: 'master',
         status: 'aprovado',
@@ -1703,13 +1715,8 @@
       };
     }
 
-    if (!userData) {
-      alert('Acesso negado.');
-      window.location.href = 'index.html';
-      return false;
-    }
-
     const { ehMaster, ehTransportadora } = setUsuarioLogadoDados(userData, user);
+
     if (!ehAdmin && !ehTransportadora && !ehMaster) {
       alert('Acesso negado.');
       window.location.href = 'index.html';
