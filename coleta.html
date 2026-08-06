@@ -821,7 +821,7 @@
 <script>
   const DRAFT_KEY = 'coletaweb_draft_v13';
   const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
-  const ETAPAS = ['ric', 'genset1', 'genset2', 'genset3'];
+  const EMAIL_MASTER = 'leandro.brasil@minervafoods.com';
 
   let tipoCargaSelecionado = '';
   let cargaPulmaoSelecionado = '';
@@ -1609,432 +1609,48 @@
     }
   }
 
-  async function abrirRegistroParaContinuar(id) {
-    const registro = registrosEmAndamento.find(r => String(r.id) === String(id));
-    if (!registro) {
-      mostrarAlerta('Registro não encontrado.');
-      return;
-    }
+  function setUsuarioLogadoDados(userData, user) {
+    perfilUsuario = (userData?.perfil || '').trim().toLowerCase();
+    const status = (userData?.status || '').trim().toLowerCase();
+    transportadoraUsuario = (userData?.transportadora || '').trim();
+    nomeUsuarioLogado = userData?.nome || user?.user_metadata?.full_name || user?.email || 'Usuário';
 
-    registroSelecionadoId = id;
-    termoBuscaAtual = document.getElementById('buscaContainer').value || '';
-    filtrarResultadosBusca();
+    const ehMaster = normalizarTexto(user?.email) === EMAIL_MASTER || perfilUsuario === 'master' || perfilUsuario === 'mestre';
+    ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
+    const ehTransportadora = !!transportadoraUsuario;
 
-    tipoCargaSelecionado = registro.tipo_carga || '';
-    cargaPulmaoSelecionado = registro.carga_pulmao || '';
-    etapaFluxo = obterEtapaDoRegistro(registro);
-    registroId = registro.id;
-    registroAtual = registro;
-    fotoAtualDataUrl = '';
-    fotoPendenteNome = '';
-    fotoPendenteEtapa = '';
-    modalDepositoAberto = !!(registro.depositado && !isFinalizado(registro.finalizado));
-    fotosSalvas = {
-      ric: registro.foto_url ? { nome: registro.foto_url, url: obterUrlFoto(registro.foto_url) } : null,
-      genset1: registro.genset ? { nome: registro.genset, url: obterUrlFoto(registro.genset) } : null,
-      genset2: registro.liberado ? { nome: registro.liberado, url: obterUrlFoto(registro.liberado) } : null,
-      genset3: registro.depositado ? { nome: registro.depositado, url: obterUrlFoto(registro.depositado) } : null
-    };
-
-    aplicarBotoesAtivos();
-    preencherCamposRestaurados({
-      data_retirada: registro.data_retirada,
-      armador: registro.armador,
-      placa: registro.placa,
-      container: registro.container,
-      ordem: registro.ordem
-    });
-
-    atualizarInterfaceEtapa();
-    restaurarPreviewAtual();
-    renderGaleria();
-    salvarRascunho();
-
-    document.querySelector('.form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    if (modalDepositoAberto) {
-      setTimeout(() => abrirModalDataEtapa('data_finalizado', 'Selecione a data do depósito', registro.data_finalizado || new Date().toISOString().split('T')[0]), 180);
-    }
+    return { ehMaster, ehTransportadora };
   }
 
-  function limparFluxoCompleto() {
-    tipoCargaSelecionado = '';
-    cargaPulmaoSelecionado = '';
-    etapaFluxo = 'ric';
-    registroId = null;
-    registroAtual = null;
-    fotoAtualDataUrl = '';
-    fotoPendenteNome = '';
-    fotoPendenteEtapa = '';
-    modalDepositoAberto = false;
-    modalDataCampo = '';
-    modalDataTitulo = '';
-    fotosSalvas = { ric: null, genset1: null, genset2: null, genset3: null };
-    registroSelecionadoId = null;
-    termoBuscaAtual = '';
+  async function buscarUsuarioPorEmail(cliente, email) {
+    try {
+      const { data, error } = await cliente
+        .from('usuarios')
+        .select('perfil, status, transportadora, nome')
+        .eq('email', email)
+        .maybeSingle();
 
-    document.getElementById('btnResfriado').classList.remove('active');
-    document.getElementById('btnCongelado').classList.remove('active');
-    document.getElementById('btnCongeladoGenSet').classList.remove('active');
-    document.getElementById('btnCarga').classList.remove('active');
-    document.getElementById('btnPulmao').classList.remove('active');
-
-    document.getElementById('dataRetirada').value = '';
-    document.getElementById('armador').value = '';
-    document.getElementById('placa').value = '';
-    document.getElementById('containerInput').value = '';
-    document.getElementById('ordem').value = '';
-    document.getElementById('buscaContainer').value = '';
-
-    document.getElementById('cameraInput').value = '';
-    document.getElementById('gensetInput').value = '';
-    limparPreviewRic();
-    limparPreviewGenset();
-
-    document.getElementById('grupoCargaPulmao').style.display = 'none';
-    document.getElementById('blocoRic').style.display = 'none';
-    document.getElementById('genset-section').style.display = 'none';
-    document.getElementById('galeriaFotos').innerHTML = '';
-    document.getElementById('galeriaFotos').style.display = 'none';
-
-    document.getElementById('btnSalvar').disabled = true;
-    document.getElementById('btnSalvar').innerText = 'SALVAR';
-
-    limparRascunho();
-    atualizarResumoRegistroAtual();
-    atualizarMensagemEtapa();
-    filtrarResultadosBusca();
-  }
-
-  function mostrarMensagemFotoSalva(etapaNome) {
-    const etapaTexto = (etapaNome || '').toUpperCase();
-    mostrarAlerta(`Foto salva com sucesso (${etapaTexto}).`);
-  }
-
-  function mostrarMensagemFinalNovoRegistro() {
-    const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
-    mostrarAlerta(`${nome} pode fazer um novo registro.`, function () {
-      limparFluxoCompleto();
-    });
-  }
-
-  async function salvarColeta() {
-    if (salvando) return;
-
-    if (!clienteSupabase) {
-      mostrarAlerta('Erro: O sistema ainda está carregando.');
-      return;
-    }
-
-    if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
-    if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
-    if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
-    if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
-    if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
-
-    const { data: { user } } = await clienteSupabase.auth.getUser();
-    if (!user) return mostrarAlerta('Usuário não autenticado!');
+      if (!error && data) return data;
+    } catch (e) {}
 
     try {
-      setSalvando(true);
+      const { data, error } = await cliente
+        .from('usuarios')
+        .select('perfil, status, transportadora, nome')
+        .eq('email_usuario', email)
+        .maybeSingle();
 
-      const etapaOrigem = etapaFluxo;
-      const suffix = etapaOrigem === 'ric' ? 'ric' : etapaOrigem;
-      const fileName = await uploadFoto(fotoAtualDataUrl, suffix);
+      if (!error && data) return data;
+    } catch (e) {}
 
-      fotoPendenteNome = fileName;
-      fotoPendenteEtapa = etapaOrigem;
-
-      const defaults = {
-        ric: { campo: 'data_retirada', titulo: 'Selecione a data da retirada' },
-        genset1: { campo: 'data_ag_carregamento', titulo: 'Selecione a data da AG. CARREGAMENTO' },
-        genset2: { campo: 'data_liberado', titulo: 'Selecione a data da LIBERAÇÃO' },
-        genset3: { campo: 'data_finalizado', titulo: 'Selecione a data do depósito' }
-      };
-
-      const cfg = defaults[etapaOrigem];
-      const dataInicial = obterDataInicialParaCampo(cfg.campo);
-
-      if (etapaOrigem === 'ric') {
-        fotosSalvas.ric = { nome: fileName, url: obterUrlFoto(fileName) };
-      } else if (etapaOrigem === 'genset1') {
-        fotosSalvas.genset1 = { nome: fileName, url: obterUrlFoto(fileName) };
-      } else if (etapaOrigem === 'genset2') {
-        fotosSalvas.genset2 = { nome: fileName, url: obterUrlFoto(fileName) };
-      } else if (etapaOrigem === 'genset3') {
-        fotosSalvas.genset3 = { nome: fileName, url: obterUrlFoto(fileName) };
-      }
-
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-      renderGaleria();
-
-      abrirModalDataEtapa(cfg.campo, cfg.titulo, dataInicial);
-      setSalvando(false);
-    } catch (err) {
-      console.error(err);
-      setSalvando(false);
-      mostrarAlerta('Erro ao salvar foto: ' + err.message);
-    }
-  }
-
-  async function confirmarDataDeposito() {
-    const dataEscolhida = document.getElementById('input-data-deposito').value;
-    if (!dataEscolhida) return alert('Selecione uma data.');
-    if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
-    if (!modalDataCampo) return alert('Erro: etapa não encontrada.');
-
-    try {
-      setSalvando(true);
-
-      const { data: { user } } = await clienteSupabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado.');
-
-      const dataValor = dataEscolhida;
-      const etapa = fotoPendenteEtapa || etapaFluxo;
-
-      if (etapa === 'ric') {
-        const campos = obterValoresCampos();
-        const { data: userData } = await clienteSupabase
-          .from('usuarios')
-          .select('transportadora, nome')
-          .eq('email', user.email)
-          .single();
-
-        const transportadora = userData ? userData.transportadora : 'N/A';
-        nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
-
-        let localizacao = 'Sem GPS';
-
-        try {
-          const pos = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              enableHighAccuracy: true,
-              timeout: 10000
-            });
-          });
-
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-          const data = await response.json();
-
-          if (data && data.address) {
-            const addr = data.address;
-            const rua = addr.road || '';
-            const num = addr.house_number || '';
-            const bairro = addr.suburb || addr.neighbourhood || '';
-            const cidadeGps = addr.city || addr.town || '';
-            const estado = addr.state || addr.state_district || '';
-            localizacao = [rua, num, bairro, cidadeGps, estado].filter(Boolean).join(' - ');
-          } else {
-            localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-          }
-        } catch (e) {
-          console.warn('GPS bloqueado ou falhou:', e);
-          localizacao = 'GPS Bloqueado';
-        }
-
-        const insertObj = {
-          email_usuario: user.email,
-          data_retirada: dataValor,
-          armador: campos.armador,
-          container: campos.container || 'N/A',
-          ordem: campos.ordem,
-          placa: campos.placa,
-          carga_pulmao: cargaPulmaoSelecionado,
-          foto_url: fotoPendenteNome,
-          localizacao: localizacao,
-          transportadora: transportadora,
-          status: 'ag. carregamento',
-          finalizado: false,
-          tipo_carga: tipoCargaSelecionado,
-          created_at: new Date().toISOString()
-        };
-
-        const { data: inserted, error: dbError } = await clienteSupabase.from('coletas').insert([insertObj]).select().single();
-        if (dbError) throw dbError;
-
-        registroId = inserted.id;
-        registroAtual = inserted;
-        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-        etapaFluxo = 'genset1';
-
-        fecharModalDeposito();
-        fotoAtualDataUrl = '';
-        fotoPendenteNome = '';
-        fotoPendenteEtapa = '';
-        salvarRascunho();
-        atualizarInterfaceEtapa();
-        renderGaleria();
-        await carregarRegistrosEmAndamento();
-
-        mostrarMensagemFotoSalva('RIC');
-        return;
-      }
-
-      if (!registroId) {
-        throw new Error('Registro não encontrado. Salve o RIC novamente.');
-      }
-
-      const updateObj = {};
-
-      if (modalDataCampo === 'data_ag_carregamento') {
-        updateObj.genset = fotoPendenteNome;
-        updateObj.status = 'ag. carregamento';
-        updateObj.finalizado = false;
-        updateObj.data_ag_carregamento = dataValor;
-        etapaFluxo = 'genset2';
-        fotosSalvas.genset1 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-
-      if (modalDataCampo === 'data_liberado') {
-        updateObj.liberado = fotoPendenteNome;
-        updateObj.status = 'liberado';
-        updateObj.finalizado = false;
-        updateObj.data_liberado = dataValor;
-        etapaFluxo = 'genset3';
-        fotosSalvas.genset2 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-
-      if (modalDataCampo === 'data_finalizado') {
-        updateObj.depositado = fotoPendenteNome;
-        updateObj.status = 'depositado';
-        updateObj.finalizado = true;
-        updateObj.data_finalizado = dataValor;
-        fotosSalvas.genset3 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
-      }
-
-      const { error } = await clienteSupabase.from('coletas').update(updateObj).eq('id', registroId);
-      if (error) throw error;
-
-      registroAtual = { ...(registroAtual || {}), ...updateObj, id: registroId };
-
-      fecharModalDeposito();
-      fotoAtualDataUrl = '';
-      fotoPendenteNome = '';
-      fotoPendenteEtapa = '';
-      salvarRascunho();
-      atualizarInterfaceEtapa();
-      renderGaleria();
-      await carregarRegistrosEmAndamento();
-
-      if (modalDataCampo === 'data_ag_carregamento') {
-        mostrarMensagemFotoSalva('AG. CARREGAMENTO');
-        return;
-      }
-
-      if (modalDataCampo === 'data_liberado') {
-        mostrarMensagemFotoSalva('LIBERADO');
-        return;
-      }
-
-      if (modalDataCampo === 'data_finalizado') {
-        mostrarMensagemFotoSalva('DEPOSITADO');
-        setTimeout(() => {
-          mostrarMensagemFinalNovoRegistro();
-        }, 250);
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-      mostrarAlerta('Erro ao salvar data: ' + err.message);
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  function novoRegistro() {
-    const temAlgo = !!registroId || !!tipoCargaSelecionado || !!cargaPulmaoSelecionado || !!fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean);
-    if (temAlgo) {
-      abrirModalConfirmacaoNovoRegistro(() => {
-        limparFluxoCompleto();
-      });
-      return;
-    }
-    limparFluxoCompleto();
-  }
-
-  function voltar() {
-    salvarRascunho();
-    window.location.href = 'index.html';
-  }
-
-  function buscarContainers() {
-    termoBuscaAtual = document.getElementById('buscaContainer').value || '';
-    salvarRascunho();
-    filtrarResultadosBusca();
-  }
-
-  function limparBusca() {
-    termoBuscaAtual = '';
-    registroSelecionadoId = null;
-    document.getElementById('buscaContainer').value = '';
-    salvarRascunho();
-    filtrarResultadosBusca();
-  }
-
-  async function restaurarRascunho() {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) {
-      atualizarInterfaceEtapa();
-      return;
-    }
-
-    try {
-      const draft = JSON.parse(raw);
-      tipoCargaSelecionado = draft.tipoCargaSelecionado || '';
-      cargaPulmaoSelecionado = draft.cargaPulmaoSelecionado || '';
-      etapaFluxo = draft.etapaFluxo || 'ric';
-      registroId = draft.registroId || null;
-      registroAtual = draft.registroAtual || null;
-      fotoAtualDataUrl = draft.fotoAtualDataUrl || '';
-      fotoPendenteNome = draft.fotoPendenteNome || '';
-      fotoPendenteEtapa = draft.fotoPendenteEtapa || '';
-      modalDepositoAberto = !!draft.modalDepositoAberto;
-      modalDataCampo = draft.modalDataCampo || '';
-      modalDataTitulo = draft.modalDataTitulo || '';
-      fotosSalvas = draft.fotosSalvas || { ric: null, genset1: null, genset2: null, genset3: null };
-      termoBuscaAtual = draft.termoBuscaAtual || '';
-      registroSelecionadoId = draft.registroSelecionadoId || null;
-
-      if (draft.campos) preencherCamposRestaurados(draft.campos);
-
-      if (tipoCargaSelecionado) {
-        const map = {
-          'Resfriado': 'btnResfriado',
-          'Congelado com GenSet': 'btnCongeladoGenSet',
-          'Congelado': 'btnCongelado'
-        };
-        const id = map[tipoCargaSelecionado];
-        if (id) document.getElementById(id).classList.add('active');
-      }
-
-      if (cargaPulmaoSelecionado) {
-        const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
-        if (id) document.getElementById(id).classList.add('active');
-      }
-
-      document.getElementById('buscaContainer').value = termoBuscaAtual || '';
-      filtrarResultadosBusca();
-
-      atualizarInterfaceEtapa();
-      restaurarPreviewAtual();
-      renderGaleria();
-
-      if (modalDepositoAberto && modalDataCampo) {
-        setTimeout(() => abrirModalDataEtapa(modalDataCampo, modalDataTitulo || 'Selecione a data', obterDataInicialParaCampo(modalDataCampo)), 180);
-      }
-    } catch (e) {
-      console.warn('Falha ao restaurar rascunho:', e);
-      atualizarInterfaceEtapa();
-    }
+    return null;
   }
 
   async function verificarAcesso() {
-    if (!clienteSupabase) return false;
+    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+    if (!cliente) return false;
 
-    const { data: { user } } = await clienteSupabase.auth.getUser();
+    const { data: { user } } = await cliente.auth.getUser();
     if (!user) {
       window.location.href = 'login.html';
       return false;
@@ -2042,28 +1658,19 @@
 
     usuarioLogado = user;
 
-    const { data: userData } = await clienteSupabase
-      .from('usuarios')
-      .select('perfil, status, transportadora, nome')
-      .eq('email', user.email)
-      .single();
+    const emailLogado = (user.email || '').trim().toLowerCase();
+    const isMasterEmail = emailLogado === EMAIL_MASTER;
 
-    if (!userData) {
+    const userData = await buscarUsuarioPorEmail(cliente, user.email);
+    if (!userData && !isMasterEmail) {
       alert('Acesso negado.');
       window.location.href = 'index.html';
       return false;
     }
 
-    perfilUsuario = (userData.perfil || '').trim().toLowerCase();
-    const status = (userData.status || '').trim().toLowerCase();
-    transportadoraUsuario = (userData.transportadora || '').trim();
-    nomeUsuarioLogado = userData.nome || user.user_metadata?.full_name || user.email || 'Usuário';
+    const { ehMaster, ehTransportadora } = setUsuarioLogadoDados(userData, user);
 
-    const ehMaster = perfilUsuario === 'master' || perfilUsuario === 'mestre';
-    ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
-    const ehTransportadora = !!transportadoraUsuario;
-
-    if (!ehAdmin && !ehTransportadora) {
+    if (!ehAdmin && !ehTransportadora && !ehMaster) {
       alert('Acesso negado.');
       window.location.href = 'index.html';
       return false;
@@ -2209,6 +1816,582 @@
     return st || 'ag. carregamento';
   }
 
+  function mostrarMensagemFotoSalva(etapaNome) {
+    const etapaTexto = (etapaNome || '').toUpperCase();
+    mostrarAlerta(`Foto salva com sucesso (${etapaTexto}).`);
+  }
+
+  function mostrarMensagemFinalNovoRegistro() {
+    const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
+    mostrarAlerta(`${nome} pode fazer um novo registro.`, function () {
+      limparFluxoCompleto();
+    });
+  }
+
+  function limparFluxoCompleto() {
+    tipoCargaSelecionado = '';
+    cargaPulmaoSelecionado = '';
+    etapaFluxo = 'ric';
+    registroId = null;
+    registroAtual = null;
+    fotoAtualDataUrl = '';
+    fotoPendenteNome = '';
+    fotoPendenteEtapa = '';
+    modalDepositoAberto = false;
+    modalDataCampo = '';
+    modalDataTitulo = '';
+    fotosSalvas = { ric: null, genset1: null, genset2: null, genset3: null };
+    registroSelecionadoId = null;
+    termoBuscaAtual = '';
+
+    document.getElementById('btnResfriado').classList.remove('active');
+    document.getElementById('btnCongelado').classList.remove('active');
+    document.getElementById('btnCongeladoGenSet').classList.remove('active');
+    document.getElementById('btnCarga').classList.remove('active');
+    document.getElementById('btnPulmao').classList.remove('active');
+
+    document.getElementById('dataRetirada').value = '';
+    document.getElementById('armador').value = '';
+    document.getElementById('placa').value = '';
+    document.getElementById('containerInput').value = '';
+    document.getElementById('ordem').value = '';
+    document.getElementById('buscaContainer').value = '';
+
+    document.getElementById('cameraInput').value = '';
+    document.getElementById('gensetInput').value = '';
+    limparPreviewRic();
+    limparPreviewGenset();
+
+    document.getElementById('grupoCargaPulmao').style.display = 'none';
+    document.getElementById('blocoRic').style.display = 'none';
+    document.getElementById('genset-section').style.display = 'none';
+    document.getElementById('galeriaFotos').innerHTML = '';
+    document.getElementById('galeriaFotos').style.display = 'none';
+
+    document.getElementById('btnSalvar').disabled = true;
+    document.getElementById('btnSalvar').innerText = 'SALVAR';
+
+    limparRascunho();
+    atualizarResumoRegistroAtual();
+    atualizarMensagemEtapa();
+    filtrarResultadosBusca();
+  }
+
+  async function salvarColeta() {
+    if (salvando) return;
+
+    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+
+    if (!cliente) {
+      mostrarAlerta('Erro: O sistema ainda está carregando.');
+      return;
+    }
+
+    if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
+    if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
+    if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
+    if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
+    if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
+
+    const { data: { user } } = await cliente.auth.getUser();
+    if (!user) return mostrarAlerta('Usuário não autenticado!');
+
+    try {
+      setSalvando(true);
+
+      const etapaOrigem = etapaFluxo;
+      const suffix = etapaOrigem === 'ric' ? 'ric' : etapaOrigem;
+      const fileName = await uploadFoto(fotoAtualDataUrl, suffix);
+
+      fotoPendenteNome = fileName;
+      fotoPendenteEtapa = etapaOrigem;
+
+      const defaults = {
+        ric: { campo: 'data_retirada', titulo: 'Selecione a data da retirada' },
+        genset1: { campo: 'data_ag_carregamento', titulo: 'Selecione a data da AG. CARREGAMENTO' },
+        genset2: { campo: 'data_liberado', titulo: 'Selecione a data da LIBERAÇÃO' },
+        genset3: { campo: 'data_finalizado', titulo: 'Selecione a data do depósito' }
+      };
+
+      const cfg = defaults[etapaOrigem];
+      const dataInicial = obterDataInicialParaCampo(cfg.campo);
+
+      if (etapaOrigem === 'ric') {
+        fotosSalvas.ric = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset1') {
+        fotosSalvas.genset1 = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset2') {
+        fotosSalvas.genset2 = { nome: fileName, url: obterUrlFoto(fileName) };
+      } else if (etapaOrigem === 'genset3') {
+        fotosSalvas.genset3 = { nome: fileName, url: obterUrlFoto(fileName) };
+      }
+
+      salvarRascunho();
+      atualizarInterfaceEtapa();
+      renderGaleria();
+
+      abrirModalDataEtapa(cfg.campo, cfg.titulo, dataInicial);
+      setSalvando(false);
+    } catch (err) {
+      console.error(err);
+      setSalvando(false);
+      mostrarAlerta('Erro ao salvar foto: ' + err.message);
+    }
+  }
+
+  async function confirmarDataDeposito() {
+    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+    const dataEscolhida = document.getElementById('input-data-deposito').value;
+    if (!dataEscolhida) return alert('Selecione uma data.');
+    if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
+    if (!modalDataCampo) return alert('Erro: etapa não encontrada.');
+
+    try {
+      setSalvando(true);
+
+      const { data: { user } } = await cliente.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado.');
+
+      const dataValor = dataEscolhida;
+      const etapa = fotoPendenteEtapa || etapaFluxo;
+
+      if (etapa === 'ric') {
+        const campos = obterValoresCampos();
+        const userData = await buscarUsuarioPorEmail(cliente, user.email);
+        nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
+        const transportadora = userData ? userData.transportadora : 'N/A';
+
+        let localizacao = 'Sem GPS';
+
+        try {
+          const pos = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 10000
+            });
+          });
+
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+          const data = await response.json();
+
+          if (data && data.address) {
+            const addr = data.address;
+            const rua = addr.road || '';
+            const num = addr.house_number || '';
+            const bairro = addr.suburb || addr.neighbourhood || '';
+            const cidadeGps = addr.city || addr.town || '';
+            const estado = addr.state || addr.state_district || '';
+            localizacao = [rua, num, bairro, cidadeGps, estado].filter(Boolean).join(' - ');
+          } else {
+            localizacao = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+          }
+        } catch (e) {
+          console.warn('GPS bloqueado ou falhou:', e);
+          localizacao = 'GPS Bloqueado';
+        }
+
+        const insertObj = {
+          email_usuario: user.email,
+          data_retirada: dataValor,
+          armador: campos.armador,
+          container: campos.container || 'N/A',
+          ordem: campos.ordem,
+          placa: campos.placa,
+          carga_pulmao: cargaPulmaoSelecionado,
+          foto_url: fotoPendenteNome,
+          localizacao: localizacao,
+          transportadora: transportadora,
+          status: 'ag. carregamento',
+          finalizado: false,
+          tipo_carga: tipoCargaSelecionado,
+          created_at: new Date().toISOString()
+        };
+
+        const { data: inserted, error: dbError } = await cliente.from('coletas').insert([insertObj]).select().single();
+        if (dbError) throw dbError;
+
+        registroId = inserted.id;
+        registroAtual = inserted;
+        fotosSalvas.ric = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+        etapaFluxo = 'genset1';
+
+        fecharModalDeposito();
+        fotoAtualDataUrl = '';
+        fotoPendenteNome = '';
+        fotoPendenteEtapa = '';
+        salvarRascunho();
+        atualizarInterfaceEtapa();
+        renderGaleria();
+        await carregarRegistrosEmAndamento();
+
+        mostrarMensagemFotoSalva('RIC');
+        return;
+      }
+
+      if (!registroId) {
+        throw new Error('Registro não encontrado. Salve o RIC novamente.');
+      }
+
+      const updateObj = {};
+
+      if (modalDataCampo === 'data_ag_carregamento') {
+        updateObj.genset = fotoPendenteNome;
+        updateObj.status = 'ag. carregamento';
+        updateObj.finalizado = false;
+        updateObj.data_ag_carregamento = dataValor;
+        etapaFluxo = 'genset2';
+        fotosSalvas.genset1 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+
+      if (modalDataCampo === 'data_liberado') {
+        updateObj.liberado = fotoPendenteNome;
+        updateObj.status = 'liberado';
+        updateObj.finalizado = false;
+        updateObj.data_liberado = dataValor;
+        etapaFluxo = 'genset3';
+        fotosSalvas.genset2 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+
+      if (modalDataCampo === 'data_finalizado') {
+        updateObj.depositado = fotoPendenteNome;
+        updateObj.status = 'depositado';
+        updateObj.finalizado = true;
+        updateObj.data_finalizado = dataValor;
+        fotosSalvas.genset3 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
+      }
+
+      const { error } = await cliente.from('coletas').update(updateObj).eq('id', registroId);
+      if (error) throw error;
+
+      registroAtual = { ...(registroAtual || {}), ...updateObj, id: registroId };
+
+      fecharModalDeposito();
+      fotoAtualDataUrl = '';
+      fotoPendenteNome = '';
+      fotoPendenteEtapa = '';
+      salvarRascunho();
+      atualizarInterfaceEtapa();
+      renderGaleria();
+      await carregarRegistrosEmAndamento();
+
+      if (modalDataCampo === 'data_ag_carregamento') {
+        mostrarMensagemFotoSalva('AG. CARREGAMENTO');
+        return;
+      }
+
+      if (modalDataCampo === 'data_liberado') {
+        mostrarMensagemFotoSalva('LIBERADO');
+        return;
+      }
+
+      if (modalDataCampo === 'data_finalizado') {
+        mostrarMensagemFotoSalva('DEPOSITADO');
+        setTimeout(() => {
+          mostrarMensagemFinalNovoRegistro();
+        }, 250);
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+      mostrarAlerta('Erro ao salvar data: ' + err.message);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  function novoRegistro() {
+    const temAlgo = !!registroId || !!tipoCargaSelecionado || !!cargaPulmaoSelecionado || !!fotoAtualDataUrl || Object.values(fotosSalvas).some(Boolean);
+    if (temAlgo) {
+      abrirModalConfirmacaoNovoRegistro(() => {
+        limparFluxoCompleto();
+      });
+      return;
+    }
+    limparFluxoCompleto();
+  }
+
+  function voltar() {
+    salvarRascunho();
+    window.location.href = 'index.html';
+  }
+
+  function buscarContainers() {
+    termoBuscaAtual = document.getElementById('buscaContainer').value || '';
+    salvarRascunho();
+    filtrarResultadosBusca();
+  }
+
+  function limparBusca() {
+    termoBuscaAtual = '';
+    registroSelecionadoId = null;
+    document.getElementById('buscaContainer').value = '';
+    salvarRascunho();
+    filtrarResultadosBusca();
+  }
+
+  async function restaurarRascunho() {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) {
+      atualizarInterfaceEtapa();
+      return;
+    }
+
+    try {
+      const draft = JSON.parse(raw);
+      tipoCargaSelecionado = draft.tipoCargaSelecionado || '';
+      cargaPulmaoSelecionado = draft.cargaPulmaoSelecionado || '';
+      etapaFluxo = draft.etapaFluxo || 'ric';
+      registroId = draft.registroId || null;
+      registroAtual = draft.registroAtual || null;
+      fotoAtualDataUrl = draft.fotoAtualDataUrl || '';
+      fotoPendenteNome = draft.fotoPendenteNome || '';
+      fotoPendenteEtapa = draft.fotoPendenteEtapa || '';
+      modalDepositoAberto = !!draft.modalDepositoAberto;
+      modalDataCampo = draft.modalDataCampo || '';
+      modalDataTitulo = draft.modalDataTitulo || '';
+      fotosSalvas = draft.fotosSalvas || { ric: null, genset1: null, genset2: null, genset3: null };
+      termoBuscaAtual = draft.termoBuscaAtual || '';
+      registroSelecionadoId = draft.registroSelecionadoId || null;
+
+      if (draft.campos) preencherCamposRestaurados(draft.campos);
+
+      if (tipoCargaSelecionado) {
+        const map = {
+          'Resfriado': 'btnResfriado',
+          'Congelado com GenSet': 'btnCongeladoGenSet',
+          'Congelado': 'btnCongelado'
+        };
+        const id = map[tipoCargaSelecionado];
+        if (id) document.getElementById(id).classList.add('active');
+      }
+
+      if (cargaPulmaoSelecionado) {
+        const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
+        if (id) document.getElementById(id).classList.add('active');
+      }
+
+      document.getElementById('buscaContainer').value = termoBuscaAtual || '';
+      filtrarResultadosBusca();
+
+      atualizarInterfaceEtapa();
+      restaurarPreviewAtual();
+      renderGaleria();
+
+      if (modalDepositoAberto && modalDataCampo) {
+        setTimeout(() => abrirModalDataEtapa(modalDataCampo, modalDataTitulo || 'Selecione a data', obterDataInicialParaCampo(modalDataCampo)), 180);
+      }
+    } catch (e) {
+      console.warn('Falha ao restaurar rascunho:', e);
+      atualizarInterfaceEtapa();
+    }
+  }
+
+  async function buscarUsuarioPorEmail(cliente, email) {
+    try {
+      const { data, error } = await cliente
+        .from('usuarios')
+        .select('perfil, status, transportadora, nome')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (!error && data) return data;
+    } catch (e) {}
+
+    try {
+      const { data, error } = await cliente
+        .from('usuarios')
+        .select('perfil, status, transportadora, nome')
+        .eq('email_usuario', email)
+        .maybeSingle();
+
+      if (!error && data) return data;
+    } catch (e) {}
+
+    return null;
+  }
+
+  function setUsuarioLogadoDados(userData, user) {
+    perfilUsuario = (userData?.perfil || '').trim().toLowerCase();
+    const status = (userData?.status || '').trim().toLowerCase();
+    transportadoraUsuario = (userData?.transportadora || '').trim();
+    nomeUsuarioLogado = userData?.nome || user?.user_metadata?.full_name || user?.email || 'Usuário';
+
+    const ehMaster = normalizarTexto(user?.email) === EMAIL_MASTER || perfilUsuario === 'master' || perfilUsuario === 'mestre';
+    ehAdmin = ehMaster || (perfilUsuario === 'administrador' && (status === 'aprovado' || status === ''));
+    const ehTransportadora = !!transportadoraUsuario;
+
+    return { ehMaster, ehTransportadora };
+  }
+
+  async function verificarAcesso() {
+    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
+    if (!cliente) return false;
+
+    const { data: { user } } = await cliente.auth.getUser();
+    if (!user) {
+      window.location.href = 'login.html';
+      return false;
+    }
+
+    usuarioLogado = user;
+
+    const emailLogado = (user.email || '').trim().toLowerCase();
+    const isMasterEmail = emailLogado === EMAIL_MASTER;
+
+    const userData = await buscarUsuarioPorEmail(cliente, user.email);
+    if (!userData && !isMasterEmail) {
+      alert('Acesso negado.');
+      window.location.href = 'index.html';
+      return false;
+    }
+
+    const { ehMaster, ehTransportadora } = setUsuarioLogadoDados(userData, user);
+
+    if (!ehAdmin && !ehTransportadora && !ehMaster) {
+      alert('Acesso negado.');
+      window.location.href = 'index.html';
+      return false;
+    }
+
+    return true;
+  }
+
+  function fecharModalFoto() {
+    document.getElementById('modal-foto').style.display = 'none';
+    const img = document.getElementById('foto-modal-img');
+    img.src = '';
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    fotoIsDragging = false;
+    fotoTouchLastDist = null;
+  }
+
+  function abrirModalFoto(src, titulo) {
+    const img = document.getElementById('foto-modal-img');
+    const label = document.getElementById('foto-modal-title');
+
+    label.textContent = titulo || '';
+    img.src = src;
+
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    fotoTouchLastDist = null;
+    fotoTouchStartZoom = 1;
+
+    document.getElementById('modal-foto').style.display = 'flex';
+
+    img.onload = () => {
+      requestAnimationFrame(() => ajustarFotoParaTela());
+    };
+
+    setTimeout(() => {
+      if (img.complete) ajustarFotoParaTela();
+    }, 120);
+  }
+
+  function onFileChangeRic(e) {
+    return (async function() {
+      if (etapaFluxo !== 'ric') return;
+      const file = e.target.files[0];
+      if (!file) return;
+
+      fotoAtualDataUrl = await comprimirImagem(file);
+      salvarRascunho();
+
+      const img = document.getElementById('preview');
+      img.src = fotoAtualDataUrl;
+      img.style.display = 'block';
+      img.onclick = () => abrirModalFoto(fotoAtualDataUrl, 'RIC');
+      atualizarInterfaceEtapa();
+    })();
+  }
+
+  function onFileChangeGenset(e) {
+    return (async function() {
+      if (etapaFluxo === 'ric') return;
+      const file = e.target.files[0];
+      if (!file) return;
+
+      fotoAtualDataUrl = await comprimirImagem(file);
+      salvarRascunho();
+
+      const img = document.getElementById('gensetPreview');
+      img.src = fotoAtualDataUrl;
+      img.style.display = 'block';
+      img.onclick = () => abrirModalFoto(fotoAtualDataUrl, textoEtapa(etapaFluxo));
+      atualizarInterfaceEtapa();
+    })();
+  }
+
+  function ajustarEventosArquivo() {
+    document.getElementById('cameraInput').addEventListener('change', onFileChangeRic);
+    document.getElementById('gensetInput').addEventListener('change', onFileChangeGenset);
+  }
+
+  function sincronizarCamposInput() {
+    ['dataRetirada', 'armador', 'placa', 'containerInput', 'ordem'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => {
+        salvarRascunho();
+        atualizarInterfaceEtapa();
+      });
+      el.addEventListener('change', () => {
+        salvarRascunho();
+        atualizarInterfaceEtapa();
+      });
+    });
+  }
+
+  function sincronizarBusca() {
+    document.getElementById('buscaContainer').addEventListener('input', function() {
+      termoBuscaAtual = this.value || '';
+      salvarRascunho();
+      clearTimeout(debounceBusca);
+      debounceBusca = setTimeout(() => {
+        filtrarResultadosBusca();
+      }, 150);
+    });
+
+    document.getElementById('buscaContainer').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (resultadosFiltrados.length === 1) {
+          abrirRegistroParaContinuar(resultadosFiltrados[0].id);
+        } else {
+          buscarContainers();
+        }
+      }
+    });
+  }
+
+  function getEffectiveStatus(reg) {
+    if (isFinalizado(reg.finalizado)) return 'depositado';
+    const st = normalizarTexto(reg.status);
+    if (st === 'depositado' || st === 'liberado' || st === 'ag. carregamento') return st;
+    if (!reg.foto_url) return 'ag. carregamento';
+    if (reg.foto_url && !reg.genset) return 'ag. carregamento';
+    if (reg.genset && !reg.liberado) return 'ag. carregamento';
+    if (reg.liberado && !reg.depositado) return 'liberado';
+    if (reg.depositado) return 'depositado';
+    return st || 'ag. carregamento';
+  }
+
+  function mostrarMensagemFotoSalva(etapaNome) {
+    const etapaTexto = (etapaNome || '').toUpperCase();
+    mostrarAlerta(`Foto salva com sucesso (${etapaTexto}).`);
+  }
+
+  function mostrarMensagemFinalNovoRegistro() {
+    const nome = nomeUsuarioLogado || usuarioLogado?.email || 'Usuário';
+    mostrarAlerta(`${nome} pode fazer um novo registro.`, function () {
+      limparFluxoCompleto();
+    });
+  }
+
   window.addEventListener('click', function(e) {
     if (e.target === document.getElementById('modal-foto')) fecharModalFoto();
     if (e.target === document.getElementById('modal-data-deposito')) fecharModalDeposito();
@@ -2234,7 +2417,6 @@
       ajustarEventosArquivo();
       sincronizarCamposInput();
       sincronizarBusca();
-      vincularModalFoto();
 
       if (await verificarAcesso()) {
         await carregarRegistrosEmAndamento();
