@@ -1083,23 +1083,35 @@
     return new Blob([u8arr], { type: mime });
   }
 
-  async function uploadFoto(fotoDataUrl, prefixo) {
+  // Upload da foto para o Supabase Storage.
+  // A função é registrada explicitamente em window para ficar disponível
+  // também para handlers/eventos globais e evitar "uploadFoto is not defined".
+  window.uploadFoto = async function uploadFoto(fotoDataUrl, prefixo) {
     const cliente = getCliente();
     if (!cliente) throw new Error('Cliente Supabase não inicializado.');
+
+    if (!fotoDataUrl || typeof fotoDataUrl !== 'string' || !fotoDataUrl.startsWith('data:image/')) {
+      throw new Error('A imagem selecionada é inválida ou não foi carregada corretamente.');
+    }
 
     const blob = dataURLtoBlob(fotoDataUrl);
     const nomeArquivo = `${prefixo}_${Date.now()}.jpg`;
 
-    const { error } = await cliente.storage
+    const { data, error } = await cliente.storage
       .from('coletas-fotos')
       .upload(nomeArquivo, blob, {
         contentType: 'image/jpeg',
+        cacheControl: '3600',
         upsert: false
       });
 
-    if (error) throw error;
-    return nomeArquivo;
-  }
+    if (error) {
+      console.error('Erro no upload da foto para o Supabase:', error);
+      throw new Error(error.message || 'Falha ao enviar a foto para o Storage.');
+    }
+
+    return data?.path || nomeArquivo;
+  };
 
   function obterUrlGaleria(etapa) {
     if (etapa === 'ric') {
@@ -1883,7 +1895,7 @@
 
       const etapaOrigem = etapaFluxo;
       const suffix = etapaOrigem === 'ric' ? 'ric' : etapaOrigem;
-      const fileName = await uploadFoto(fotoAtualDataUrl, suffix);
+      const fileName = await window.uploadFoto(fotoAtualDataUrl, suffix);
 
       fotoPendenteNome = fileName;
       fotoPendenteEtapa = etapaOrigem;
