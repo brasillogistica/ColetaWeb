@@ -1122,12 +1122,11 @@
   }
 
   async function uploadFoto(dataUrl, sufixo) {
-    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
-    const { data: { user } } = await cliente.auth.getUser();
+    const { data: { user } } = await clienteSupabase.auth.getUser();
     const blob = dataURLtoBlob(dataUrl);
     const fileName = `${Date.now()}_${user.email}_${registroId || 'novo'}_${sufixo}.jpg`.replace(/[^a-zA-Z0-9._@-]/g, '_');
 
-    const { error } = await cliente.storage
+    const { error } = await clienteSupabase.storage
       .from('coletas-fotos')
       .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
 
@@ -1576,10 +1575,9 @@
 
   async function carregarRegistrosEmAndamento() {
     try {
-      const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
-      if (!cliente) return;
+      if (!clienteSupabase) return;
 
-      let query = cliente.from('coletas').select('*').order('created_at', { ascending: false });
+      let query = clienteSupabase.from('coletas').select('*').order('created_at', { ascending: false });
 
       if (!ehAdmin && transportadoraUsuario) {
         query = query.ilike('transportadora', transportadoraUsuario.trim());
@@ -1702,9 +1700,7 @@
   async function salvarColeta() {
     if (salvando) return;
 
-    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
-
-    if (!cliente) {
+    if (!clienteSupabase) {
       mostrarAlerta('Erro: O sistema ainda está carregando.');
       return;
     }
@@ -1715,7 +1711,7 @@
     if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
     if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
 
-    const { data: { user } } = await cliente.auth.getUser();
+    const { data: { user } } = await clienteSupabase.auth.getUser();
     if (!user) return mostrarAlerta('Usuário não autenticado!');
 
     try {
@@ -1762,7 +1758,6 @@
   }
 
   async function confirmarDataDeposito() {
-    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
     const dataEscolhida = document.getElementById('input-data-deposito').value;
     if (!dataEscolhida) return alert('Selecione uma data.');
     if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
@@ -1771,7 +1766,7 @@
     try {
       setSalvando(true);
 
-      const { data: { user } } = await cliente.auth.getUser();
+      const { data: { user } } = await clienteSupabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado.');
 
       const dataValor = dataEscolhida;
@@ -1779,7 +1774,7 @@
 
       if (etapa === 'ric') {
         const campos = obterValoresCampos();
-        const { data: userData } = await cliente
+        const { data: userData } = await clienteSupabase
           .from('usuarios')
           .select('transportadora')
           .eq('email', user.email)
@@ -1834,7 +1829,7 @@
           created_at: new Date().toISOString()
         };
 
-        const { data: inserted, error: dbError } = await cliente.from('coletas').insert([insertObj]).select().single();
+        const { data: inserted, error: dbError } = await clienteSupabase.from('coletas').insert([insertObj]).select().single();
         if (dbError) throw dbError;
 
         registroId = inserted.id;
@@ -1887,7 +1882,7 @@
         fotosSalvas.genset3 = { nome: fotoPendenteNome, url: obterUrlFoto(fotoPendenteNome) };
       }
 
-      const { error } = await cliente.from('coletas').update(updateObj).eq('id', registroId);
+      const { error } = await clienteSupabase.from('coletas').update(updateObj).eq('id', registroId);
       if (error) throw error;
 
       registroAtual = { ...(registroAtual || {}), ...updateObj, id: registroId };
@@ -1993,7 +1988,7 @@
 
       if (cargaPulmaoSelecionado) {
         const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
-        if (id) document.getElementById(id).classList.add('active');
+        document.getElementById(id).classList.add('active');
       }
 
       document.getElementById('buscaContainer').value = termoBuscaAtual || '';
@@ -2013,10 +2008,9 @@
   }
 
   async function verificarAcesso() {
-    const cliente = window.clienteSupabase || (typeof clienteSupabase !== 'undefined' ? clienteSupabase : null);
-    if (!cliente) return false;
+    if (!clienteSupabase) return false;
 
-    const { data: { user } } = await cliente.auth.getUser();
+    const { data: { user } } = await clienteSupabase.auth.getUser();
     if (!user) {
       window.location.href = 'login.html';
       return false;
@@ -2024,7 +2018,7 @@
 
     usuarioLogado = user;
 
-    const { data: userData } = await cliente
+    const { data: userData } = await clienteSupabase
       .from('usuarios')
       .select('perfil, status, transportadora')
       .eq('email', user.email)
