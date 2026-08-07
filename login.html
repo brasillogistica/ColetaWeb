@@ -6,79 +6,73 @@
     <link rel="stylesheet" href="style.css">
     <title>Login | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        @media (max-width: 768px) {
-            body {
-                padding: 12px !important;
-                height: 100vh !important;
-                align-items: center !important;
-            }
-
-            .card {
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 18px !important;
-                border-radius: 18px !important;
-            }
-
-            .card > div:first-child {
-                font-size: 22px !important;
-                margin-bottom: 24px !important;
-            }
-
-            h2 {
-                font-size: 1.1rem !important;
-                margin-bottom: 16px !important;
-            }
-
-            .form-group input {
-                font-size: 16px !important;
-                min-height: 42px;
-            }
-
-            .btn-main {
-                width: 100% !important;
-                min-height: 48px;
-                font-size: 13px !important;
-            }
+        .login-title {
+            font-weight: 400 !important;
+            text-transform: none;
         }
 
-        @media (max-width: 480px) {
-            body {
-                padding: 8px !important;
-            }
+        .login-logo {
+            font-weight: 800;
+            font-size: 24px;
+            line-height: 1.1;
+            text-align: center;
+        }
 
-            .card {
-                padding: 14px !important;
-                border-radius: 16px !important;
-            }
+        .login-logo .minerva {
+            color: var(--navy);
+        }
 
-            h2 {
-                font-size: 1rem !important;
-            }
+        .login-logo .foods {
+            color: var(--red);
+        }
+
+        .login-footer {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--navy);
+            opacity: 0.65;
+            text-align: center;
+            user-select: none;
         }
     </style>
 </head>
-<body style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+<body class="login-page">
+    <div class="login-container">
+        <div class="card login-card">
+            <div class="login-logo">
+                <span class="minerva">minerva</span><span class="foods">foods</span>
+            </div>
 
-    <div class="card" style="width: 400px; text-align: center;">
-        <div style="font-size: 24px; font-weight: 800; margin-bottom: 30px;">
-            <span style="color: var(--navy);">minerva</span><span style="color: var(--red);">foods</span>
+            <h2 class="login-title">Login - ColetaWeb</h2>
+
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="email">E-MAIL</label>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="seu.email@minervafoods.com"
+                        autocomplete="email"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">SENHA</label>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <button class="btn-main login-button" onclick="fazerLogin()">ENTRAR</button>
+            </div>
+
+            <div class="login-footer">Desenvolvido por Leandro Brasil • 2026</div>
         </div>
-        
-        <h2 style="color: var(--navy); margin-bottom: 20px; font-size: 1.2rem;">LOGIN - COLETAWEB</h2>
-        
-        <div class="form-group" style="text-align: left;">
-            <label>E-MAIL</label>
-            <input type="email" id="email" placeholder="seu.email@minervafoods.com">
-        </div>
-        
-        <div class="form-group" style="text-align: left;">
-            <label>SENHA</label>
-            <input type="password" id="password" placeholder="••••••••">
-        </div>
-        
-        <button class="btn-main" style="width: 100%; margin-top: 20px; background: var(--red);" onclick="fazerLogin()">ENTRAR</button>
     </div>
 
     <script src="script.js"></script>
@@ -88,33 +82,35 @@
             const password = document.getElementById('password').value;
 
             if (!email || !password) {
-                alert("Por favor, preencha e-mail e senha.");
+                alert('Por favor, preencha e-mail e senha.');
                 return;
             }
 
             try {
-                if (typeof clienteSupabase === 'undefined') {
-                    alert("Erro: O cliente Supabase não foi carregado.");
+                if (typeof clienteSupabase === 'undefined' || !clienteSupabase) {
+                    alert('Erro: O cliente Supabase não foi carregado.');
                     return;
                 }
 
-                const { data, error } = await clienteSupabase.auth.signInWithPassword({
+                const { error } = await clienteSupabase.auth.signInWithPassword({
                     email: email,
-                    password: password,
+                    password: password
                 });
 
                 if (error) {
-                    alert("Erro no Login: " + error.message);
-                } else {
-                    window.location.href = 'index.html';
+                    alert('Erro no Login: ' + error.message);
+                    return;
                 }
+
+                window.location.href = 'index.html';
             } catch (err) {
-                console.error("Erro crítico:", err);
+                console.error('Erro crítico:', err);
+                alert('Erro inesperado ao entrar.');
             }
         }
 
-        document.getElementById("password").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
+        document.getElementById('password').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
                 event.preventDefault();
                 fazerLogin();
             }

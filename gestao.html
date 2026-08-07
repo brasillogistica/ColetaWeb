@@ -261,6 +261,7 @@
       padding: 8px 8px 6px 8px;
     }
 
+    /* TABELA: conteúdo completo + rolagem */
     .table-wrapper {
       height: 290px;
       max-height: 290px;
@@ -271,11 +272,11 @@
     }
 
     table {
-      width: 100%;
-      min-width: 1700px;
+      width: max-content;
+      min-width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      table-layout: fixed;
+      table-layout: auto;
       font-size: 10px;
       font-family: 'Courier New', monospace;
     }
@@ -291,17 +292,14 @@
       z-index: 20;
       background: var(--navy);
       color: white;
-      padding: 8px 5px;
+      padding: 8px 10px;
       text-align: center;
       font-weight: 700;
       text-transform: uppercase;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: clip;
       line-height: 1.15;
       font-size: 8.5px;
       height: 46px;
-      min-height: 46px;
       vertical-align: middle;
       border-bottom: 2px solid var(--navy);
       backdrop-filter: blur(2px);
@@ -311,16 +309,25 @@
     th:last-child { border-radius: 0 12px 0 0; }
 
     td {
-      padding: 7px 6px;
+      padding: 7px 10px;
       border-bottom: 1px solid #f2f2f2;
       color: var(--navy);
       text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
       background: var(--white);
-      line-height: 1.1;
+      line-height: 1.25;
       font-size: 10px;
+      vertical-align: top;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    td .status-badge,
+    td .badge-tipo,
+    td .foto-link {
+      white-space: nowrap;
     }
 
     tr:nth-child(even) td { background-color: #f9f9f9; }
@@ -369,6 +376,7 @@
 
     .foto-link:hover { transform: translateY(-1px); }
 
+    /* MODAL FOTO COM ZOOM */
     #foto-modal {
       display: none;
       position: fixed;
@@ -384,19 +392,48 @@
       background: white;
       border-radius: 20px;
       padding: 20px;
-      width: 90%;
-      max-width: 900px;
-      height: 80vh;
+      width: min(96vw, 1200px);
+      height: min(92vh, 900px);
       position: relative;
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .foto-container img {
+    .foto-stage {
+      position: relative;
       width: 100%;
-      height: calc(100% - 40px);
-      object-fit: contain;
+      height: 100%;
+      overflow: hidden;
       background: #111;
-      border-radius: 10px;
+      border-radius: 12px;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .foto-stage:active { cursor: grabbing; }
+
+    #foto-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      user-select: none;
+      -webkit-user-drag: none;
+      transform-origin: center center;
+      will-change: transform;
+      pointer-events: none;
+      background: transparent;
+    }
+
+    .foto-titulo {
+      text-align: center;
+      font-weight: 800;
+      color: var(--navy);
+      font-size: 13px;
     }
 
     .fechar-foto {
@@ -583,15 +620,23 @@
       .table-wrapper {
         height: 55vh !important;
         max-height: 55vh !important;
-        overflow-x: auto !important;
+        overflow: auto !important;
         -webkit-overflow-scrolling: touch;
       }
 
-      table { min-width: 1850px !important; }
+      table {
+        min-width: 1850px !important;
+      }
 
       th, td {
         padding: 6px 4px !important;
         font-size: 9px !important;
+        white-space: normal !important;
+      }
+
+      .foto-container {
+        width: 96vw !important;
+        height: 88vh !important;
       }
     }
 
@@ -722,28 +767,6 @@
 
   <div class="table-wrapper">
     <table id="main-table">
-      <colgroup>
-        <col style="width:85px">
-        <col style="width:95px">
-        <col style="width:95px">
-        <col style="width:115px">
-        <col style="width:115px">
-        <col style="width:95px">
-        <col style="width:105px">
-        <col style="width:95px">
-        <col style="width:105px">
-        <col style="width:110px">
-        <col style="width:110px">
-        <col style="width:70px">
-        <col style="width:80px">
-        <col style="width:80px">
-        <col style="width:95px">
-        <col style="width:95px">
-        <col style="width:110px">
-        <col style="width:110px">
-        <col style="width:110px">
-        <col style="width:110px">
-      </colgroup>
       <thead>
         <tr>
           <th>Status</th>
@@ -776,7 +799,10 @@
 <div id="foto-modal">
   <div class="foto-container">
     <span class="fechar-foto" onclick="fecharFoto()">&times;</span>
-    <img id="foto-img" src="" alt="Foto">
+    <div id="foto-stage" class="foto-stage">
+      <img id="foto-img" src="" alt="Foto ampliada">
+    </div>
+    <div id="foto-titulo" class="foto-titulo"></div>
   </div>
 </div>
 
@@ -818,6 +844,18 @@
   let charts = {};
   let lastSignature = '';
   let carregandoInicial = true;
+
+  // FOTO ZOOM
+  let fotoZoom = 1;
+  let fotoPanX = 0;
+  let fotoPanY = 0;
+  let fotoIsDragging = false;
+  let fotoDragStartX = 0;
+  let fotoDragStartY = 0;
+  let fotoStartPanX = 0;
+  let fotoStartPanY = 0;
+  let fotoTouchLastDist = null;
+  let fotoTouchStartZoom = 1;
 
   function getValue(id) {
     const el = document.getElementById(id);
@@ -1137,13 +1175,107 @@
     return `<span class="foto-link" data-url="${escapeHtml(url)}" data-titulo="${escapeHtml(titulo || '')}">${escapeHtml(titulo || '')}</span>`;
   }
 
+  function aplicarTransformFoto() {
+    const img = document.getElementById('foto-img');
+    if (!img) return;
+    img.style.transform = `translate(${fotoPanX}px, ${fotoPanY}px) scale(${fotoZoom})`;
+  }
+
+  function ajustarFotoParaTela() {
+    const img = document.getElementById('foto-img');
+    if (!img || !img.naturalWidth || !img.naturalHeight) return;
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    aplicarTransformFoto();
+  }
+
+  function resetarZoomFoto() {
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    aplicarTransformFoto();
+  }
+
+  function zoomFoto(delta) {
+    fotoZoom = Math.max(1, Math.min(5, fotoZoom + delta));
+    if (fotoZoom === 1) {
+      fotoPanX = 0;
+      fotoPanY = 0;
+    }
+    aplicarTransformFoto();
+  }
+
+  function iniciarDragFoto(e) {
+    if (fotoZoom <= 1) return;
+    fotoIsDragging = true;
+    fotoDragStartX = e.clientX;
+    fotoDragStartY = e.clientY;
+    fotoStartPanX = fotoPanX;
+    fotoStartPanY = fotoPanY;
+    e.preventDefault();
+  }
+
+  function moverDragFoto(e) {
+    if (!fotoIsDragging) return;
+    fotoPanX = fotoStartPanX + (e.clientX - fotoDragStartX);
+    fotoPanY = fotoStartPanY + (e.clientY - fotoDragStartY);
+    aplicarTransformFoto();
+  }
+
+  function finalizarDragFoto() {
+    fotoIsDragging = false;
+  }
+
+  function getDistanceTouch(t1, t2) {
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function iniciarPinchFoto(e) {
+    if (e.touches.length === 2) {
+      fotoTouchLastDist = getDistanceTouch(e.touches[0], e.touches[1]);
+      fotoTouchStartZoom = fotoZoom;
+    }
+  }
+
+  function moverPinchFoto(e) {
+    if (e.touches.length === 2 && fotoTouchLastDist) {
+      const newDist = getDistanceTouch(e.touches[0], e.touches[1]);
+      const ratio = newDist / fotoTouchLastDist;
+      fotoZoom = Math.max(1, Math.min(5, fotoTouchStartZoom * ratio));
+      if (fotoZoom === 1) {
+        fotoPanX = 0;
+        fotoPanY = 0;
+      }
+      aplicarTransformFoto();
+      e.preventDefault();
+    }
+  }
+
+  function finalizarPinchFoto() {
+    fotoTouchLastDist = null;
+  }
+
   function abrirFoto(url, titulo) {
     const modal = document.getElementById('foto-modal');
     const img = document.getElementById('foto-img');
-    if (!modal || !img) return;
-    img.src = url;
-    img.alt = titulo || 'Foto';
+    const label = document.getElementById('foto-titulo');
+    const stage = document.getElementById('foto-stage');
+    if (!modal || !img || !label || !stage) return;
+
+    label.textContent = titulo || '';
     modal.style.display = 'flex';
+    img.src = url;
+    fotoZoom = 1;
+    fotoPanX = 0;
+    fotoPanY = 0;
+    fotoTouchLastDist = null;
+    fotoTouchStartZoom = 1;
+
+    img.onload = () => requestAnimationFrame(() => ajustarFotoParaTela());
+    setTimeout(() => { if (img.complete) ajustarFotoParaTela(); }, 120);
   }
 
   function fecharFoto() {
@@ -1151,6 +1283,7 @@
     const img = document.getElementById('foto-img');
     if (modal) modal.style.display = 'none';
     if (img) img.src = '';
+    resetarZoomFoto();
   }
 
   async function verificarAcesso() {
@@ -1638,10 +1771,75 @@
     }
   }
 
+  function registrarEventosFoto() {
+    const modal = document.getElementById('foto-modal');
+    const box = document.querySelector('.foto-container');
+    const stage = document.getElementById('foto-stage');
+    const img = document.getElementById('foto-img');
+
+    if (!modal || !box || !stage || !img) return;
+
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) fecharFoto();
+    });
+
+    box.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+
+    stage.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      zoomFoto(e.deltaY < 0 ? 0.15 : -0.15);
+    }, { passive: false });
+
+    stage.addEventListener('mousedown', iniciarDragFoto);
+    window.addEventListener('mousemove', moverDragFoto);
+    window.addEventListener('mouseup', finalizarDragFoto);
+
+    stage.addEventListener('touchstart', function (e) {
+      if (e.touches.length === 1 && fotoZoom > 1) {
+        fotoIsDragging = true;
+        fotoDragStartX = e.touches[0].clientX;
+        fotoDragStartY = e.touches[0].clientY;
+        fotoStartPanX = fotoPanX;
+        fotoStartPanY = fotoPanY;
+      }
+      if (e.touches.length === 2) {
+        iniciarPinchFoto(e);
+      }
+    }, { passive: false });
+
+    stage.addEventListener('touchmove', function (e) {
+      if (e.touches.length === 1 && fotoIsDragging) {
+        fotoPanX = fotoStartPanX + (e.touches[0].clientX - fotoDragStartX);
+        fotoPanY = fotoStartPanY + (e.touches[0].clientY - fotoDragStartY);
+        aplicarTransformFoto();
+        e.preventDefault();
+      } else if (e.touches.length === 2) {
+        moverPinchFoto(e);
+      }
+    }, { passive: false });
+
+    stage.addEventListener('touchend', function () {
+      fotoIsDragging = false;
+      finalizarPinchFoto();
+    });
+
+    img.addEventListener('dblclick', function () {
+      if (fotoZoom === 1) zoomFoto(1);
+      else resetarZoomFoto();
+    });
+
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') fecharFoto();
+    });
+  }
+
   window.onload = async () => {
     if (await verificarAcesso()) {
       initCharts();
       syncStatusCheckboxes();
+      registrarEventosFoto();
       await carregarTodos();
 
       if (refreshInterval) clearInterval(refreshInterval);
@@ -1683,16 +1881,6 @@
       }
       fecharStatusPanel();
     }
-  });
-
-  document.getElementById('foto-modal').addEventListener('click', function (e) {
-    if (e.target === this) {
-      fecharFoto();
-    }
-  });
-
-  document.querySelector('.foto-container').addEventListener('click', function (e) {
-    e.stopPropagation();
   });
 
   ['filtroDataInicio','filtroDataFim','filtroDataRetirada'].forEach(id => {
