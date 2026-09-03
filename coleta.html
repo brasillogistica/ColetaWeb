@@ -1552,8 +1552,10 @@
     return data;
   }
 
-  function obterTransportadoraFallback(userData) {
-    return (userData?.transportadora || transportadoraUsuario || 'Minerva Foods').trim();
+  function obterTransportadoraDoUsuario(userData) {
+    // A transportadora nunca pode ser presumida. Se o vínculo não existir no
+    // cadastro, bloquear o processo é mais seguro que gravá-lo na Minerva.
+    return String(userData?.transportadora || '').trim();
   }
 
   async function filtrarResultadosBusca() {
@@ -1670,7 +1672,7 @@
   function setUsuarioLogadoDados(userData, user) {
     perfilUsuario = (userData?.perfil || '').trim().toLowerCase();
     const status = (userData?.status || '').trim().toLowerCase();
-    transportadoraUsuario = obterTransportadoraFallback(userData);
+    transportadoraUsuario = obterTransportadoraDoUsuario(userData);
     nomeUsuarioLogado = userData?.nome || user?.user_metadata?.full_name || user?.email || 'Usuário';
 
     const ehMaster = normalizarTexto(user?.email) === EMAIL_MASTER || perfilUsuario === 'master' || perfilUsuario === 'mestre';
@@ -1696,23 +1698,21 @@
     const isMasterEmail = emailNormalizado === EMAIL_MASTER;
     let userData = await buscarUsuarioPorEmail(cliente, user.email);
 
-    // Fallbacks para não bloquear usuários que antes acessavam
-    if (!userData) {
-      userData = {
-        perfil: user.user_metadata?.perfil || 'administrador',
-        status: user.user_metadata?.status || 'aprovado',
-        transportadora: user.user_metadata?.transportadora || 'Minerva Foods',
-        nome: user.user_metadata?.full_name || user.email
-      };
-    }
-
     if (isMasterEmail) {
       userData = {
         perfil: 'master',
         status: 'aprovado',
-        transportadora: 'Minerva Foods',
+        // Usuário Minerva é administrador, não uma transportadora.
+        transportadora: '',
         nome: user.user_metadata?.full_name || user.email
       };
+    }
+
+    if (!userData) {
+      alert('Seu usuário não possui vínculo de transportadora no cadastro. Solicite ao administrador o cadastro do e-mail ' + user.email + '.');
+      await cliente.auth.signOut();
+      window.location.href = 'login.html';
+      return false;
     }
 
     const { ehMaster, ehTransportadora } = setUsuarioLogadoDados(userData, user);
@@ -1997,7 +1997,10 @@
         const campos = obterValoresCampos();
         const userData = await buscarUsuarioPorEmail(cliente, user.email);
         nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
-        const transportadora = obterTransportadoraFallback(userData);
+        const transportadora = obterTransportadoraDoUsuario(userData);
+        if (!transportadora) {
+          throw new Error('Usuário sem transportadora vinculada. Solicite o ajuste do cadastro antes de iniciar o processo.');
+        }
         const localizacao = await obterLocalizacaoGpsRapida();
 
         const insertObj = {

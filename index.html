@@ -48,6 +48,18 @@
               <div class="corner br"></div>
             </button>
 
+            <div id="analise-processos-container" style="display:none;">
+              <button class="container-btn container-dark" onclick="window.location.href='analise-processos.html'">
+                <span>ANÁLISE PROCESSOS</span>
+                <div class="top-bar"></div>
+                <div class="bottom-bar"></div>
+                <div class="corner tl"></div>
+                <div class="corner tr"></div>
+                <div class="corner bl"></div>
+                <div class="corner br"></div>
+              </button>
+            </div>
+
             <div id="admin-container" style="display:none; flex-direction: column; gap: 12px;">
               <button class="container-btn container-blue" onclick="window.location.href='gestao.html'">
                 <span>PAINEL DE GESTÃO</span>
@@ -115,6 +127,33 @@
 
   <script src="script.js"></script>
   <script>
+    function normalizarValorMenu(valor) {
+      return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+    }
+
+    async function configurarMenuAnaliseProcessos() {
+      const container = document.getElementById('analise-processos-container');
+      if (!container) return;
+
+      try {
+        // Usa a mesma regra de permissão já existente no ColetaWeb.
+        // A função checarPermissaoMaster também aceita Administrador aprovado.
+        const permitido = (typeof checarPermissaoMaster === 'function')
+          ? await checarPermissaoMaster()
+          : false;
+
+        // Master/Administrador: mostra. User: esconde.
+        container.style.display = permitido ? 'block' : 'none';
+      } catch (error) {
+        console.error('Erro ao configurar menu Análise Processos:', error);
+        container.style.display = 'none';
+      }
+    }
+
     async function verificarInicializacao() {
       if (typeof clienteSupabase === 'undefined' || !clienteSupabase) {
         setTimeout(verificarInicializacao, 300);
@@ -138,7 +177,8 @@
         document.getElementById('welcome-message').innerText = 'Bem-vindo, ' + nomeFormatado;
 
         renderCalendar();
-        inicializarPainel();
+        await inicializarPainel();
+        await configurarMenuAnaliseProcessos();
       } catch (error) {
         console.error('Erro ao inicializar:', error);
       }
