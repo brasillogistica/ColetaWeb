@@ -1659,13 +1659,12 @@
 
   async function buscarUsuarioPorEmail(cliente, email) {
     try {
-      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora, nome').eq('email', email).maybeSingle();
+      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora').eq('email', email).maybeSingle();
       if (!error && data) return data;
-    } catch (e) {}
-    try {
-      const { data, error } = await cliente.from('usuarios').select('perfil, status, transportadora, nome').eq('email_usuario', email).maybeSingle();
-      if (!error && data) return data;
-    } catch (e) {}
+      if (error) console.error('Erro ao buscar cadastro do usuário:', error);
+    } catch (e) {
+      console.error('Erro ao consultar cadastro do usuário:', e);
+    }
     return null;
   }
 
