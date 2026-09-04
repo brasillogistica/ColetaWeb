@@ -338,6 +338,37 @@
   color: #8a8a8a;
 }
 
+.aviso-duplicidade {
+  display: none;
+  margin: -4px 0 12px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.aviso-duplicidade.verificando {
+  display: block;
+  background: #eef5fa;
+  border: 1px solid #b8d3e5;
+  color: var(--navy);
+}
+
+.aviso-duplicidade.duplicado {
+  display: block;
+  background: #fff1f1;
+  border: 1px solid #e84d53;
+  color: #a51f25;
+}
+
+.aviso-duplicidade.erro {
+  display: block;
+  background: #fff8e7;
+  border: 1px solid var(--gold);
+  color: #745b10;
+}
+
 .thumbs-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -720,6 +751,7 @@
         <input type="text" id="placa" placeholder="Digite a placa" disabled>
       </div>
     </div>
+    <div id="avisoDuplicidade" class="aviso-duplicidade" role="alert"></div>
   </div>
 
   <div id="blocoRic" class="foto-bloco" style="display:none;">
@@ -824,6 +856,12 @@
   let termoBuscaAtual = '';
   let registroSelecionadoId = null;
   let debounceBusca = null;
+  let debounceDuplicidade = null;
+  let verificandoDuplicidade = false;
+  let duplicidadeEncontrada = null;
+  let erroVerificacaoDuplicidade = '';
+  let versaoVerificacaoDuplicidade = 0;
+  let duplicidadeNotificadaId = null;
   let confirmNovoRegistroCallback = null;
 
   let fotoZoom = 1;
@@ -848,6 +886,137 @@
 
   function normalizarTexto(texto) {
     return String(texto || '').trim().toLowerCase();
+  }
+
+  function normalizarChaveProcesso(texto) {
+    return String(texto || '').trim().toUpperCase();
+  }
+
+  function atualizarAvisoDuplicidade() {
+    const aviso = document.getElementById('avisoDuplicidade');
+    if (!aviso) return;
+
+    aviso.className = 'aviso-duplicidade';
+    aviso.textContent = '';
+
+    if (registroId) return;
+
+    if (verificandoDuplicidade) {
+      aviso.classList.add('verificando');
+      aviso.textContent = 'Conferindo se já existe um processo com estes dados...';
+      return;
+    }
+
+    if (duplicidadeEncontrada) {
+      aviso.classList.add('duplicado');
+      aviso.textContent = 'Já existe um processo com esta data de retirada, armador, container, ordem e placa. O registro existente será aberto para você continuar.';
+      return;
+    }
+
+    if (erroVerificacaoDuplicidade) {
+      aviso.classList.add('erro');
+      aviso.textContent = 'Não foi possível conferir duplicidade agora. Tente novamente em instantes; o banco continuará bloqueando registros repetidos.';
+    }
+  }
+
+  async function verificarDuplicidadeAntesDoRegistro() {
+    if (registroId) {
+      verificandoDuplicidade = false;
+      duplicidadeEncontrada = null;
+      erroVerificacaoDuplicidade = '';
+      atualizarAvisoDuplicidade();
+      atualizarInterfaceEtapa();
+      return false;
+    }
+
+    const ordem = normalizarChaveProcesso(document.getElementById('ordem')?.value);
+    const container = normalizarChaveProcesso(document.getElementById('containerInput')?.value);
+    const dataRetirada = String(document.getElementById('dataRetirada')?.value || '').trim();
+    const armador = normalizarChaveProcesso(document.getElementById('armador')?.value);
+    const placa = normalizarChaveProcesso(document.getElementById('placa')?.value);
+
+    if (!ordem || !container || !dataRetirada || !armador || !placa) {
+      verificandoDuplicidade = false;
+      duplicidadeEncontrada = null;
+      erroVerificacaoDuplicidade = '';
+      atualizarAvisoDuplicidade();
+      atualizarInterfaceEtapa();
+      return false;
+    }
+
+    const cliente = getCliente();
+    if (!cliente) return false;
+
+    const versao = ++versaoVerificacaoDuplicidade;
+    verificandoDuplicidade = true;
+    duplicidadeEncontrada = null;
+    erroVerificacaoDuplicidade = '';
+    atualizarAvisoDuplicidade();
+    atualizarInterfaceEtapa();
+
+    try {
+      const { data, error } = await cliente.rpc('buscar_processo_duplicado', {
+        p_ordem: ordem,
+        p_container: container,
+        p_data_retirada: dataRetirada,
+        p_armador: armador,
+        p_placa: placa
+      });
+
+      if (error) throw error;
+      if (versao !== versaoVerificacaoDuplicidade) return false;
+
+      duplicidadeEncontrada = Array.isArray(data) ? (data[0] || null) : (data || null);
+    } catch (err) {
+      console.error('Erro ao verificar duplicidade:', err);
+      if (versao !== versaoVerificacaoDuplicidade) return false;
+        erroVerificacaoDuplicidade = err.message || 'Erro de consulta';
+      duplicidadeEncontrada = null;
+    } finally {
+      if (versao === versaoVerificacaoDuplicidade) {
+        verificandoDuplicidade = false;
+        atualizarAvisoDuplicidade();
+        atualizarInterfaceEtapa();
+        if (duplicidadeEncontrada?.id && duplicidadeNotificadaId !== duplicidadeEncontrada.id) {
+          const idExistente = duplicidadeEncontrada.id;
+          duplicidadeNotificadaId = idExistente;
+          mostrarAlerta('Já existe um registro com a mesma data de retirada, armador, container, ordem e placa. Clique em OK para retomar o processo existente.', () => {
+            if (duplicidadeEncontrada?.id === idExistente) abrirRegistroParaContinuar(idExistente);
+          });
+        }
+      }
+    }
+
+    return Boolean(duplicidadeEncontrada);
+  }
+
+  function agendarVerificacaoDuplicidade() {
+    clearTimeout(debounceDuplicidade);
+
+    if (registroId) return;
+
+    const ordem = normalizarChaveProcesso(document.getElementById('ordem')?.value);
+    const container = normalizarChaveProcesso(document.getElementById('containerInput')?.value);
+    const dataRetirada = String(document.getElementById('dataRetirada')?.value || '').trim();
+    const armador = normalizarChaveProcesso(document.getElementById('armador')?.value);
+    const placa = normalizarChaveProcesso(document.getElementById('placa')?.value);
+    duplicidadeNotificadaId = null;
+    if (!ordem || !container || !dataRetirada || !armador || !placa) {
+      versaoVerificacaoDuplicidade++;
+      verificandoDuplicidade = false;
+      duplicidadeEncontrada = null;
+      erroVerificacaoDuplicidade = '';
+      atualizarAvisoDuplicidade();
+      atualizarInterfaceEtapa();
+      return;
+    }
+
+    verificandoDuplicidade = true;
+    duplicidadeEncontrada = null;
+    erroVerificacaoDuplicidade = '';
+    atualizarAvisoDuplicidade();
+    atualizarInterfaceEtapa();
+    debounceDuplicidade = setTimeout(verificarDuplicidadeAntesDoRegistro, 450);
   }
 
   function isFinalizado(valor) {
@@ -1408,7 +1577,8 @@
     const statusRic = document.getElementById('statusRic');
     const statusGenset = document.getElementById('statusGenset');
 
-    const ready = tipoCargaSelecionado && cargaPulmaoSelecionado && camposObrigatoriosPreenchidos();
+    const bloqueioDuplicidade = !registroId && (verificandoDuplicidade || Boolean(duplicidadeEncontrada));
+    const ready = tipoCargaSelecionado && cargaPulmaoSelecionado && camposObrigatoriosPreenchidos() && !bloqueioDuplicidade;
 
     if (!ready) {
       blocoRic.style.display = 'none';
@@ -1789,8 +1959,8 @@
   function sincronizarCamposInput() {
     ['dataRetirada', 'armador', 'placa', 'containerInput', 'ordem'].forEach(id => {
       const el = document.getElementById(id);
-      el.addEventListener('input', () => { salvarRascunho(); atualizarInterfaceEtapa(); });
-      el.addEventListener('change', () => { salvarRascunho(); atualizarInterfaceEtapa(); });
+      el.addEventListener('input', () => { salvarRascunho(); agendarVerificacaoDuplicidade(); atualizarInterfaceEtapa(); });
+      el.addEventListener('change', () => { salvarRascunho(); agendarVerificacaoDuplicidade(); atualizarInterfaceEtapa(); });
     });
   }
 
@@ -1884,6 +2054,12 @@
     fotosSalvas = { ric: null, genset1: null, genset2: null, genset3: null };
     registroSelecionadoId = null;
     termoBuscaAtual = '';
+    clearTimeout(debounceDuplicidade);
+    verificandoDuplicidade = false;
+    duplicidadeEncontrada = null;
+    erroVerificacaoDuplicidade = '';
+    versaoVerificacaoDuplicidade++;
+    duplicidadeNotificadaId = null;
 
     document.getElementById('btnResfriado').classList.remove('active');
     document.getElementById('btnCongelado').classList.remove('active');
@@ -1912,6 +2088,8 @@
     document.getElementById('btnSalvar').disabled = true;
     document.getElementById('btnSalvar').innerText = 'SALVAR';
 
+    atualizarAvisoDuplicidade();
+
     limparRascunho();
     atualizarResumoRegistroAtual();
     atualizarMensagemEtapa();
@@ -1927,6 +2105,7 @@
     if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
     if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
     if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
+    if (!registroId && await verificarDuplicidadeAntesDoRegistro()) return;
     if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
 
     const { data: { user } } = await cliente.auth.getUser();
@@ -1993,6 +2172,9 @@
       const campoProcessado = modalDataCampo;
 
       if (etapa === 'ric') {
+        document.getElementById('dataRetirada').value = dataValor;
+        if (await verificarDuplicidadeAntesDoRegistro()) return;
+
         const campos = obterValoresCampos();
         const userData = await buscarUsuarioPorEmail(cliente, user.email);
         nomeUsuarioLogado = userData?.nome || user.user_metadata?.full_name || user.email || 'Usuário';
@@ -2020,6 +2202,11 @@
         };
 
         const { data: inserted, error: dbError } = await cliente.from('coletas').insert([insertObj]).select().single();
+        if (dbError?.code === '23505') {
+          const existe = await verificarDuplicidadeAntesDoRegistro();
+          if (existe) return;
+          throw new Error('Já existe um processo com a mesma data de retirada, armador, container, ordem e placa.');
+        }
         if (dbError) throw dbError;
 
         registroId = inserted.id;
