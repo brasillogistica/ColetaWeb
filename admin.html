@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+<head><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://ekmcgifpvqrdgcikvepe.supabase.co" crossorigin>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gerenciamento | ColetaWeb</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
   <style>
     * {
       margin: 0;
@@ -325,7 +325,7 @@
       }
     }
   </style>
-</head>
+<link rel="stylesheet" href="css/site-background.css"></head>
 <body>
 
 <header class="header-card">
@@ -391,7 +391,7 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<script src="js/script.js"></script>
 <script>
   async function carregarUsuarios() {
     if (typeof clienteSupabase === 'undefined' || !clienteSupabase) {
@@ -538,10 +538,10 @@
     }
   }
 
-  window.addEventListener('load', async () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     await carregarUsuarios();
     await carregarTransportadoras();
   });
 </script>
-</body>
+<script src="js/i18n-global.js"></script><script src="js/navigation-fast.js" defer></script></body>
 </html>

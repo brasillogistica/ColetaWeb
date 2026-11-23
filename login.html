@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+<head><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://ekmcgifpvqrdgcikvepe.supabase.co" crossorigin>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <title>Login | ColetaWeb</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -37,7 +37,7 @@
             user-select: none;
         }
     </style>
-</head>
+<link rel="stylesheet" href="css/site-background.css"></head>
 <body class="login-page">
     <div class="login-container">
         <div class="card login-card">
@@ -75,7 +75,7 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="js/script.js"></script>
     <script>
         async function fazerLogin() {
             const email = document.getElementById('email').value.trim();
@@ -116,5 +116,5 @@
             }
         });
     </script>
-</body>
+<script src="js/i18n-global.js"></script><script src="js/navigation-fast.js" defer></script></body>
 </html>

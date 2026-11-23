@@ -1,0 +1,118 @@
+<!doctype html><html lang="pt-BR"><head><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://ekmcgifpvqrdgcikvepe.supabase.co" crossorigin><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Solicitar Contêiner | ColetaWeb</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><link rel="stylesheet" href="css/booking-style.css"><style>
+/* ColetaWeb — formulário de largura total, com alinhamento rigoroso. */
+html,body{width:100%;max-width:none;margin:0;box-sizing:border-box}
+*,*::before,*::after{box-sizing:border-box}
+body{padding:12px 16px!important}
+.shell{width:100%!important;max-width:none!important;margin:0 auto!important}
+.shell>.head,.shell>.panel{width:100%!important;max-width:none!important}
+.choice{display:flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap}
+.choice label{display:inline-flex;align-items:center;gap:4px;border:1px solid #c5b68d;border-radius:999px;padding:4px 7px;cursor:pointer;color:#2d4b5e;font-weight:800;font-size:10px;line-height:1.15;white-space:nowrap}
+.choice label:has(input:checked){background:#2d4b5e;color:#fff;border-color:#2d4b5e}
+.choice input{accent-color:#c5b68d;margin:0}
+.field[hidden]{display:none!important}.notice{white-space:pre-line}
+.panel .fields{display:grid!important;grid-template-columns:minmax(0,1fr);gap:14px;margin:0 0 12px;width:100%}
+.panel .fields>.field-row{display:grid!important;grid-template-columns:minmax(180px,1.1fr) minmax(170px,1fr) minmax(205px,1.25fr) minmax(155px,.88fr) minmax(185px,1.06fr);gap:clamp(10px,1.2vw,22px);align-items:end;width:100%}
+.panel .fields .field{width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;flex:none!important}
+.panel .fields .field>label{display:block!important;text-align:center!important;margin:0 0 7px!important;white-space:nowrap;font-size:clamp(9px,.72vw,11px);letter-spacing:.12px}
+.panel .fields .field input:not([type=radio]),.panel .fields .field select{display:block;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box}
+#temperaturaBox select{width:100%!important;max-width:100%!important}
+.panel .fields .choice-field .choice{min-height:34px}
+@media(max-width:1120px){
+ .panel .fields>.field-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+ .panel .fields .field>label{white-space:normal;min-height:24px}
+}
+@media(max-width:700px){
+ body{padding:8px!important}
+ .panel .fields>.field-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .panel .fields .field>label{font-size:10px}
+}
+@media(max-width:470px){.panel .fields>.field-row{grid-template-columns:minmax(0,1fr)}}
+
+/* V8 — ações discretas e instruções de importação em diálogo */
+.shell .panel .toolbar{gap:7px!important;flex-wrap:wrap}
+.shell .panel .toolbar button,.shell .panel .toolbar .btn{font-size:10px!important;padding:6px 11px!important;min-height:27px!important;line-height:1.2!important;border-radius:999px!important;width:auto!important;min-width:0!important;letter-spacing:0!important}
+.excel-helper{display:flex;align-items:center;gap:7px;margin-top:9px;color:#536b79;font-size:11px}
+.excel-info{height:21px!important;width:21px!important;min-height:21px!important;min-width:21px!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center;border:0!important;background:transparent!important;border-radius:0!important;cursor:pointer;flex:0 0 21px;vertical-align:middle;box-shadow:none!important}.excel-info img{width:19px;height:19px;display:block;object-fit:contain}
+.excel-info:hover img{filter:brightness(1.04)}.excel-info:focus-visible{outline:2px solid #c5b68d;outline-offset:2px;border-radius:4px!important}
+.excel-dialog{border:1px solid #c5b68d;border-radius:16px;padding:22px 24px;max-width:min(530px,calc(100vw - 24px));width:100%;color:#2d4b5e;background:white;box-shadow:0 20px 60px #0003;margin:auto}
+.excel-dialog::backdrop{background:rgba(15,35,47,.45)}
+.excel-dialog h3{font-size:16px;margin:0 0 12px;text-transform:uppercase;color:#2d4b5e}
+.excel-dialog p{font-size:12px;line-height:1.6;margin:0 0 12px}
+.excel-dialog ol{font-size:12px;line-height:1.8;padding-left:21px;margin:0 0 14px}
+.excel-dialog .dialog-actions{display:flex;justify-content:flex-end}
+.excel-dialog .dialog-actions button{border:0;border-radius:999px;padding:8px 20px;background:#2d4b5e;color:white;font-weight:800;cursor:pointer;font-size:11px}
+
+/* V10 — centralizar os títulos e dados das duas tabelas */
+.shell .panel .wrap table{width:100%;border-collapse:collapse;table-layout:auto}
+.shell .panel .wrap table thead th,
+.shell .panel .wrap table tbody td{ text-align:center!important;vertical-align:middle!important; }
+.shell .panel .wrap table thead th{white-space:nowrap}
+.shell .panel .wrap table tbody td{overflow-wrap:anywhere}
+
+.toolbar a.btn.secondary{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;white-space:nowrap}
+.obs-transport{white-space:pre-wrap;overflow-wrap:anywhere;min-width:190px;max-width:330px;text-align:left;padding:8px 12px!important}
+/* Formulário compacto: seletores de operação separados dos dados da solicitação. */
+.shell .panel .fields {gap:9px;margin-bottom:10px}
+.shell .panel .fields>.field-row.escolha-row {
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+ padding:9px 12px;border:1px solid #e1e7eb;border-radius:11px;background:#f9fbfc;
+ width:min(100%,650px);margin:0 auto;
+}
+.shell .panel .fields>.field-row.detalhes-row {
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;
+}
+.shell .panel .fields>.field-row.detalhes-row>.field {
+ padding:7px 10px;border:1px solid #e1e7eb;border-radius:9px;background:#f9fbfc;
+}
+.shell .panel .fields>.field-row .field>label {
+ font-size:10px!important;min-height:0!important;margin:0 0 5px!important;
+ color:#526c7d;text-align:center!important;letter-spacing:.25px;white-space:normal;
+}
+.shell .panel .fields>.escolha-row .field>label {text-align:center!important;color:#2d4b5e}
+.shell .panel .fields>.escolha-row .choice {justify-content:center;gap:8px;min-height:30px}
+.shell .panel .fields>.escolha-row .choice label {
+ min-width:115px;justify-content:center;padding:6px 12px;border:1px solid #ced9df;
+ border-radius:8px;background:white;font-size:10px;
+}
+.shell .panel .fields>.escolha-row .choice label:has(input:checked) {
+ border-color:#2d4b5e;background:#2d4b5e;color:white;
+}
+.shell .panel .fields>.detalhes-row .field input:not([type=radio]),
+.shell .panel .fields>.detalhes-row .field select {
+ height:32px!important;min-height:32px!important;max-height:32px!important;
+ padding:5px 8px!important;margin:0!important;font-size:12px!important;
+ border:1px solid #d1dce3!important;border-radius:7px!important;background:white!important;
+}
+.shell .panel .fields>.detalhes-row .field input:focus,
+.shell .panel .fields>.detalhes-row .field select:focus {
+ outline:2px solid #b7cbd6;outline-offset:0;
+}
+@media(max-width:1050px){
+ .shell .panel .fields>.field-row.detalhes-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+ .shell .panel .fields>.field-row.escolha-row{grid-template-columns:1fr}
+ .shell .panel .fields>.field-row.detalhes-row{grid-template-columns:1fr}
+ .shell .panel .fields>.escolha-row .choice label{min-width:0;flex:1}
+}
+</style><link rel="stylesheet" href="css/site-background.css"></head><body><div class="shell"><header class="head"><div class="brand">minerva<span>foods</span></div><h1>SOLICITAR CONTÊINER</h1><div class="actions"><button class="secondary" onclick="location.href='index.html'">VOLTAR</button></div></header><div id="msg" class="notice" hidden></div><section class="panel"><input id="transp" type="hidden"><div class="fields">
+<div class="field-row escolha-row">
+<div class="field choice-field" id="tipoBox"><label>TIPO DE SOLICITAÇÃO</label><div class="choice" role="radiogroup" aria-label="Tipo de solicitação"><label><input type="radio" name="tipo" value="CARGA" checked>CARGA</label><label><input type="radio" name="tipo" value="PULMÃO">PULMÃO</label></div></div>
+<div class="field choice-field" id="origemBox"><label>ORIGEM DO CARREGAMENTO</label><div class="choice" role="radiogroup" aria-label="Origem do carregamento"><label><input type="radio" name="origem" value="INDÚSTRIA" checked>INDÚSTRIA</label><label><input type="radio" name="origem" value="ARMAZÉM">ARMAZÉM</label></div></div>
+</div>
+<div class="field-row detalhes-row">
+<div class="field" id="ordemBox"><label for="ordem">ORDEM</label><input id="ordem" placeholder="O/1234-5"></div>
+<div class="field" id="regiaoBox"><label for="regiao">REGIÃO DE COLETA</label><select id="regiao"><option value="">SELECIONE...</option><option>SANTOS</option><option>SUL PARA SANTOS</option><option>PARANAGUÁ</option><option>ITAPOÁ</option><option>ITAJAÍ</option><option>RIO GRANDE</option><option>NAVEGANTES</option></select></div>
+<div class="field" id="armadorBox"><label for="armadorSolic">ARMADOR</label><select id="armadorSolic"></select></div>
+<div class="field" id="quantidadeBox"><label for="qtd">QUANTIDADE DE CONTÊINERES</label><input type="number" min="1" max="300" step="1" id="qtd" value="1" readonly></div>
+</div>
+<div class="field-row detalhes-row">
+<div class="field" id="localBox"><label for="planta">LOCAL CARREGAMENTO</label><select id="planta" class="select-local"><option value="">SELECIONE...</option></select></div>
+<div class="field" id="temperaturaBox"><label for="temp">TEMPERATURA</label><select id="temp"><option value="40&quot; REEFER HIGH CUBIC (-18ºC)">40&quot; REEFER HIGH CUBIC (-18ºC)</option><option value="20&quot; DRY">20&quot; DRY</option><option value="40&quot; DRY HIGH CUBIC">40&quot; DRY HIGH CUBIC</option><option value="40&quot; REEFER HIGH CUBIC (-1.4ºC) C/ GENSET">40&quot; REEFER HIGH CUBIC (-1.4ºC) C/ GENSET</option><option value="40&quot; REEFER HIGH CUBIC (-24ºC)">40&quot; REEFER HIGH CUBIC (-24ºC)</option><option value="40&quot; REEFER HIGH CUBIC (-22ºC)">40&quot; REEFER HIGH CUBIC (-22ºC)</option><option value="40&quot; REEFER HIGH CUBIC (-24ºC) C/ GENSET">40&quot; REEFER HIGH CUBIC (-24ºC) C/ GENSET</option><option value="40&quot; REEFER HIGH CUBIC (-18ºC) C/ GENSET">40&quot; REEFER HIGH CUBIC (-18ºC) C/ GENSET</option></select></div>
+<div class="field" id="dataBox"><label for="data">DATA DA COLETA (PREVISTA)</label><input type="date" id="data" class="date-clickable"></div>
+<div class="field" id="pcpBox"><label for="pcp">PCP - DATA DO CARREGAMENTO</label><input type="date" id="pcp" class="date-clickable"></div>
+</div></div><div class="toolbar"><button onclick="adicionar()">+ ADICIONAR SOLICITAÇÃO</button><label class="btn secondary" for="arquivo">IMPORTAR EXCEL</label><input id="arquivo" type="file" accept=".xlsx,.xls,.csv" hidden><a class="btn secondary" href="modelos/modelo_solicitar_container.xlsx" download="modelo_solicitar_container.xlsx" title="Baixar modelo Excel pronto para preenchimento">BAIXAR MODELO EXCEL</a></div><div class="excel-helper"><button type="button" class="excel-info" aria-label="Ver instruções para importar Excel" title="Instruções para o Excel" onclick="document.getElementById('excelAjuda').showModal()"><img src="assets/excel-alerta.png" alt=""></button><span>Excel <span style="opacity:.75">— Clique no ícone para ver as instruções de importação.</span></span></div>
+<dialog id="excelAjuda" class="excel-dialog" aria-labelledby="excelAjudaTitulo"><h3 id="excelAjudaTitulo">Atenção — Importação Excel</h3><p>A planilha deve conter as colunas, nesta sequência:</p><ol><li>TIPO</li><li>ORDEM</li><li>PCP</li><li>ORIGEM</li><li>LOCAL CARREGAMENTO</li><li>TEMPERATURA</li><li>ARMADOR</li><li>QUANTIDADE DE CONTAINERS</li><li>DATA DE COLETA</li><li>REGIÃO DE COLETA</li></ol><p><strong>Para solicitações PULMÃO:</strong> deixe as colunas ORDEM, PCP, ORIGEM e LOCAL CARREGAMENTO vazias.</p><div class="dialog-actions"><button type="button" onclick="document.getElementById('excelAjuda').close()">ENTENDI</button></div></dialog></section>
+<section class="panel"><h2>Solicitações para enviar <span id="count">(0)</span></h2><div class="wrap"><table><thead><tr><th>TIPO</th><th>ORDEM</th><th>PCP</th><th>ORIGEM</th><th>LOCAL CARREGAMENTO</th><th>TEMPERATURA</th><th>ARMADOR</th><th>QTD.</th><th>DATA COLETA</th><th>REGIÃO</th><th>AÇÃO</th></tr></thead><tbody id="linhas"></tbody></table></div><div class="toolbar"><button id="enviar" onclick="enviar()">ENVIAR PARA BOOKING</button><button class="secondary" onclick="pendencias()">ATUALIZAR MINHAS SOLICITAÇÕES</button></div></section>
+<section class="panel"><h2>Minhas solicitações</h2><div class="wrap"><table><thead><tr><th>TIPO</th><th>ORDEM</th><th>PCP</th><th>LOCAL CARREGAMENTO</th><th>ARMADOR</th><th>QTD.</th><th>CONTÊINERES LIBERADOS</th><th>DEPOT</th><th>STATUS</th><th>OBSERVAÇÃO DO BOOKING</th></tr></thead><tbody id="historico"></tbody></table></div></section></div>
+<script src="js/script.js"></script><script src="js/unidades.js"></script><script src="js/solicitacao-transporte.js"></script><script src="js/i18n-global.js"></script><script src="js/navigation-fast.js" defer></script></body></html>

@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+<head><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://ekmcgifpvqrdgcikvepe.supabase.co" crossorigin>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Análise Processos | ColetaWeb</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
   <style>
     * { box-sizing: border-box; }
 
@@ -73,10 +75,22 @@
     .header-actions {
       justify-self: end;
       display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
+      gap: 7px;
+      flex-wrap: nowrap;
       justify-content: flex-end;
+      align-items: center;
+      white-space: nowrap;
     }
+
+    .header-actions .btn-analysis {
+      min-height: 28px;
+      padding: 6px 11px;
+      font-size: 8px;
+    }
+
+
+
+
 
     .btn-analysis {
       border: none;
@@ -112,6 +126,16 @@
       align-items: end;
     }
 
+    .analysis-controls-panel {
+      padding: 8px 10px 9px;
+      margin-bottom: 8px;
+    }
+
+
+
+
+
+
     .field label {
       display: block;
       font-size: 9px;
@@ -141,6 +165,7 @@
       min-width: 0;
     }
 
+
     .file-name {
       flex: 1;
       min-width: 0;
@@ -162,18 +187,182 @@
       line-height: 1.45;
     }
 
-    .status-banner {
+    .btn-rule {
+      background: #ffffff;
+      color: var(--navy);
+      border: 1px solid var(--gold);
+      padding: 6px 12px;
+      box-shadow: 0 2px 7px rgba(0,0,0,.04);
+    }
+
+    .btn-rule:hover {
+      background: #faf8f1;
+      border-color: var(--navy);
+    }
+
+    .rule-modal {
       display: none;
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 10px;
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      background: rgba(25,39,50,.36);
+      backdrop-filter: blur(2px);
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .rule-modal.active {
+      display: flex;
+    }
+
+    .rule-modal-card {
+      width: min(720px, 96vw);
+      max-height: 88vh;
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--gold);
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.18);
+    }
+
+    .rule-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px 11px;
+      border-bottom: 1px solid #eee8d8;
+    }
+
+    .rule-modal-title {
+      color: var(--navy);
+      font-size: 15px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .rule-modal-subtitle {
+      margin-top: 2px;
+      color: #667085;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .rule-close {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #d8dce0;
+      border-radius: 50%;
+      background: #fff;
+      color: var(--navy);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .rule-modal-body {
+      padding: 13px 16px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .rule-step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 9px;
+      align-items: start;
+      padding: 9px 10px;
+      border: 1px solid #eee8d8;
+      background: #fcfbf8;
+      border-radius: 11px;
+    }
+
+    .rule-step-number {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 10px;
+      font-weight: 900;
+    }
+
+    .rule-step strong,
+    .rule-scope-card strong {
+      color: var(--navy);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .rule-step p,
+    .rule-scope-card p {
+      margin: 3px 0 0;
+      color: #52606d;
+      font-size: 9px;
+      line-height: 1.5;
+    }
+
+    .rule-scope-card {
+      padding: 10px 11px;
+      border-radius: 11px;
+      background: #fffaf0;
+      border: 1px solid #e4d5a8;
+    }
+
+    .rule-transport-list {
+      margin: 7px 0 2px 18px;
+      padding: 0;
+      display: grid;
+      gap: 4px;
+      color: #52606d;
+      font-size: 9px;
+      line-height: 1.4;
+    }
+
+    .rule-transport-list li {
+      padding-left: 2px;
+    }
+
+    .rule-scope-card small {
+      display: block;
+      margin-top: 8px;
+      color: #8a5b12;
+      font-size: 8px;
       font-weight: 800;
     }
 
-    .status-banner.warn { display: block; background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-    .status-banner.ok { display: block; background: #ecfdf3; color: #166534; border: 1px solid #bbf7d0; }
-    .status-banner.error { display: block; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .rule-modal-footer {
+      padding: 10px 16px 14px;
+      display: flex;
+      justify-content: flex-end;
+      border-top: 1px solid #eee8d8;
+    }
+
+    .status-banner {
+      display: inline-flex;
+      width: fit-content;
+      max-width: 100%;
+      padding: 5px 9px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.25;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .75s ease;
+    }
+
+    .status-banner.warn { visibility: visible; opacity: 1; background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .status-banner.ok { visibility: visible; opacity: 1; background: #ecfdf3; color: #166534; border: 1px solid #bbf7d0; }
+    .status-banner.error { visibility: visible; opacity: 1; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .status-banner.fading { opacity: 0; }
 
     .cards-grid {
       display: grid;
@@ -232,9 +421,63 @@
 
     .filter-row {
       display: grid;
-      grid-template-columns: 1.3fr 1fr 1fr auto auto;
-      gap: 8px;
+      grid-template-columns:
+        minmax(220px, 1.1fr)
+        minmax(155px, .70fr)
+        minmax(230px, 1fr)
+        minmax(200px, .82fr)
+        auto
+        auto;
+      gap: 7px;
       align-items: end;
+    }
+
+    .filter-row-compact {
+      margin-top: 7px;
+    }
+
+    .filter-row-compact .field input,
+    .filter-row-compact .field select {
+      padding: 4px 2px;
+      min-height: 27px;
+      font-size: 10px;
+    }
+
+    .filter-row-compact .field label {
+      margin-bottom: 2px;
+      font-size: 8px;
+    }
+
+    .filter-action-btn {
+      min-height: 28px;
+      padding: 6px 12px;
+      font-size: 8px;
+      align-self: end;
+    }
+
+    .filter-actions-stack {
+      grid-column: 5 / 7;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .filter-banner-slot {
+      width: 100%;
+      height: 26px;
+      min-height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .filter-actions-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 7px;
     }
 
     .mode-label {
@@ -246,6 +489,43 @@
       border-radius: 9px;
       background: #f5f7f8;
       border-left: 4px solid var(--navy);
+    }
+
+    .current-context-panel {
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+
+    .current-context-panel .mode-label {
+      margin-bottom: 0;
+    }
+
+    .current-period {
+      margin: 0;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: var(--navy);
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1.35;
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-period-info {
+      margin: 0 0 6px 0;
+      min-height: 18px;
+      padding: 0 2px;
+    }
+
+    .current-period strong {
+      color: var(--gold);
+      font-weight: 900;
+      text-transform: uppercase;
     }
 
     .table-panel { padding: 8px; }
@@ -333,6 +613,139 @@
     .badge-divergent { background: #ffedd5; color: #c2410c; }
     .badge-neutral { background: #ede9fe; color: #6d28d9; }
 
+
+
+    /* ===== GRÁFICOS MENSAIS ===== */
+    .monthly-panel { padding: 10px; }
+
+    .monthly-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .monthly-title h2 {
+      margin: 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 900;
+      color: var(--navy);
+    }
+
+    .monthly-title small {
+      display: block;
+      margin-top: 3px;
+      font-size: 9px;
+      color: #667085;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .monthly-controls {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .monthly-controls .field { min-width: 165px; }
+    .monthly-controls .field.year { min-width: 105px; }
+
+    .monthly-kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 7px;
+      margin-bottom: 8px;
+    }
+
+    .monthly-kpi {
+      border: 1px solid #e8e0c8;
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: #fbfbfa;
+      min-height: 58px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .monthly-kpi .k-label {
+      font-size: 8px;
+      font-weight: 900;
+      color: #667085;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .monthly-kpi .k-value {
+      font-size: 18px;
+      line-height: 1;
+      font-weight: 900;
+      color: var(--navy);
+    }
+
+    .monthly-kpi.gap .k-value { color: #b91c1c; }
+    .monthly-kpi.coverage .k-value { color: #15803d; }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .chart-card {
+      border: 1px solid #eee9dc;
+      border-radius: 12px;
+      padding: 8px;
+      background: #fff;
+      min-width: 0;
+    }
+
+    .chart-card-title {
+      font-size: 9px;
+      font-weight: 900;
+      color: var(--navy);
+      text-transform: uppercase;
+      margin: 0 0 4px 2px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 345px;
+      min-height: 345px;
+    }
+
+    .chart-empty {
+      display: none;
+      position: absolute;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 18px;
+      color: #8a8a8a;
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(255,255,255,.88);
+      z-index: 3;
+      border-radius: 8px;
+    }
+
+    .chart-empty.active { display: flex; }
+
+    .chart-footnote {
+      margin-top: 6px;
+      font-size: 8px;
+      line-height: 1.35;
+      color: #667085;
+      font-weight: 700;
+    }
+
     .history-grid {
       display: grid;
       grid-template-columns: minmax(200px, 1fr) auto auto;
@@ -350,7 +763,7 @@
 
     .history-item {
       display: grid;
-      grid-template-columns: 145px minmax(160px, 1fr) 95px 95px 95px auto;
+      grid-template-columns: 145px minmax(160px, 1fr) 95px 105px 95px 95px auto;
       gap: 7px;
       align-items: center;
       padding: 7px 8px;
@@ -404,8 +817,18 @@
     @media (max-width: 900px) {
       .analysis-header { grid-template-columns: 1fr; text-align: center; }
       .analysis-logo, .analysis-title, .header-actions { justify-self: center; }
+      .header-actions { align-items: center; justify-content: center; }
+      .update-coleta-box { align-items: center; }
       .import-row, .filter-row, .history-grid { grid-template-columns: 1fr; }
+      .filter-actions-stack { grid-column: 1; align-items: stretch; }
+      .filter-actions-buttons { justify-content: stretch; }
+      .filter-actions-buttons .filter-action-btn { flex: 1; }
+      .filter-actions-stack .status-banner { align-self: center; }
       .cards-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .charts-grid { grid-template-columns: 1fr; }
+      .monthly-kpis { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .monthly-controls { width: 100%; }
+      .monthly-controls .field { flex: 1; min-width: 150px; }
       .history-item { grid-template-columns: 1fr 1fr; }
       .btn-analysis { min-height: 38px; }
     }
@@ -415,75 +838,148 @@
       .cards-grid { grid-template-columns: 1fr 1fr; gap: 5px; }
       .metric-card .value { font-size: 19px; }
       .file-box { flex-direction: column; align-items: stretch; }
+      .monthly-kpis { grid-template-columns: 1fr 1fr; gap: 5px; }
+      .chart-wrap { height: 265px; min-height: 265px; }
     }
   </style>
-</head>
+<link rel="stylesheet" href="css/site-background.css"></head>
 <body>
   <div class="analysis-shell">
     <header class="analysis-header">
       <div class="analysis-logo"><span class="m">minerva</span><span class="f">foods</span></div>
       <div class="analysis-title">
         <h1>Análise Processos</h1>
-        <small>ColetaWeb • auditoria das ordens GEN SET faturadas</small>
+        <small>Auditoria das ordens GEN SET faturadas</small>
       </div>
       <div class="header-actions">
+        <input id="arquivoExcel" type="file" accept=".xlsx,.xls" style="display:none" />
+        <button class="btn-analysis btn-gold" onclick="document.getElementById('arquivoExcel').click()">Importar Excel</button>
+        <button class="btn-analysis btn-outline" onclick="exportarResultado()">Exportar Resultado</button>
+        <button id="btnRegraAnalise" class="btn-analysis btn-rule" type="button" onclick="abrirRegraAnalise()">Regra da Análise</button>
         <button class="btn-analysis btn-secondary" onclick="window.location.href='index.html'">Voltar</button>
-        <button class="btn-analysis btn-primary" onclick="recarregarProcessos()">Atualizar ColetaWeb</button>
       </div>
     </header>
 
-    <section class="panel">
-      <div class="import-row">
-        <div class="field">
-          <label>Arquivo Excel para análise</label>
-          <div class="file-box">
-            <input id="arquivoExcel" type="file" accept=".xlsx,.xls" style="display:none" />
-            <button class="btn-analysis btn-gold" onclick="document.getElementById('arquivoExcel').click()">Importar Excel</button>
-            <div id="arquivoNome" class="file-name">Nenhum arquivo selecionado</div>
-          </div>
-        </div>
+    <section class="panel analysis-controls-panel">
+      <div id="modoAtual" style="display:none;"></div>
 
-        <div class="field">
-          <label>Regra de cruzamento</label>
-          <div class="file-name">1º ORDEM • DEPOIS STATUS E DEMAIS INFORMAÇÕES</div>
-        </div>
+      <div id="periodoArquivoInfo" class="current-period filter-period-info" style="display:none;"></div>
 
-        <button class="btn-analysis btn-outline" onclick="exportarResultado()">Exportar resultado</button>
-      </div>
-
-      <div class="info-line">
-        O arquivo importado é a referência das <strong>ordens já faturadas</strong>. Primeiro o sistema pega cada ORDEM cuja <strong>descricao_embarque</strong> contém GEN SET e procura essa <strong>ORDEM em todo o ColetaWeb</strong>, independentemente da transportadora cadastrada no processo.
-        Somente depois de encontrar a ordem ele confere se o processo está <strong>finalizado ou em aberto</strong> e exibe tipo de carga, container, transportadora e demais informações. O cruzamento principal é <strong>somente pela ORDEM</strong>. <strong>Ordens cuja descricao_embarque não contenha GEN SET são ignoradas e não aparecem no painel.</strong>
-      </div>
-      <div id="setupBanner" class="status-banner"></div>
-    </section>
-
-    <section class="cards-grid">
-      <div id="cardTodos" class="metric-card" title="1 clique: mostrar todas as ordens GEN SET • 2 cliques: limpar filtro" onclick="cliqueCardFiltro('todos')" ondblclick="duploCliqueCardFiltro()"><div class="label">GEN SET faturadas no arquivo</div><div id="mGenArquivo" class="value">0</div></div>
-      <div id="cardEncontradas" class="metric-card" title="1 clique: filtrar ordens encontradas no ColetaWeb • 2 cliques: limpar filtro" onclick="cliqueCardFiltro('encontradas')" ondblclick="duploCliqueCardFiltro()"><div class="label">Faturadas encontradas no ColetaWeb</div><div id="mEncontradasColeta" class="value">0</div></div>
-      <div id="cardFinalizadas" class="metric-card good" title="1 clique: filtrar faturadas e finalizadas • 2 cliques: limpar filtro" onclick="cliqueCardFiltro('finalizadas')" ondblclick="duploCliqueCardFiltro()"><div class="label">Faturadas e finalizadas no ColetaWeb</div><div id="mFatFinalizadas" class="value">0</div></div>
-      <div id="cardAbertas" class="metric-card attention" title="1 clique: filtrar faturadas em aberto • 2 cliques: limpar filtro" onclick="cliqueCardFiltro('abertas')" ondblclick="duploCliqueCardFiltro()"><div class="label">Faturadas em aberto no ColetaWeb</div><div id="mFatNaoFinalizadas" class="value">0</div></div>
-      <div id="cardSemRegistro" class="metric-card alert" title="1 clique: filtrar faturadas sem registro • 2 cliques: limpar filtro" onclick="cliqueCardFiltro('sem_registro')" ondblclick="duploCliqueCardFiltro()"><div class="label">Faturadas sem registro no ColetaWeb</div><div id="mSemRegistro" class="value">0</div></div>
-    </section>
-
-    <section class="panel">
-      <div id="modoAtual" class="mode-label">Aguardando importação do arquivo faturado.</div>
-      <div class="filter-row">
-        <div class="field">
+      <div class="filter-row filter-row-compact">
+        <div class="field field-search">
           <label>Buscar Ordem / Container</label>
-          <input id="filtroBusca" type="text" placeholder="Digite uma ordem ou container..." oninput="renderizarTabela()" />
+          <input id="filtroBusca" type="text" placeholder="Digite uma ordem ou container..." oninput="atualizarPainelDinamico()" />
         </div>
-        <div class="field">
+
+        <div class="field field-situacao">
           <label>Situação da ordem</label>
-          <select id="filtroSituacao" onchange="renderizarTabela()">
+          <select id="filtroSituacao" onchange="atualizarPainelDinamico()">
             <option value="">Todas</option>
             <option value="faturada_finalizada">Faturada + finalizada</option>
             <option value="faturada_nao_finalizada">Faturada + em aberto</option>
             <option value="faturada_sem_registro">Faturada + sem registro</option>
           </select>
         </div>
-        <button class="btn-analysis btn-primary" onclick="renderizarTabela()">Filtrar</button>
-        <button class="btn-analysis btn-outline" onclick="limparFiltros()">Limpar</button>
+
+        <div class="field field-transportadora">
+          <label>Transportadora do arquivo</label>
+          <select id="filtroTransportadora" onchange="atualizarPainelDinamico()">
+            <option value="">Todas liberadas</option>
+            <option value="DALLASTRA">DALLASTRA</option>
+            <option value="TFX FAUSTINO TRANSPORTE LTDA">TFX FAUSTINO TRANSPORTE LTDA</option>
+            <option value="ORLANDO TRANSPORTES LTDA">ORLANDO TRANSPORTES LTDA</option>
+            <option value="LUIZ MAURO HERGERT E CIA LTDA">LUIZ MAURO HERGERT E CIA LTDA</option>
+            <option value="TRANSMARONI TRANSPORTES BRASIL RODOVIARIOS LTDA">TRANSMARONI TRANSPORTES BRASIL RODOVIARIOS LTDA</option>
+            <option value="AGREGA MAIS TRANSPORTES EIRELI">AGREGA MAIS TRANSPORTES EIRELI</option>
+          </select>
+        </div>
+
+        <div class="field field-conferencia">
+          <label>Conferência transportadora</label>
+          <select id="filtroConferenciaTransportadora" onchange="atualizarPainelDinamico()">
+            <option value="">Todas</option>
+            <option value="OK">OK</option>
+            <option value="DIVERGENTE">Divergente</option>
+            <option value="SEM REGISTRO">Sem registro</option>
+          </select>
+        </div>
+
+        <div class="filter-actions-stack">
+          <div class="filter-banner-slot">
+            <div id="setupBanner" class="status-banner"></div>
+          </div>
+          <div class="filter-actions-buttons">
+            <button class="btn-analysis btn-primary filter-action-btn" onclick="atualizarPainelDinamico()">Filtrar</button>
+            <button class="btn-analysis btn-outline filter-action-btn" onclick="limparFiltros()">Limpar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cards-grid">
+      <div id="cardTodos" class="metric-card" title="Clique para filtrar • clique novamente para retirar" onclick="cliqueCardFiltro('todos')"><div class="label">GEN SET faturadas no arquivo</div><div id="mGenArquivo" class="value">0</div></div>
+      <div id="cardEncontradas" class="metric-card" title="Clique para filtrar • clique novamente para retirar" onclick="cliqueCardFiltro('encontradas')"><div class="label">Faturadas encontradas no ColetaWeb</div><div id="mEncontradasColeta" class="value">0</div></div>
+      <div id="cardFinalizadas" class="metric-card good" title="Clique para filtrar • clique novamente para retirar" onclick="cliqueCardFiltro('finalizadas')"><div class="label">Faturadas e finalizadas no ColetaWeb</div><div id="mFatFinalizadas" class="value">0</div></div>
+      <div id="cardAbertas" class="metric-card attention" title="Clique para filtrar • clique novamente para retirar" onclick="cliqueCardFiltro('abertas')"><div class="label">Faturadas em aberto no ColetaWeb</div><div id="mFatNaoFinalizadas" class="value">0</div></div>
+      <div id="cardSemRegistro" class="metric-card alert" title="Clique para filtrar • clique novamente para retirar" onclick="cliqueCardFiltro('sem_registro')"><div class="label">Faturadas sem registro no ColetaWeb</div><div id="mSemRegistro" class="value">0</div></div>
+    </section>
+
+
+    <section class="panel monthly-panel">
+      <div class="monthly-head">
+        <div class="monthly-title">
+          <h2>Comparativo mensal • Arquivo faturado x ColetaWeb</h2>
+          <small id="graficoSubtitulo"></small>
+        </div>
+        <div class="monthly-controls">
+          <div class="field">
+            <label>Base do gráfico</label>
+            <select id="graficoFonte" onchange="renderizarGraficosMensais()">
+              <option value="historico">Histórico acumulado • mês da dta_embarque</option>
+              <option value="dta_embarque">Análise acumulada atual • mês da dta_embarque</option>
+              <option value="carregamento">Análise acumulada atual • mês do Carregamento</option>
+            </select>
+          </div>
+          <div class="field year">
+            <label>Ano</label>
+            <select id="graficoAno" onchange="renderizarGraficosMensais()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="monthly-kpis">
+        <div class="monthly-kpi">
+          <div id="kMesLabel" class="k-label">Último mês exibido</div>
+          <div id="kMes" class="k-value">-</div>
+        </div>
+        <div class="monthly-kpi">
+          <div class="k-label">Faturado no arquivo</div>
+          <div id="kFaturado" class="k-value">0</div>
+        </div>
+        <div class="monthly-kpi gap">
+          <div class="k-label">GAP • sem registro</div>
+          <div id="kGap" class="k-value">0</div>
+        </div>
+        <div class="monthly-kpi coverage">
+          <div class="k-label">Cobertura ColetaWeb</div>
+          <div id="kCobertura" class="k-value">0%</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-card-title">Volume mensal e cobertura</div>
+          <div class="chart-wrap">
+            <canvas id="chartComparativoMensal"></canvas>
+            <div id="graficoComparativoVazio" class="chart-empty">Ainda não há dados mensais para esta visão.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-footnote">
+        
       </div>
     </section>
 
@@ -506,9 +1002,10 @@
               <th>Tipo Carga ColetaWeb</th>
               <th>Container ColetaWeb</th>
               <th>Transportadora ColetaWeb</th>
+              <th>Conferência Transportadora</th>
               <th>dta_embarque</th>
               <th>Carregamento</th>
-              <th>Transportador</th>
+              <th>Transportadora Arquivo</th>
               <th>Nro. Container Arquivo</th>
               <th>descricao_embarque</th>
               <th>Destino</th>
@@ -516,7 +1013,7 @@
             </tr>
           </thead>
           <tbody id="resultadoBody">
-            <tr><td colspan="17" class="empty">Importe o arquivo faturado para iniciar a análise.</td></tr>
+            <tr><td colspan="18" class="empty">Importe o arquivo faturado para iniciar a análise.</td></tr>
           </tbody>
         </table>
       </div>
@@ -541,14 +1038,93 @@
     </section>
   </div>
 
+
+  <div id="regraAnaliseModal" class="rule-modal" onclick="fecharRegraAnaliseAoFundo(event)">
+    <div class="rule-modal-card" role="dialog" aria-modal="true" aria-labelledby="regraAnaliseTitulo">
+      <div class="rule-modal-header">
+        <div>
+          <div id="regraAnaliseTitulo" class="rule-modal-title">Regra da Análise</div>
+          <div class="rule-modal-subtitle">Como o ColetaWeb realiza o cruzamento das ordens faturadas.</div>
+        </div>
+        <button class="rule-close" type="button" onclick="fecharRegraAnalise()" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="rule-modal-body">
+        <div class="rule-step">
+          <div class="rule-step-number">1</div>
+          <div>
+            <strong>Arquivo faturado como referência</strong>
+            <p>O sistema considera as ordens já faturadas cuja <strong>descricao_embarque</strong> contém GEN SET e cuja transportadora está na lista liberada. Cada novo arquivo completa a base já salva, sem apagar os períodos anteriores.</p>
+          </div>
+        </div>
+
+        <div class="rule-step">
+          <div class="rule-step-number">2</div>
+          <div>
+            <strong>Cruzamento principal pela ORDEM</strong>
+            <p>Cada ORDEM do arquivo é procurada no ColetaWeb somente dentro das transportadoras liberadas. O cruzamento principal continua sendo pela <strong>ORDEM</strong>.</p>
+          </div>
+        </div>
+
+        <div class="rule-step">
+          <div class="rule-step-number">3</div>
+          <div>
+            <strong>Conferência do processo</strong>
+            <p>Depois de encontrar a ordem, o sistema verifica se o processo está finalizado ou em aberto e apresenta tipo de carga, container, transportadora e demais informações.</p>
+          </div>
+        </div>
+
+        <div class="rule-step">
+          <div class="rule-step-number">4</div>
+          <div>
+            <strong>Conferência da transportadora</strong>
+            <p>O sistema compara a transportadora do arquivo com a transportadora do ColetaWeb e sinaliza <strong>OK</strong>, <strong>DIVERGENTE</strong> ou <strong>SEM REGISTRO</strong>.</p>
+          </div>
+        </div>
+
+        <div class="rule-scope-card rule-cross-card">
+          <strong>Regra de cruzamento</strong>
+          <p><strong>1º ORDEM</strong> • depois STATUS e demais informações.</p>
+          <small>O sistema primeiro localiza a ORDEM. Somente depois confere status, etapa, tipo de carga, container, transportadora e demais dados.</small>
+        </div>
+
+        <div class="rule-scope-card">
+          <strong>Transportadoras liberadas nesta análise</strong>
+          <ul class="rule-transport-list">
+            <li>DALLASTRA</li>
+            <li>TFX FAUSTINO TRANSPORTE LTDA</li>
+            <li>ORLANDO TRANSPORTES LTDA</li>
+            <li>LUIZ MAURO HERGERT E CIA LTDA</li>
+            <li>TRANSMARONI TRANSPORTES BRASIL RODOVIARIOS LTDA</li>
+            <li>AGREGA MAIS TRANSPORTES EIRELI</li>
+          </ul>
+          <small>Ordens fora do escopo GEN SET / transportadoras liberadas não entram na análise.</small>
+        </div>
+      </div>
+
+      <div class="rule-modal-footer">
+        <button class="btn-analysis btn-primary" type="button" onclick="fecharRegraAnalise()">Entendi</button>
+      </div>
+    </div>
+  </div>
+
   <div id="loadingOverlay" class="loading-overlay">
     <div class="spinner-analysis"></div>
     <div id="loadingText">Processando...</div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="js/script.js"></script>
   <script>
     const TRANSPORTADORA_PERMITIDA = 'Minerva Foods';
+
+    const TRANSPORTADORAS_LIBERADAS = [
+      { nome: 'DALLASTRA', aliases: ['DALLASTRA'] },
+      { nome: 'TFX FAUSTINO TRANSPORTE LTDA', aliases: ['TFX', 'TFX FAUSTINO', 'TFX FAUSTINO TRANSPORTE LTDA', 'TFX FAUSTINO TRANSPORTES LTDA'] },
+      { nome: 'ORLANDO TRANSPORTES LTDA', aliases: ['ORLANDO', 'ORLANDO TRANSPORTES', 'ORLANDO TRANSPORTES LTDA'] },
+      { nome: 'LUIZ MAURO HERGERT E CIA LTDA', aliases: ['LUIZ MAURO HERGERT', 'LUIZ MAURO HERGERT E CIA LTDA'] },
+      { nome: 'TRANSMARONI TRANSPORTES BRASIL RODOVIARIOS LTDA', aliases: ['TRANSMARONI', 'TRANS MARONI', 'TRANSMARONI TRANSPORTES BRASIL RODOVIARIOS LTDA', 'TRANSMARONI TRANSPORTES BRASIL RODOVIÁRIOS LTDA', 'TRANS MAMONI', 'MAMONI', 'TRANS MAMONI TRANSPORTES BRASIL RODOVIARIOS LTDA', 'TRANS MAMONI TRANSPORTES BRASIL RODOVIÁRIOS LTDA'] },
+      { nome: 'AGREGA MAIS TRANSPORTES EIRELI', aliases: ['AGREGA', 'AGREGA MAIS', 'AGREGA MAIS TRANSPORTES EIRELI', 'ACREGA', 'ACREGA MAIS', 'ACREGA MAIS TRANSPORTES EIRELI'] }
+    ];
     const COLUNAS_OBRIGATORIAS = [
       'Ordem',
       'dta_embarque',
@@ -569,10 +1145,14 @@
     let historicoCache = [];
     let historicoDisponivel = true;
     let filtroCardAtivo = '';
-    let cardClickTimer = null;
     let nomeArquivoAtual = '';
     let ultimaModificacaoArquivo = null;
     let linhasArquivoAtual = 0;
+    let periodoArquivoAtual = null;
+    let chartComparativoMensal = null;
+    let graficoAnoInicializado = false;
+    let bannerTimeoutId = null;
+    let bannerFadeTimeoutId = null;
 
     function normalizarTexto(valor) {
       return String(valor ?? '')
@@ -580,6 +1160,104 @@
         .replace(/[\u0300-\u036f]/g, '')
         .trim()
         .toLowerCase();
+    }
+
+
+    function normalizarNomeTransportadora(valor) {
+      return String(valor ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[._\-\/]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function obterTransportadoraLiberada(valor) {
+      const atual = normalizarNomeTransportadora(valor);
+      if (!atual) return '';
+
+      for (const item of TRANSPORTADORAS_LIBERADAS) {
+        const candidatos = [item.nome, ...(item.aliases || [])];
+        for (const alias of candidatos) {
+          const a = normalizarNomeTransportadora(alias);
+          if (!a) continue;
+          if (atual === a || atual.includes(a) || a.includes(atual)) return item.nome;
+        }
+      }
+      return '';
+    }
+
+    function obterTransportadorasLiberadasDoCampo(valor) {
+      const texto = String(valor ?? '').trim();
+      if (!texto) return [];
+
+      const partes = texto.split(/\s*[|;\n]+\s*/).filter(Boolean);
+      const candidatos = partes.length ? partes : [texto];
+      const encontrados = [];
+
+      candidatos.forEach(parte => {
+        const nome = obterTransportadoraLiberada(parte);
+        if (nome && !encontrados.includes(nome)) encontrados.push(nome);
+      });
+
+      // Alguns arquivos trazem texto adicional no mesmo campo sem separador.
+      if (!encontrados.length) {
+        const nome = obterTransportadoraLiberada(texto);
+        if (nome) encontrados.push(nome);
+      }
+
+      return encontrados;
+    }
+
+    function transportadoraEstaLiberada(valor) {
+      return obterTransportadorasLiberadasDoCampo(valor).length > 0;
+    }
+
+    function transportadorasIguais(campoArquivo, campoColeta) {
+      const a = obterTransportadorasLiberadasDoCampo(campoArquivo).sort();
+      const b = obterTransportadorasLiberadasDoCampo(campoColeta).sort();
+      if (!a.length || !b.length || a.length !== b.length) return false;
+      return a.every((nome, i) => nome === b[i]);
+    }
+
+    function sanitizarRegistroParaTransportadorasLiberadas(registro) {
+      if (!registro) return null;
+
+      const transpArquivo = obterTransportadorasLiberadasDoCampo(registro.transportador);
+      if (!transpArquivo.length) return null;
+
+      const transpColeta = obterTransportadorasLiberadasDoCampo(registro.transportadora_coletaweb);
+      const registradaLiberada = registro.registrada_coletaweb === true && transpColeta.length > 0;
+      const finalizado = registradaLiberada && registro.finalizado_coletaweb === true;
+      const emAberto = registradaLiberada && !finalizado;
+      const situacao = !registradaLiberada
+        ? 'faturada_sem_registro'
+        : (finalizado ? 'faturada_finalizada' : 'faturada_nao_finalizada');
+
+      return {
+        ...registro,
+        transportador: transpArquivo.join(' | '),
+        transportadora_coletaweb: transpColeta.join(' | '),
+        registrada_coletaweb: registradaLiberada,
+        finalizado_coletaweb: finalizado,
+        em_andamento_coletaweb: emAberto,
+        status_coletaweb: !registradaLiberada ? 'NÃO REGISTRADA' : (finalizado ? 'FINALIZADA' : 'EM ABERTO'),
+        situacao,
+        situacao_texto: !registradaLiberada
+          ? 'FATURADA - SEM REGISTRO'
+          : (finalizado ? 'FATURADA - FINALIZADA' : 'FATURADA - EM ABERTO'),
+        transportadora_confere: registradaLiberada && transportadorasIguais(transpArquivo.join(' | '), transpColeta.join(' | ')),
+        transportadora_status: !registradaLiberada
+          ? 'SEM REGISTRO'
+          : (transportadorasIguais(transpArquivo.join(' | '), transpColeta.join(' | ')) ? 'OK' : 'DIVERGENTE')
+      };
+    }
+
+    function aplicarEscopoTransportadorasLiberadas(lista) {
+      return (Array.isArray(lista) ? lista : [])
+        .map(sanitizarRegistroParaTransportadorasLiberadas)
+        .filter(Boolean);
     }
 
     function normalizarCabecalho(valor) {
@@ -633,14 +1311,62 @@
       document.getElementById('loadingOverlay').classList.remove('active');
     }
 
-    function mostrarBanner(texto, tipo = 'warn') {
+    function abrirRegraAnalise() {
+      const modal = document.getElementById('regraAnaliseModal');
+      if (!modal) return;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function fecharRegraAnalise() {
+      const modal = document.getElementById('regraAnaliseModal');
+      if (!modal) return;
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function fecharRegraAnaliseAoFundo(event) {
+      if (event?.target?.id === 'regraAnaliseModal') fecharRegraAnalise();
+    }
+
+    function mostrarBanner(texto, tipo = 'warn', duracaoMs = 0) {
       const el = document.getElementById('setupBanner');
+      if (bannerTimeoutId) {
+        clearTimeout(bannerTimeoutId);
+        bannerTimeoutId = null;
+      }
+      if (bannerFadeTimeoutId) {
+        clearTimeout(bannerFadeTimeoutId);
+        bannerFadeTimeoutId = null;
+      }
       el.className = `status-banner ${tipo}`;
       el.textContent = texto;
+
+      if (duracaoMs > 0) {
+        const duracaoFade = Math.min(750, duracaoMs);
+        bannerFadeTimeoutId = setTimeout(() => {
+          el.classList.add('fading');
+          bannerFadeTimeoutId = null;
+        }, Math.max(0, duracaoMs - duracaoFade));
+
+        bannerTimeoutId = setTimeout(() => {
+          el.className = 'status-banner';
+          el.textContent = '';
+          bannerTimeoutId = null;
+        }, duracaoMs);
+      }
     }
 
     function limparBanner() {
       const el = document.getElementById('setupBanner');
+      if (bannerTimeoutId) {
+        clearTimeout(bannerTimeoutId);
+        bannerTimeoutId = null;
+      }
+      if (bannerFadeTimeoutId) {
+        clearTimeout(bannerFadeTimeoutId);
+        bannerFadeTimeoutId = null;
+      }
       el.className = 'status-banner';
       el.textContent = '';
     }
@@ -649,32 +1375,12 @@
       const { data: { user }, error: authError } = await clienteSupabase.auth.getUser();
       if (authError) throw authError;
       if (!user) return null;
-
-      // Usa a mesma função global do restante do ColetaWeb.
-      // Assim a permissão é lida exatamente da tabela usuarios já usada no sistema.
-      let userData = null;
-      if (typeof buscarUsuarioLogado === 'function') {
-        try {
-          userData = await buscarUsuarioLogado();
-        } catch (e) {
-          console.warn('Falha ao usar buscarUsuarioLogado:', e);
-        }
-      }
-
-      // Fallback seguro: consulta somente colunas que já existem no seu cadastro de usuários.
-      if (!userData) {
-        const { data, error } = await clienteSupabase
-          .from('usuarios')
-          .select('email, perfil, status, transportadora')
-          .eq('email', user.email)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Erro ao buscar perfil do usuário:', error);
-        } else {
-          userData = data;
-        }
-      }
+      // Autenticacao e perfil sao consultados uma unica vez. Antes a mesma
+      // funcao repetia getUser() ao chamar buscarUsuarioLogado().
+      const { data: userData, error } = await clienteSupabase
+        .from('usuarios').select('email, perfil, status, transportadora')
+        .eq('email', user.email).maybeSingle();
+      if (error) throw error;
 
       return {
         auth: user,
@@ -732,7 +1438,7 @@
         inicio += pagina;
       }
 
-      processosColetaWeb = todos;
+      processosColetaWeb = todos.filter(reg => transportadoraEstaLiberada(reg.transportadora));
       return processosColetaWeb;
     }
 
@@ -804,6 +1510,7 @@
         dta_embarque: r[cab['dta_embarque']] ?? '',
         carregamento: r[cab['Carregamento']] ?? '',
         transportador: r[cab['Transportador']] ?? '',
+        transportador_canonico: obterTransportadoraLiberada(r[cab['Transportador']] ?? ''),
         container: r[cab['Nro. Container']] ?? '',
         descricao_embarque: r[cab['descricao_embarque']] ?? '',
         destino: r[cab['Destino']] ?? '',
@@ -873,7 +1580,7 @@
         etapa: finalizado ? 'FINALIZADO' : etapaProcesso(referencia),
         tipo_carga: unirValores(ordenados, 'tipo_carga'),
         container: unirValores(ordenados, 'container'),
-        transportadora: unirValores(ordenados, 'transportadora'),
+        transportadora: Array.from(new Set(ordenados.map(r => obterTransportadoraLiberada(r.transportadora)).filter(Boolean))).join(' | '),
         ids: ordenados.map(r => String(r.id ?? '')).filter(Boolean),
         quantidade_registros: ordenados.length
       };
@@ -924,9 +1631,15 @@
         }
 
         const ordemOriginal = (rowsExcelGen[0]?.ordem || regsColeta[0]?.ordem || ordemNorm);
+        const transportadorasArquivo = Array.from(new Set(rowsExcelGen.map(r => obterTransportadoraLiberada(r.transportador)).filter(Boolean)));
+        if (!transportadorasArquivo.length) return;
+        const transportadorArquivoCanonico = transportadorasArquivo.join(' | ');
+        const transportadoraColetaCanonica = resumoColeta.transportadora || '';
+        const transportadoraConfere = resumoColeta.registrado && transportadorasIguais(transportadorArquivoCanonico, transportadoraColetaCanonica);
+        const transportadoraStatus = !resumoColeta.registrado ? 'SEM REGISTRO' : (transportadoraConfere ? 'OK' : 'DIVERGENTE');
 
         resultado.push({
-          analise_versao: 3,
+          analise_versao: 4,
           ordem: ordemOriginal,
           ordem_norm: ordemNorm,
           situacao,
@@ -940,12 +1653,14 @@
           etapa_coletaweb: resumoColeta.etapa,
           tipo_carga_coletaweb: resumoColeta.tipo_carga,
           container_coletaweb: resumoColeta.container,
-          transportadora_coletaweb: resumoColeta.transportadora,
+          transportadora_coletaweb: transportadoraColetaCanonica,
+          transportadora_confere: transportadoraConfere,
+          transportadora_status: transportadoraStatus,
           quantidade_registros_coletaweb: resumoColeta.quantidade_registros,
           coleta_ids: resumoColeta.ids,
           dta_embarque: unirDatas(rowsExcelGen, 'dta_embarque'),
           carregamento: unirValores(rowsExcelGen, 'carregamento'),
-          transportador: unirValores(rowsExcelGen, 'transportador'),
+          transportador: transportadorArquivoCanonico,
           container_arquivo: unirValores(rowsExcelGen, 'container'),
           descricao_embarque: unirValores(rowsExcelGen, 'descricao_embarque'),
           destino: unirValores(rowsExcelGen, 'destino'),
@@ -1008,37 +1723,618 @@
       }
     }
 
-    function aplicarFiltroCard(tipo) {
-      filtroCardAtivo = tipo;
-      const select = document.getElementById('filtroSituacao');
-      if (select) select.value = '';
-      atualizarVisualFiltroCards();
-      renderizarTabela();
-    }
-
     function cliqueCardFiltro(tipo) {
-      if (cardClickTimer) clearTimeout(cardClickTimer);
-      cardClickTimer = setTimeout(() => {
-        aplicarFiltroCard(tipo);
-        cardClickTimer = null;
-      }, 240);
+      filtroCardAtivo = (filtroCardAtivo === tipo) ? '' : tipo;
+      atualizarVisualFiltroCards();
+      atualizarPainelDinamico();
     }
 
     function duploCliqueCardFiltro() {
-      if (cardClickTimer) {
-        clearTimeout(cardClickTimer);
-        cardClickTimer = null;
-      }
+      // Compatibilidade com versões anteriores.
       filtroCardAtivo = '';
-      const select = document.getElementById('filtroSituacao');
-      if (select) select.value = '';
       atualizarVisualFiltroCards();
-      renderizarTabela();
+      atualizarPainelDinamico();
     }
 
     function resumoSomenteColeta(processos) {
       const vazio = montarResultado(processos, []);
       return calcularResumo(vazio);
+    }
+
+
+    // ===== GRÁFICOS MENSAIS =====
+    function parseDataGrafico(valor) {
+      if (valor === null || valor === undefined || valor === '') return null;
+      if (valor instanceof Date && !isNaN(valor.getTime())) return valor;
+
+      const partes = String(valor).split('|').map(v => v.trim()).filter(Boolean);
+      for (const parte of partes) {
+        if (/^\d+(?:[.,]\d+)?$/.test(parte)) {
+          const serial = Number(parte.replace(',', '.'));
+          if (serial > 20000 && serial < 80000 && window.XLSX?.SSF?.parse_date_code) {
+            const p = XLSX.SSF.parse_date_code(serial);
+            if (p?.y && p?.m && p?.d) return new Date(p.y, p.m - 1, p.d);
+          }
+        }
+
+        let m = parte.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+        if (m) {
+          const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+          if (!isNaN(d.getTime())) return d;
+        }
+
+        m = parte.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+        if (m) {
+          const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+          if (!isNaN(d.getTime())) return d;
+        }
+
+        const d = new Date(parte);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return null;
+    }
+
+    function chaveMesData(data) {
+      if (!(data instanceof Date) || isNaN(data.getTime())) return '';
+      return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function formatarDataGraficoBR(data) {
+      if (!(data instanceof Date) || isNaN(data.getTime())) return '-';
+      return `${String(data.getDate()).padStart(2,'0')}/${String(data.getMonth()+1).padStart(2,'0')}/${data.getFullYear()}`;
+    }
+
+    function calcularPeriodoLinhasArquivo(linhas) {
+      const datas = [];
+
+      (Array.isArray(linhas) ? linhas : []).forEach(l => {
+        // A DTA é a referência principal do arquivo.
+        // Se estiver vazia, Carregamento funciona como fallback.
+        const dt = parseDataGrafico(l?.dta_embarque) || parseDataGrafico(l?.carregamento);
+        if (dt) datas.push(dt);
+      });
+
+      if (!datas.length) return null;
+
+      datas.sort((a, b) => a.getTime() - b.getTime());
+      const inicial = datas[0];
+      const final = datas[datas.length - 1];
+
+      return {
+        inicial: formatarDataGraficoBR(inicial),
+        final: formatarDataGraficoBR(final),
+        inicialISO: `${inicial.getFullYear()}-${String(inicial.getMonth()+1).padStart(2,'0')}-${String(inicial.getDate()).padStart(2,'0')}`,
+        finalISO: `${final.getFullYear()}-${String(final.getMonth()+1).padStart(2,'0')}-${String(final.getDate()).padStart(2,'0')}`
+      };
+    }
+
+    function calcularPeriodoResultado(resultado) {
+      const linhas = Array.isArray(resultado) ? resultado : [];
+      if (!linhas.length) return null;
+
+      // Históricos novos guardam explicitamente o período do arquivo importado.
+      const comMeta = linhas.find(r => r?.__import_data_inicial || r?.__import_data_final);
+      if (comMeta?.__import_data_final) {
+        const di = parseDataGrafico(comMeta.__import_data_inicial || comMeta.__import_data_final);
+        const df = parseDataGrafico(comMeta.__import_data_final);
+        if (df) {
+          return {
+            inicial: formatarDataGraficoBR(di || df),
+            final: formatarDataGraficoBR(df),
+            inicialISO: comMeta.__import_data_inicial || comMeta.__import_data_final,
+            finalISO: comMeta.__import_data_final
+          };
+        }
+      }
+
+      // Compatibilidade com históricos antigos: deriva pelas datas das ordens.
+      return calcularPeriodoLinhasArquivo(linhas);
+    }
+
+    function atualizarPeriodoArquivo(periodo, contexto = 'ARQUIVO IMPORTADO') {
+      const el = document.getElementById('periodoArquivoInfo');
+      if (!el) return;
+
+      if (!periodo?.final) {
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+      }
+
+      el.style.display = 'flex';
+      el.innerHTML = `
+        <span><strong>Período do ${contexto}:</strong> ${periodo.inicial} até ${periodo.final}</span>
+        <span><strong>Última data do arquivo:</strong> ${periodo.final}</span>
+      `;
+    }
+
+    function consolidarPeriodos(periodos) {
+      const validos = (Array.isArray(periodos) ? periodos : [])
+        .filter(p => p?.inicialISO && p?.finalISO);
+
+      if (!validos.length) return null;
+
+      const datasIniciais = validos
+        .map(p => parseDataGrafico(p.inicialISO))
+        .filter(Boolean);
+
+      const datasFinais = validos
+        .map(p => parseDataGrafico(p.finalISO))
+        .filter(Boolean);
+
+      if (!datasIniciais.length || !datasFinais.length) return null;
+
+      datasIniciais.sort((a, b) => a.getTime() - b.getTime());
+      datasFinais.sort((a, b) => a.getTime() - b.getTime());
+
+      const inicial = datasIniciais[0];
+      const final = datasFinais[datasFinais.length - 1];
+
+      return {
+        inicial: formatarDataGraficoBR(inicial),
+        final: formatarDataGraficoBR(final),
+        inicialISO: `${inicial.getFullYear()}-${String(inicial.getMonth()+1).padStart(2,'0')}-${String(inicial.getDate()).padStart(2,'0')}`,
+        finalISO: `${final.getFullYear()}-${String(final.getMonth()+1).padStart(2,'0')}-${String(final.getDate()).padStart(2,'0')}`
+      };
+    }
+
+    function calcularPeriodoHistoricoAcumulado(periodoAdicional = null, criadoAte = null) {
+      const limite = criadoAte ? new Date(criadoAte).getTime() : null;
+      const periodos = [];
+
+      (historicoCache || []).forEach(h => {
+        if (limite !== null) {
+          const criado = new Date(h?.created_at || 0).getTime() || 0;
+          if (criado > limite) return;
+        }
+
+        const periodoHistorico = calcularPeriodoResultado(
+          Array.isArray(h?.resultado) ? h.resultado : []
+        );
+
+        if (periodoHistorico) periodos.push(periodoHistorico);
+      });
+
+      if (periodoAdicional) periodos.push(periodoAdicional);
+
+      return consolidarPeriodos(periodos);
+    }
+
+    function resultadoHistoricoParaLinhaExcel(d) {
+      const transportador = obterTransportadorasLiberadasDoCampo(d?.transportador).join(' | ');
+      if (!transportador) return null;
+
+      return {
+        __linha: 0,
+        ordem: d?.ordem || d?.ordem_norm || '',
+        dta_embarque: d?.dta_embarque || '',
+        carregamento: d?.carregamento || '',
+        transportador,
+        transportador_canonico: obterTransportadoraLiberada(transportador),
+        container: d?.container_arquivo || '',
+        descricao_embarque: possuiGenSet(d?.descricao_embarque) ? d.descricao_embarque : 'GEN SET',
+        destino: d?.destino || '',
+        pais_destino_final: d?.pais_destino_final || ''
+      };
+    }
+
+    function montarLinhasAcumuladasParaAnalise(linhasNovas) {
+      // Parte 1: tudo que já existia no histórico acumulado.
+      const porOrdem = new Map();
+
+      montarBaseHistoricaAcumulada().forEach(d => {
+        const linha = resultadoHistoricoParaLinhaExcel(d);
+        if (!linha) return;
+        const ordem = normalizarOrdem(linha.ordem);
+        if (!ordem) return;
+        porOrdem.set(ordem, [linha]);
+      });
+
+      // Parte 2: o arquivo novo substitui/atualiza somente as ordens que reapareceram.
+      // Ordens antigas ausentes no novo arquivo NÃO são apagadas.
+      const novasPorOrdem = new Map();
+      (Array.isArray(linhasNovas) ? linhasNovas : []).forEach(linha => {
+        const ordem = normalizarOrdem(linha?.ordem);
+        if (!ordem) return;
+        if (!novasPorOrdem.has(ordem)) novasPorOrdem.set(ordem, []);
+        novasPorOrdem.get(ordem).push(linha);
+      });
+
+      novasPorOrdem.forEach((rows, ordem) => porOrdem.set(ordem, rows));
+
+      return Array.from(porOrdem.values()).flat();
+    }
+
+    function aplicarMetadataImportacao(resultado, periodo, arquivoNome) {
+      // O período gravado na fotografia histórica é CONSOLIDADO:
+      // do primeiro arquivo importado até o arquivo mais recente.
+      return (Array.isArray(resultado) ? resultado : []).map(r => ({
+        ...r,
+        __import_arquivo_nome: arquivoNome || '',
+        __import_data_inicial: periodo?.inicialISO || '',
+        __import_data_final: periodo?.finalISO || ''
+      }));
+    }
+
+    function rotuloMes(chave) {
+      const m = String(chave || '').match(/^(\d{4})-(\d{2})$/);
+      if (!m) return chave || '-';
+      const nomes = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+      return `${nomes[Number(m[2]) - 1]}/${m[1]}`;
+    }
+
+    function normalizarNumeroHistorico(valor, fallback = 0) {
+      const n = Number(valor);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function valorHistoricoPreferido(novo, antigo) {
+      if (novo === null || novo === undefined) return antigo;
+      if (typeof novo === 'string' && !novo.trim()) return antigo;
+      return novo;
+    }
+
+    function montarBaseHistoricaAcumulada() {
+      // Cada importação continua salva em analise_processos_historico.
+      // Aqui reconstruímos uma BASE ACUMULADA por ORDEM:
+      // - uma ordem que apareceu em um arquivo antigo nunca some do histórico;
+      // - se ela aparecer de novo em um arquivo mais recente, prevalece a versão mais recente;
+      // - isso evita somar a mesma ordem várias vezes quando os arquivos mensais se sobrepõem.
+      const porOrdem = new Map();
+      const historicos = [...(historicoCache || [])].sort((a, b) => {
+        const ta = new Date(a?.created_at || 0).getTime() || 0;
+        const tb = new Date(b?.created_at || 0).getTime() || 0;
+        return ta - tb;
+      });
+
+      historicos.forEach(h => {
+        const linhas = Array.isArray(h?.resultado) ? h.resultado : [];
+        const timestamp = new Date(h?.created_at || 0).getTime() || 0;
+
+        linhas.forEach(d => {
+          if (!d) return;
+          const ordemNorm = normalizarOrdem(d.ordem_norm || d.ordem);
+          if (!ordemNorm) return;
+
+          // Resultado histórico desta tela contém apenas ordens faturadas GEN SET.
+          // A checagem abaixo também aceita históricos de versões anteriores.
+          const ehFaturada = d.faturada_arquivo === true || String(d.situacao || '').startsWith('faturada_');
+          const ehGenSet = possuiGenSet(d.descricao_embarque) || d.faturada_arquivo === true;
+          if (!ehFaturada || !ehGenSet) return;
+
+          const registroEscopo = sanitizarRegistroParaTransportadorasLiberadas(d);
+          if (!registroEscopo) return;
+
+          const anterior = porOrdem.get(ordemNorm)?.registro || {};
+          const registro = {
+            ...anterior,
+            ...registroEscopo,
+            ordem: valorHistoricoPreferido(registroEscopo.ordem, anterior.ordem) || ordemNorm,
+            ordem_norm: ordemNorm,
+            dta_embarque: valorHistoricoPreferido(d.dta_embarque, anterior.dta_embarque) || '',
+            carregamento: valorHistoricoPreferido(d.carregamento, anterior.carregamento) || '',
+            transportador: valorHistoricoPreferido(registroEscopo.transportador, anterior.transportador) || '',
+            transportadora_coletaweb: valorHistoricoPreferido(registroEscopo.transportadora_coletaweb, anterior.transportadora_coletaweb) || '',
+            transportadora_confere: registroEscopo.transportadora_confere === true,
+            transportadora_status: registroEscopo.transportadora_status || '',
+            registrada_coletaweb: registroEscopo.registrada_coletaweb === true,
+            finalizado_coletaweb: registroEscopo.finalizado_coletaweb === true,
+            em_andamento_coletaweb: registroEscopo.em_andamento_coletaweb === true,
+            situacao: registroEscopo.situacao || 'faturada_sem_registro',
+            situacao_texto: registroEscopo.situacao_texto || 'FATURADA - SEM REGISTRO',
+            container_arquivo: valorHistoricoPreferido(d.container_arquivo, anterior.container_arquivo) || '',
+            descricao_embarque: valorHistoricoPreferido(d.descricao_embarque, anterior.descricao_embarque) || '',
+            destino: valorHistoricoPreferido(d.destino, anterior.destino) || '',
+            pais_destino_final: valorHistoricoPreferido(d.pais_destino_final, anterior.pais_destino_final) || '',
+            __historico_id: h.id,
+            __arquivo_nome: h.arquivo_nome || '',
+            __ultima_importacao: h.created_at || '',
+            __timestamp: timestamp
+          };
+
+          porOrdem.set(ordemNorm, { registro, timestamp });
+        });
+      });
+
+      return Array.from(porOrdem.values()).map(item => item.registro);
+    }
+
+    function montarSerieHistoricoMensal() {
+      const baseAcumulada = aplicarFiltrosPainel(montarBaseHistoricaAcumulada(), true);
+      const porMes = new Map();
+
+      baseAcumulada.forEach(d => {
+        // A DTA de embarque é a referência principal para o mês.
+        // Caso ela esteja vazia em um registro legado, usa Carregamento como fallback.
+        const dt = parseDataGrafico(d.dta_embarque) || parseDataGrafico(d.carregamento);
+        const chave = chaveMesData(dt);
+        if (!chave) return;
+
+        if (!porMes.has(chave)) {
+          porMes.set(chave, {
+            chave,
+            faturado: 0,
+            coletaweb: 0,
+            finalizadas: 0,
+            abertas: 0,
+            semRegistro: 0,
+            cobertura: 0,
+            ordens: []
+          });
+        }
+
+        const p = porMes.get(chave);
+        p.faturado += 1;
+        p.ordens.push(d.ordem || d.ordem_norm || '');
+
+        if (d.registrada_coletaweb) p.coletaweb += 1;
+        if (d.situacao === 'faturada_finalizada') p.finalizadas += 1;
+        else if (d.situacao === 'faturada_nao_finalizada') p.abertas += 1;
+        else if (d.situacao === 'faturada_sem_registro') p.semRegistro += 1;
+        else if (!d.registrada_coletaweb) p.semRegistro += 1;
+      });
+
+      const serie = Array.from(porMes.values()).sort((a, b) => a.chave.localeCompare(b.chave));
+      serie.forEach(p => {
+        p.cobertura = p.faturado > 0 ? (p.coletaweb / p.faturado) * 100 : 0;
+        // Garante fechamento do mês mesmo para algum histórico legado.
+        p.semRegistro = Math.max(p.semRegistro, p.faturado - p.coletaweb);
+      });
+
+      return serie;
+    }
+
+    function montarSerieAnaliseMensal(campo) {
+      const porMes = new Map();
+      const baseFiltrada = aplicarFiltrosPainel(dadosAnalise || [], true);
+
+      baseFiltrada.forEach(d => {
+        if (!d?.faturada_arquivo || !possuiGenSet(d.descricao_embarque)) return;
+        const dt = parseDataGrafico(d[campo]);
+        const chave = chaveMesData(dt);
+        if (!chave) return;
+
+        if (!porMes.has(chave)) {
+          porMes.set(chave, {
+            chave, faturado: 0, coletaweb: 0, finalizadas: 0, abertas: 0, semRegistro: 0, cobertura: 0
+          });
+        }
+
+        const p = porMes.get(chave);
+        p.faturado += 1;
+        if (d.registrada_coletaweb) p.coletaweb += 1;
+        if (d.situacao === 'faturada_finalizada') p.finalizadas += 1;
+        else if (d.situacao === 'faturada_nao_finalizada') p.abertas += 1;
+        else if (d.situacao === 'faturada_sem_registro') p.semRegistro += 1;
+      });
+
+      const serie = Array.from(porMes.values()).sort((a, b) => a.chave.localeCompare(b.chave));
+      serie.forEach(p => {
+        p.cobertura = p.faturado > 0 ? (p.coletaweb / p.faturado) * 100 : 0;
+        // Garante fechamento mesmo em dados antigos/atípicos.
+        p.semRegistro = Math.max(p.semRegistro, p.faturado - p.coletaweb);
+      });
+      return serie;
+    }
+
+    function obterSerieGraficoCompleta() {
+      const fonte = document.getElementById('graficoFonte')?.value || 'historico';
+      if (fonte === 'dta_embarque') return montarSerieAnaliseMensal('dta_embarque');
+      if (fonte === 'carregamento') return montarSerieAnaliseMensal('carregamento');
+      return montarSerieHistoricoMensal();
+    }
+
+    function atualizarOpcoesAnoGrafico(serie) {
+      const select = document.getElementById('graficoAno');
+      if (!select) return;
+
+      const anterior = select.value;
+      const preservarTodos = graficoAnoInicializado && anterior === '';
+      const anos = Array.from(new Set(serie.map(p => p.chave.slice(0, 4)).filter(Boolean))).sort((a, b) => b.localeCompare(a));
+
+      select.innerHTML = '<option value="">Todos</option>' + anos.map(a => `<option value="${a}">${a}</option>`).join('');
+
+      if (preservarTodos) select.value = '';
+      else if (anterior && anos.includes(anterior)) select.value = anterior;
+      else if (anos.length) select.value = anos[0];
+      else select.value = '';
+
+      graficoAnoInicializado = true;
+    }
+
+    function atualizarResumoGrafico(serieVisivel) {
+      const ultimo = serieVisivel.length ? serieVisivel[serieVisivel.length - 1] : null;
+      document.getElementById('kMes').textContent = ultimo ? rotuloMes(ultimo.chave) : '-';
+      document.getElementById('kFaturado').textContent = ultimo?.faturado ?? 0;
+      document.getElementById('kGap').textContent = ultimo ? Math.max(0, ultimo.faturado - ultimo.coletaweb) : 0;
+      document.getElementById('kCobertura').textContent = ultimo ? `${ultimo.cobertura.toFixed(1).replace('.', ',')}%` : '0%';
+    }
+
+    function atualizarSubtituloGrafico() {
+      const fonte = document.getElementById('graficoFonte')?.value || 'historico';
+      const el = document.getElementById('graficoSubtitulo');
+      if (!el) return;
+
+      if (fonte === 'historico') {
+        el.textContent = '';
+      } else if (fonte === 'dta_embarque') {
+        el.textContent = '';
+      } else {
+        el.textContent = '';
+      }
+    }
+
+    function destruirGraficosMensais() {
+      if (chartComparativoMensal) { chartComparativoMensal.destroy(); chartComparativoMensal = null; }
+    }
+
+    function renderizarGraficosMensais() {
+      atualizarSubtituloGrafico();
+      const serieCompleta = obterSerieGraficoCompleta();
+      atualizarOpcoesAnoGrafico(serieCompleta);
+
+      const ano = document.getElementById('graficoAno')?.value || '';
+      const serie = ano ? serieCompleta.filter(p => p.chave.startsWith(`${ano}-`)) : serieCompleta;
+      atualizarResumoGrafico(serie);
+
+      const vazioComp = document.getElementById('graficoComparativoVazio');
+      if (!window.Chart || !serie.length) {
+        destruirGraficosMensais();
+        vazioComp?.classList.add('active');
+        if (!window.Chart) {
+          if (vazioComp) vazioComp.textContent = 'Chart.js não foi carregado. Verifique a conexão com a internet e atualize a página.';
+        } else {
+          if (vazioComp) vazioComp.textContent = 'Ainda não há dados mensais para esta visão.';
+        }
+        return;
+      }
+
+      vazioComp?.classList.remove('active');
+      destruirGraficosMensais();
+
+      const labels = serie.map(p => rotuloMes(p.chave));
+      const navy = '#2d4b5e';
+      const gold = '#c5b68d';
+      const green = '#15803d';
+
+      const ctxComparativo = document.getElementById('chartComparativoMensal')?.getContext('2d');
+      if (ctxComparativo) {
+        const pluginsGrafico = window.ChartDataLabels ? [ChartDataLabels] : [];
+        chartComparativoMensal = new Chart(ctxComparativo, {
+          data: {
+            labels,
+            datasets: [
+              {
+                type: 'bar',
+                label: 'Faturado no arquivo',
+                data: serie.map(p => p.faturado),
+                backgroundColor: 'rgba(45,75,94,.82)',
+                borderColor: navy,
+                borderWidth: 1,
+                borderRadius: 5,
+                maxBarThickness: 44,
+                order: 2
+              },
+              {
+                type: 'bar',
+                label: 'Encontrado no ColetaWeb',
+                data: serie.map(p => p.coletaweb),
+                backgroundColor: 'rgba(197,182,141,.88)',
+                borderColor: gold,
+                borderWidth: 1,
+                borderRadius: 5,
+                maxBarThickness: 44,
+                order: 2
+              },
+              {
+                type: 'line',
+                label: 'Cobertura (%)',
+                data: serie.map(p => Number(p.cobertura.toFixed(1))),
+                borderColor: green,
+                backgroundColor: green,
+                pointBackgroundColor: green,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1.5,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                borderWidth: 2.2,
+                tension: .28,
+                yAxisID: 'yPct',
+                order: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 24, right: 12, left: 6, bottom: 2 } },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: { boxWidth: 11, boxHeight: 11, font: { size: 9, weight: '700' } }
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    if (ctx.dataset?.type === 'line') {
+                      return `${ctx.dataset.label}: ${Number(ctx.raw || 0).toFixed(1).replace('.', ',')}%`;
+                    }
+                    return `${ctx.dataset.label}: ${ctx.raw}`;
+                  },
+                  afterBody: (items) => {
+                    if (!items?.length) return '';
+                    const i = items[0].dataIndex;
+                    const p = serie[i];
+                    return `GAP: ${Math.max(0, p.faturado - p.coletaweb)} | Progresso: ${p.cobertura.toFixed(1).replace('.', ',')}%`;
+                  }
+                }
+              },
+              datalabels: {
+                display: true,
+                clip: false,
+                clamp: true,
+                anchor: 'end',
+                align: (ctx) => ctx.dataset?.type === 'line' ? 'top' : 'end',
+                offset: (ctx) => ctx.dataset?.type === 'line' ? 5 : 2,
+                color: (ctx) => ctx.dataset?.type === 'line' ? green : navy,
+                backgroundColor: (ctx) => ctx.dataset?.type === 'line' ? 'rgba(255,255,255,.90)' : null,
+                borderRadius: (ctx) => ctx.dataset?.type === 'line' ? 4 : 0,
+                padding: (ctx) => ctx.dataset?.type === 'line'
+                  ? { top: 2, right: 4, bottom: 2, left: 4 }
+                  : 0,
+                font: (ctx) => ({
+                  size: ctx.dataset?.type === 'line' ? 9 : 8,
+                  weight: '800'
+                }),
+                formatter: (value, ctx) => {
+                  if (value === null || value === undefined) return '';
+                  if (ctx.dataset?.type === 'line') {
+                    return `${Number(value).toFixed(1).replace('.', ',')}%`;
+                  }
+                  return Number(value) === 0 ? '' : String(value);
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 9, weight: '700' } }
+              },
+              y: {
+                beginAtZero: true,
+                grace: '12%',
+                ticks: { precision: 0, font: { size: 9 } },
+                grid: { color: 'rgba(0,0,0,.05)' },
+                title: {
+                  display: true,
+                  text: 'Quantidade de ordens',
+                  font: { size: 9, weight: '700' }
+                }
+              },
+              yPct: {
+                beginAtZero: true,
+                min: 0,
+                max: 100,
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                ticks: {
+                  callback: v => `${v}%`,
+                  stepSize: 20,
+                  font: { size: 9 }
+                },
+                title: {
+                  display: true,
+                  text: 'Cobertura / progresso',
+                  font: { size: 9, weight: '700' }
+                }
+              }
+            }
+          },
+          plugins: pluginsGrafico
+        });
+      }
     }
 
     async function recarregarProcessos() {
@@ -1053,9 +2349,9 @@
           dadosAnalise = resultado;
           analiseAtualMemoria = JSON.parse(JSON.stringify(resultado));
           resumoAtualMemoria = { ...resumo };
-          atualizarCards(resumo);
-          renderizarTabela();
-          document.getElementById('modoAtual').textContent = `ColetaWeb atualizado e análise recalculada • ${nomeArquivoAtual}`;
+          atualizarPainelDinamico();
+          document.getElementById('modoAtual').textContent = `ColetaWeb atualizado • base acumulada recalculada • ${nomeArquivoAtual}`;
+          atualizarPeriodoArquivo(periodoArquivoAtual, 'ARQUIVO IMPORTADO');
         } else {
           document.getElementById('modoAtual').textContent = 'Dados do ColetaWeb atualizados. Importe o arquivo de ordens faturadas para realizar o cruzamento.';
         }
@@ -1067,33 +2363,82 @@
       }
     }
 
-    function obterDadosFiltrados() {
-      const busca = normalizarTexto(document.getElementById('filtroBusca').value);
-      const situacao = document.getElementById('filtroSituacao').value;
+    function aplicarFiltrosPainel(fonte, incluirFiltroCard = true) {
+      const busca = normalizarTexto(document.getElementById('filtroBusca')?.value || '');
+      const situacao = document.getElementById('filtroSituacao')?.value || '';
+      const transportadora = document.getElementById('filtroTransportadora')?.value || '';
+      const conferenciaTransportadora = document.getElementById('filtroConferenciaTransportadora')?.value || '';
 
-      return dadosAnalise.filter(d => {
-        // Só entra no painel o que foi faturado com GEN SET na descricao_embarque.
-        if (!d.faturada_arquivo || !possuiGenSet(d.descricao_embarque)) return false;
+      return (Array.isArray(fonte) ? fonte : []).filter(d => {
+        if (!d?.faturada_arquivo) return false;
+
+        // Para históricos antigos: se houver descrição, ela precisa ser GEN SET.
+        if (d.descricao_embarque && !possuiGenSet(d.descricao_embarque)) return false;
 
         if (busca) {
-          const alvo = normalizarTexto(`${d.ordem} ${d.container_coletaweb} ${d.container_arquivo}`);
+          const alvo = normalizarTexto(
+            `${d.ordem || ''} ${d.container_coletaweb || ''} ${d.container_arquivo || ''}`
+          );
           if (!alvo.includes(busca)) return false;
         }
+
         if (situacao && d.situacao !== situacao) return false;
 
-        if (filtroCardAtivo === 'encontradas' && !d.registrada_coletaweb) return false;
-        if (filtroCardAtivo === 'finalizadas' && d.situacao !== 'faturada_finalizada') return false;
-        if (filtroCardAtivo === 'abertas' && d.situacao !== 'faturada_nao_finalizada') return false;
-        if (filtroCardAtivo === 'sem_registro' && d.situacao !== 'faturada_sem_registro') return false;
-        // filtroCardAtivo === 'todos' ou vazio: mostra todas as ordens GEN SET faturadas.
+        if (transportadora) {
+          const transportadorasRegistro = obterTransportadorasLiberadasDoCampo(d.transportador || '');
+          if (!transportadorasRegistro.includes(transportadora)) return false;
+        }
+
+        if (conferenciaTransportadora && (d.transportadora_status || '') !== conferenciaTransportadora) {
+          return false;
+        }
+
+        if (incluirFiltroCard) {
+          if (filtroCardAtivo === 'encontradas' && !d.registrada_coletaweb) return false;
+          if (filtroCardAtivo === 'finalizadas' && d.situacao !== 'faturada_finalizada') return false;
+          if (filtroCardAtivo === 'abertas' && d.situacao !== 'faturada_nao_finalizada') return false;
+          if (filtroCardAtivo === 'sem_registro' && d.situacao !== 'faturada_sem_registro') return false;
+          // "todos" mantém todos os registros, apenas destaca o card.
+        }
+
         return true;
       });
+    }
+
+    function obterDadosFiltrados() {
+      return aplicarFiltrosPainel(dadosAnalise, true);
+    }
+
+    function obterDadosParaCards() {
+      // Cards respondem aos filtros superiores, mas não ao próprio card ativo.
+      return aplicarFiltrosPainel(dadosAnalise, false);
+    }
+
+    function atualizarCardsDinamicos() {
+      atualizarCards(calcularResumo(obterDadosParaCards()));
+    }
+
+    function atualizarPainelDinamico() {
+      atualizarCardsDinamicos();
+      renderizarTabela();
+      renderizarGraficosMensais();
     }
 
     function badgeSimNao(valor) {
       return valor
         ? '<span class="badge badge-yes">SIM</span>'
         : '<span class="badge badge-no">NÃO</span>';
+    }
+
+
+    function badgeTransportadora(d) {
+      if (!d.registrada_coletaweb || d.transportadora_status === 'SEM REGISTRO') {
+        return '<span class="badge badge-missing">SEM REGISTRO</span>';
+      }
+      if (d.transportadora_confere || d.transportadora_status === 'OK') {
+        return '<span class="badge badge-yes">OK</span>';
+      }
+      return '<span class="badge badge-divergent">DIVERGENTE</span>';
     }
 
     function badgeSituacao(d) {
@@ -1109,7 +2454,7 @@
       document.getElementById('tableCount').textContent = `${dados.length} ordem(ns) exibida(s)`;
 
       if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="17" class="empty">Nenhuma ordem para os filtros selecionados.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="18" class="empty">Nenhuma ordem para os filtros selecionados.</td></tr>';
         return;
       }
 
@@ -1125,6 +2470,7 @@
           <td title="${escapeHtml(d.tipo_carga_coletaweb)}">${escapeHtml(d.tipo_carga_coletaweb || '-')}</td>
           <td title="${escapeHtml(d.container_coletaweb)}">${escapeHtml(d.container_coletaweb || '-')}</td>
           <td title="${escapeHtml(d.transportadora_coletaweb)}">${escapeHtml(d.transportadora_coletaweb || '-')}</td>
+          <td>${badgeTransportadora(d)}</td>
           <td>${escapeHtml(d.dta_embarque || '-')}</td>
           <td title="${escapeHtml(d.carregamento)}">${escapeHtml(d.carregamento || '-')}</td>
           <td title="${escapeHtml(d.transportador)}">${escapeHtml(d.transportador || '-')}</td>
@@ -1137,11 +2483,19 @@
     }
 
     function limparFiltros() {
-      document.getElementById('filtroBusca').value = '';
-      document.getElementById('filtroSituacao').value = '';
+      const busca = document.getElementById('filtroBusca');
+      const situacao = document.getElementById('filtroSituacao');
+      const transportadora = document.getElementById('filtroTransportadora');
+      const conferencia = document.getElementById('filtroConferenciaTransportadora');
+
+      if (busca) busca.value = '';
+      if (situacao) situacao.value = '';
+      if (transportadora) transportadora.value = '';
+      if (conferencia) conferencia.value = '';
+
       filtroCardAtivo = '';
       atualizarVisualFiltroCards();
-      renderizarTabela();
+      atualizarPainelDinamico();
     }
 
     async function salvarHistorico(resumo, resultado) {
@@ -1165,9 +2519,11 @@
         resultado
       };
 
-      const { error } = await clienteSupabase
+      const { data: historicoCriado, error } = await clienteSupabase
         .from('analise_processos_historico')
-        .insert([payload]);
+        .insert([payload])
+        .select('id, created_at')
+        .single();
 
       if (error) {
         console.error('Erro ao salvar histórico:', error);
@@ -1179,7 +2535,7 @@
         throw error;
       }
 
-      return true;
+      return historicoCriado || { id: null, created_at: new Date().toISOString() };
     }
 
     async function processarArquivo(file) {
@@ -1189,7 +2545,8 @@
 
         nomeArquivoAtual = file.name;
         ultimaModificacaoArquivo = file.lastModified ? new Date(file.lastModified).toISOString() : null;
-        document.getElementById('arquivoNome').textContent = file.name;
+        const arquivoNomeEl = document.getElementById('arquivoNome');
+        if (arquivoNomeEl) arquivoNomeEl.textContent = file.name;
 
         await carregarProcessosColetaWeb();
 
@@ -1202,32 +2559,55 @@
         linhasArquivoAtual = linhasBrutas.length;
 
         const linhasPreparadas = prepararLinhasExcel(linhasBrutas);
-        const linhas = linhasPreparadas.filter(l => possuiGenSet(l.descricao_embarque));
-        if (!linhas.length) throw new Error('Nenhuma ordem com GEN SET foi encontrada na coluna descricao_embarque.');
-        linhasExcelAtual = linhas;
-        const resultado = montarResultado(processosColetaWeb, linhas);
+
+        // Período do arquivo que acabou de ser importado.
+        const periodoNovoArquivo = calcularPeriodoLinhasArquivo(linhasPreparadas);
+
+        // Consolida o período do PRIMEIRO arquivo importado até o arquivo atual.
+        // Ex.: 05/08/2026 a 15/09/2026 + novo arquivo 15/09/2026 a 16/09/2026
+        //      => período consolidado 05/08/2026 a 16/09/2026.
+        periodoArquivoAtual =
+          calcularPeriodoHistoricoAcumulado(periodoNovoArquivo) ||
+          periodoNovoArquivo;
+
+        atualizarPeriodoArquivo(periodoArquivoAtual, 'ARQUIVO IMPORTADO');
+
+        const linhasNovas = linhasPreparadas.filter(l => possuiGenSet(l.descricao_embarque) && transportadoraEstaLiberada(l.transportador));
+        if (!linhasNovas.length) throw new Error('Nenhuma ordem GEN SET das transportadoras liberadas foi encontrada no arquivo.');
+
+        // IMPORTANTE:
+        // Não analisa somente o arquivo novo. Primeiro recompõe tudo que já estava
+        // salvo, acrescenta/atualiza as ordens do arquivo novo e só então cruza
+        // novamente TODA a base acumulada com o ColetaWeb atual.
+        const linhasAcumuladas = montarLinhasAcumuladasParaAnalise(linhasNovas);
+        linhasExcelAtual = linhasAcumuladas;
+
+        const resultadoBase = montarResultado(processosColetaWeb, linhasAcumuladas);
+        const resultado = aplicarMetadataImportacao(resultadoBase, periodoArquivoAtual, file.name);
         const resumo = calcularResumo(resultado);
 
         dadosAnalise = resultado;
         analiseAtualMemoria = JSON.parse(JSON.stringify(resultado));
         resumoAtualMemoria = { ...resumo };
 
-        atualizarCards(resumo);
-        renderizarTabela();
+        atualizarPainelDinamico();
         document.getElementById('modoAtual').textContent =
-          `ANÁLISE GEN SET • ${file.name} • ${resumo.genset_arquivo_total} faturada(s) • ${resumo.faturadas_encontradas_coletaweb} encontrada(s) no ColetaWeb • ${resumo.faturadas_registradas_nao_finalizadas} em aberto • ${resumo.faturadas_sem_registro} sem registro`;
+          `ANÁLISE ACUMULADA • ${file.name} • ${resumo.genset_arquivo_total} ordem(ns) preservada(s) • ${resumo.faturadas_encontradas_coletaweb} encontrada(s) no ColetaWeb • ${resumo.faturadas_registradas_nao_finalizadas} em aberto • ${resumo.faturadas_sem_registro} sem registro`;
         document.getElementById('btnVoltarAtual').disabled = true;
 
-        let historicoSalvo = false;
+        let historicoSalvo = null;
         try {
           historicoSalvo = await salvarHistorico(resumo, resultado);
         } catch (histErr) {
           console.error(histErr);
-          mostrarBanner('A análise foi concluída, mas ocorreu erro ao salvar o histórico: ' + (histErr?.message || histErr), 'warn');
+          mostrarBanner('A análise acumulada foi concluída, mas ocorreu erro ao salvar o histórico: ' + (histErr?.message || histErr), 'warn');
         }
 
         if (historicoSalvo) {
-          mostrarBanner('Análise concluída e histórico salvo com sucesso.', 'ok');
+          const idTxt = historicoSalvo.id ? `#${historicoSalvo.id}` : '';
+          document.getElementById('modoAtual').textContent =
+            `HISTÓRICO ${idTxt} • ${file.name} • ${new Date(historicoSalvo.created_at).toLocaleString('pt-BR')} • salvo por ${usuarioAtual.email}`;
+          mostrarBanner('Análise concluída.', 'ok', 5000);
           await carregarHistorico();
         }
       } catch (error) {
@@ -1261,10 +2641,11 @@
           'Tipo Carga ColetaWeb': d.tipo_carga_coletaweb || '',
           'Container ColetaWeb': d.container_coletaweb || '',
           'Transportadora ColetaWeb': d.transportadora_coletaweb || '',
+          'Conferência Transportadora': d.transportadora_status || (d.transportadora_confere ? 'OK' : 'DIVERGENTE'),
           'Qtd. Registros ColetaWeb': d.quantidade_registros_coletaweb ?? 0,
           'dta_embarque': d.dta_embarque || '',
           'Carregamento': d.carregamento || '',
-          'Transportador': d.transportador || '',
+          'Transportadora Arquivo': d.transportador || '',
           'Nro. Container Arquivo': d.container_arquivo || '',
           'descricao_embarque': d.descricao_embarque || '',
           'Destino': d.destino || '',
@@ -1330,7 +2711,7 @@
 
       const { data, error } = await clienteSupabase
         .from('analise_processos_historico')
-        .select('id, created_at, usuario_email, arquivo_nome, arquivo_linhas, total_em_andamento, encontrados_faturado, nao_encontrados, divergencias_chave, genset_registrar, genset_arquivo, sem_genset_arquivo, divergencias_genset')
+        .select('id, created_at, usuario_email, arquivo_nome, arquivo_linhas, total_em_andamento, encontrados_faturado, nao_encontrados, divergencias_chave, genset_registrar, genset_arquivo, sem_genset_arquivo, divergencias_genset, resultado')
         .order('created_at', { ascending: false })
         .limit(1000);
 
@@ -1343,6 +2724,16 @@
 
       historicoCache = data || [];
       renderizarHistorico();
+      renderizarGraficosMensais();
+
+      // Ao abrir a página, já mostra o período consolidado salvo,
+      // mesmo antes de o usuário importar um arquivo novo nesta sessão.
+      if (!periodoArquivoAtual) {
+        const periodoAcumuladoSalvo = calcularPeriodoHistoricoAcumulado();
+        if (periodoAcumuladoSalvo) {
+          atualizarPeriodoArquivo(periodoAcumuladoSalvo, 'ARQUIVO IMPORTADO');
+        }
+      }
     }
 
     function renderizarHistorico() {
@@ -1359,17 +2750,25 @@
         return;
       }
 
-      lista.innerHTML = dados.map(h => `
-        <div class="history-item">
-          <strong>${escapeHtml(new Date(h.created_at).toLocaleString('pt-BR'))}</strong>
-          <span title="${escapeHtml(h.arquivo_nome)}">${escapeHtml(h.arquivo_nome)}</span>
-          <span>${h.genset_arquivo} GEN SET faturada(s)</span>
-          <span>${h.encontrados_faturado ?? h.genset_registrar} faturada(s) encontrada(s) no ColetaWeb</span>
-          <span>${h.total_em_andamento} faturada(s) em aberto</span>
-          <span>${h.nao_encontrados} faturada(s) sem registro</span>
-          <button class="btn-analysis btn-primary" onclick="abrirHistorico(${Number(h.id)})">Abrir</button>
-        </div>
-      `).join('');
+      lista.innerHTML = dados.map(h => {
+        const linhasEscopo = aplicarEscopoTransportadorasLiberadas(Array.isArray(h.resultado) ? h.resultado : []);
+        const resumoEscopo = linhasEscopo.length ? calcularResumo(linhasEscopo) : null;
+        const faturado = resumoEscopo ? resumoEscopo.genset_arquivo_total : h.genset_arquivo;
+        const encontradas = resumoEscopo ? resumoEscopo.faturadas_encontradas_coletaweb : (h.encontrados_faturado ?? h.genset_registrar);
+        const abertas = resumoEscopo ? resumoEscopo.faturadas_registradas_nao_finalizadas : h.total_em_andamento;
+        const semRegistro = resumoEscopo ? resumoEscopo.faturadas_sem_registro : h.nao_encontrados;
+        return `
+          <div class="history-item">
+            <strong>${escapeHtml(new Date(h.created_at).toLocaleString('pt-BR'))}</strong>
+            <span title="${escapeHtml(h.arquivo_nome)}">${escapeHtml(h.arquivo_nome)}</span>
+            <span>${faturado} GEN SET faturada(s) • liberadas</span>
+            <span>${encontradas} encontrada(s) no ColetaWeb • liberadas</span>
+            <span>${abertas} faturada(s) em aberto</span>
+            <span>${semRegistro} faturada(s) sem registro</span>
+            <button class="btn-analysis btn-primary" onclick="abrirHistorico(${Number(h.id)})">Abrir</button>
+          </div>
+        `;
+      }).join('');
     }
 
     async function abrirHistorico(id) {
@@ -1383,31 +2782,21 @@
 
         if (error) throw error;
 
-        dadosAnalise = Array.isArray(data.resultado) ? data.resultado : [];
-        const linhasHist = Array.isArray(data.resultado) ? data.resultado : [];
-        const fatFinalizadasHist = linhasHist.filter(r => r.situacao === 'faturada_finalizada').length || data.divergencias_genset || 0;
-        const fatAbertasHist = linhasHist.filter(r => r.situacao === 'faturada_nao_finalizada').length || data.sem_genset_arquivo || data.total_em_andamento || 0;
-        const semRegistroHist = linhasHist.filter(r => r.situacao === 'faturada_sem_registro').length || data.nao_encontrados || 0;
-        const totalFaturadoHist = data.genset_arquivo || linhasHist.filter(r => r.faturada_arquivo).length;
-        const encontradasHist = linhasHist.length
-          ? linhasHist.filter(r => r.registrada_coletaweb).length
-          : (data.encontrados_faturado || Math.max(0, totalFaturadoHist - semRegistroHist));
-        const tipoDivergenteHist = linhasHist.filter(r => r.registrada_coletaweb && !r.genset_coletaweb).length || data.divergencias_chave || 0;
-        const resumo = {
-          genset_arquivo_total: totalFaturadoHist,
-          faturadas_encontradas_coletaweb: encontradasHist,
-          faturadas_pendentes_total: fatAbertasHist,
-          faturadas_sem_registro: semRegistroHist,
-          faturadas_registradas_nao_finalizadas: fatAbertasHist,
-          faturadas_registradas_finalizadas: fatFinalizadasHist,
-          genset_coleta_total: Math.max(0, encontradasHist - tipoDivergenteHist),
-          faturadas_registradas_sem_genset: tipoDivergenteHist
-        };
+        const linhasHist = aplicarEscopoTransportadorasLiberadas(Array.isArray(data.resultado) ? data.resultado : []);
+        dadosAnalise = linhasHist;
+        const resumo = calcularResumo(linhasHist);
 
-        atualizarCards(resumo);
         limparFiltros();
         document.getElementById('modoAtual').textContent =
           `HISTÓRICO #${data.id} • ${data.arquivo_nome} • ${new Date(data.created_at).toLocaleString('pt-BR')} • salvo por ${data.usuario_email}`;
+        const periodoDesteHistorico =
+          calcularPeriodoHistoricoAcumulado(
+            calcularPeriodoResultado(Array.isArray(data.resultado) ? data.resultado : []),
+            data.created_at
+          ) ||
+          calcularPeriodoResultado(Array.isArray(data.resultado) ? data.resultado : []);
+
+        atualizarPeriodoArquivo(periodoDesteHistorico, 'ARQUIVO DESTE HISTÓRICO');
         document.getElementById('btnVoltarAtual').disabled = !analiseAtualMemoria;
       } catch (error) {
         console.error(error);
@@ -1420,12 +2809,16 @@
     function voltarAnaliseAtual() {
       if (!analiseAtualMemoria || !resumoAtualMemoria) return;
       dadosAnalise = JSON.parse(JSON.stringify(analiseAtualMemoria));
-      atualizarCards(resumoAtualMemoria);
       limparFiltros();
       document.getElementById('modoAtual').textContent =
-        `ANÁLISE ATUAL • ${nomeArquivoAtual || 'arquivo importado nesta sessão'}`;
+        `ANÁLISE ACUMULADA ATUAL • ${nomeArquivoAtual || 'arquivo importado nesta sessão'}`;
+      atualizarPeriodoArquivo(periodoArquivoAtual, 'ARQUIVO IMPORTADO');
       document.getElementById('btnVoltarAtual').disabled = true;
     }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') fecharRegraAnalise();
+    });
 
     async function inicializarPagina() {
       if (!clienteSupabase) {
@@ -1445,14 +2838,12 @@
 
         // Reaproveita a mesma regra do ColetaWeb:
         // Master/Mestre ou Administrador aprovado entram; perfil user não entra.
-        let acessoPermitido = usuarioPodeAcessar(usuarioAtual);
-        if (typeof checarPermissaoMaster === 'function') {
-          try {
-            acessoPermitido = await checarPermissaoMaster();
-          } catch (e) {
-            console.warn('Falha ao validar permissão global:', e);
-          }
-        }
+        // Equivale a checarPermissaoMaster, usando o perfil JA validado;
+        // evita nova consulta ao auth e a public.usuarios.
+        const perfilAtual = normalizarTexto(usuarioAtual.perfil);
+        const statusAtual = normalizarTexto(usuarioAtual.status);
+        const acessoPermitido = ['master','mestre'].includes(perfilAtual) ||
+          (perfilAtual === 'administrador' && (statusAtual === '' || statusAtual === 'aprovado'));
 
         if (!acessoPermitido) {
           console.warn('Acesso Análise Processos negado para:', {
@@ -1468,10 +2859,12 @@
         await carregarProcessosColetaWeb();
         const resumoInicial = resumoSomenteColeta(processosColetaWeb);
         atualizarCards(resumoInicial);
-        document.getElementById('modoAtual').textContent = 'Importe o arquivo de ordens faturadas para analisar o que está finalizado, em aberto ou sem registro no ColetaWeb.';
+        document.getElementById('modoAtual').textContent = 'Importe o arquivo de ordens faturadas. Cada nova importação completará a base histórica acumulada.';
+        atualizarPeriodoArquivo(null);
 
         const okHistorico = await testarHistoricoDisponivel();
         if (okHistorico) await carregarHistorico();
+        else renderizarGraficosMensais();
       } catch (error) {
         console.error(error);
         mostrarBanner('Erro ao inicializar a página: ' + (error?.message || error), 'error');
@@ -1485,7 +2878,7 @@
       if (file) processarArquivo(file);
     });
 
-    window.addEventListener('load', inicializarPagina);
+    document.addEventListener('DOMContentLoaded', inicializarPagina);
   </script>
-</body>
+<script src="js/i18n-global.js"></script><script src="js/navigation-fast.js" defer></script></body>
 </html>

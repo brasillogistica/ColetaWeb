@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+<head><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://ekmcgifpvqrdgcikvepe.supabase.co" crossorigin>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Processos - Container | ColetaWeb</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
@@ -445,7 +445,7 @@
       }
     }
   </style>
-</head>
+<link rel="stylesheet" href="css/site-background.css"></head>
 <body>
 <div id="loading-overlay"><div class="spinner"></div></div>
 
@@ -533,6 +533,7 @@
 <div id="chips-area" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px; min-height:18px;"></div>
 
 <div class="table-container">
+  <div id="consulta-feedback" role="status" aria-live="polite" style="font-size:11px;color:var(--navy);padding:2px 2px 7px">Preparando consulta...</div>
   <div class="table-wrapper">
     <table>
       <colgroup>
@@ -578,6 +579,11 @@
       <tbody id="table-body"></tbody>
     </table>
   </div>
+  <div id="paginacao-processos" style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px">
+    <button class="btn-limpar" id="pagina-anterior" type="button">Anterior</button>
+    <strong id="pagina-info">Página 1</strong>
+    <button class="btn-filtrar" id="pagina-proxima" type="button">Próxima</button>
+  </div>
 </div>
 
 <div id="foto-modal">
@@ -608,7 +614,7 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<script src="js/script.js"></script>
 <script>
   const FREE_TIME_RULES = {
     "PIL": { dias: 30, custo: 100 },
@@ -643,6 +649,17 @@
   let filtroAtrasoAtivo = null;
   let filtroTransportadoraAtiva = null;
   let refreshInterval = null;
+  const TAMANHO_PAGINA = 50;
+  const COLUNAS_PROCESSOS = 'id,created_at,status,ordem,data_retirada,container,armador,transportadora,placa,carga_pulmao,tipo_carga,localizacao,foto_url,genset,liberado,depositado,finalizado';
+  let paginaAtual = 0;
+  let totalRegistros = 0;
+  let usuarioConsulta = null;
+  let consultaEmAndamento = false;
+  let novaConsultaPendente = false;
+  let ultimaConsulta = 0;
+  let carregamentoInicial = true;
+  let filtrosAplicados = null;
+  let tentativaConsulta = 0;
 
   let fotoZoom = 1;
   let fotoPanX = 0;
@@ -657,17 +674,16 @@
 
   function getFreeTimeRuleCached(armador) {
     if (!armador) return null;
-    const nome = armador.trim().toUpperCase();
+    const nome = String(armador).trim().toUpperCase();
     if (freeTimeCache.has(nome)) return freeTimeCache.get(nome);
-
-    for (const [key, value] of Object.entries(FREE_TIME_RULES)) {
-      if (nome === key.toUpperCase() || nome.includes(key.toUpperCase()) || key.toUpperCase().includes(nome)) {
-        freeTimeCache.set(nome, value);
-        return value;
-      }
-    }
-    freeTimeCache.set(nome, null);
-    return null;
+    // Prioridade ao nome mais específico: INTERTRANS - COSCO não pode herdar a regra COSCO.
+    const regras = Object.entries(FREE_TIME_RULES)
+      .sort((a, b) => b[0].length - a[0].length);
+    const encontrada = regras.find(([key]) => nome === key.toUpperCase())
+      || regras.find(([key]) => nome.includes(key.toUpperCase()));
+    const regra = encontrada ? encontrada[1] : null;
+    freeTimeCache.set(nome, regra);
+    return regra;
   }
 
   function normalizarStatus(status) {
@@ -704,43 +720,13 @@
 
   async function verificarAcesso() {
     try {
-      if (!clienteSupabase) return false;
-
-      const { data: { user } } = await clienteSupabase.auth.getUser();
-      if (!user) {
-        window.location.href = 'login.html';
-        return false;
-      }
-
-      const { data: userData } = await clienteSupabase
-        .from('usuarios')
-        .select('perfil, status, transportadora')
-        .eq('email', user.email)
-        .single();
-
-      if (!userData) {
-        window.location.href = 'index.html';
-        return false;
-      }
-
-      const perfil = (userData.perfil || '').trim().toLowerCase();
-      const status = (userData.status || '').trim().toLowerCase();
-      const transportadora = (userData.transportadora || '').trim();
-
-      const ehMaster = perfil === 'master' || perfil === 'mestre';
-      const ehAdmin = ehMaster || (perfil === 'administrador' && (status === 'aprovado' || status === ''));
-      const ehTransportadora = !!transportadora;
-
-      if (!ehAdmin && !ehTransportadora) {
-        alert('Acesso negado.');
-        window.location.href = 'index.html';
-        return false;
-      }
-
-      return true;
+      // prepararConsulta ja autentica, confere o perfil e guarda o contexto
+      // para carregarProcessos. Evita repetir as mesmas duas requisicoes.
+      return await prepararConsulta();
     } catch (error) {
       console.error('Erro em verificarAcesso:', error);
       alert('Erro ao verificar acesso.');
+      window.location.href = 'index.html';
       return false;
     }
   }
@@ -901,93 +887,120 @@
         else if (c.key === 'freeTime') filtroFreeTimeAtivo = null;
         else if (c.key === 'atraso') filtroAtrasoAtivo = null;
         else if (c.key === 'transp') filtroTransportadoraAtiva = null;
-        atualizarTudo();
+        aplicarFiltros();
       };
       chipArea.appendChild(chip);
     });
   }
 
   function atualizarFiltrosDinamicos() {
-    const filtros = obterFiltroAtual();
-
-    const baseArmador = dadosCompletos.filter(d => matchFilters(d, filtros, 'armador'));
-    const baseContainer = dadosCompletos.filter(d => matchFilters(d, filtros, 'container'));
-    const baseOrdem = dadosCompletos.filter(d => matchFilters(d, filtros, 'ordem'));
-    const basePlaca = dadosCompletos.filter(d => matchFilters(d, filtros, 'placa'));
-    const baseTransp = dadosCompletos.filter(d => matchFilters(d, filtros, 'transportadora'));
-    const baseCargaPulmao = dadosCompletos.filter(d => matchFilters(d, filtros, 'cargaPulmao'));
-    const baseTipoCarga = dadosCompletos.filter(d => matchFilters(d, filtros, 'tipoCarga'));
-    const baseStatus = dadosCompletos.filter(d => matchFilters(d, filtros, 'status'));
-
-    atualizarDatalist('listaArmador', baseArmador.map(d => d.armador || ''));
-    atualizarDatalist('listaContainer', baseContainer.map(d => d.container || ''));
-    atualizarDatalist('listaOrdem', baseOrdem.map(d => d.ordem || ''));
-    atualizarDatalist('listaPlaca', basePlaca.map(d => d.placa || ''));
-    atualizarDatalist('listaTransportadora', baseTransp.map(d => d.transportadora || ''));
-
-    atualizarSelectDinamico('filtroCargaPulmao', baseCargaPulmao.map(d => d.carga_pulmao || ''), 'Todos', filtros.cargaPulmao);
-    atualizarSelectDinamico('filtroTipoCarga', baseTipoCarga.map(d => d.tipo_carga || ''), 'Todos', filtros.tipoCarga);
-
-    const statusSelect = document.getElementById('filtroStatus');
-    if (statusSelect) {
-      const statusUnique = Array.from(new Set(baseStatus.map(d => normalizarStatus(d.status || 'ag. carregamento')))).filter(Boolean);
-      const current = filtros.status || '';
-      statusSelect.innerHTML = `<option value="">Todos</option>`;
-      ['ag. carregamento', 'liberado', 'depositado'].forEach(s => {
-        if (statusUnique.includes(s) || current === s) {
-          const opt = document.createElement('option');
-          opt.value = s;
-          opt.textContent = s.toUpperCase();
-          if (current === s) opt.selected = true;
-          statusSelect.appendChild(opt);
-        }
-      });
-      if (current && !statusUnique.includes(current)) {
-        const opt = document.createElement('option');
-        opt.value = current;
-        opt.textContent = current.toUpperCase();
-        opt.selected = true;
-        statusSelect.appendChild(opt);
-      }
-    }
+    // Sugestões da página atual. As opções dos selects não são apagadas.
+    atualizarDatalist('listaArmador', dadosCompletos.map(d => d.armador || ''));
+    atualizarDatalist('listaContainer', dadosCompletos.map(d => d.container || ''));
+    atualizarDatalist('listaOrdem', dadosCompletos.map(d => d.ordem || ''));
+    atualizarDatalist('listaPlaca', dadosCompletos.map(d => d.placa || ''));
+    atualizarDatalist('listaTransportadora', dadosCompletos.map(d => d.transportadora || ''));
   }
 
   function fotoLink(url, titulo) {
-    return url ? `<span style="cursor:pointer; color:var(--navy); text-decoration:underline; white-space:nowrap;" onclick='abrirFoto(${JSON.stringify(url)}, ${JSON.stringify(titulo)})'>${titulo}</span>` : '-';
+    return url ? `<button type="button" class="loc-link" style="background:none;border:none" data-foto="${escaparHtml(url)}" data-titulo="${escaparHtml(titulo)}">${escaparHtml(titulo)}</button>` : '-';
+  }
+
+  function escaparHtml(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function obterConsultaBase(filtros, contar = false) {
+    let q = clienteSupabase.from('coletas').select(COLUNAS_PROCESSOS, contar ? { count: 'exact' } : undefined);
+    // A filtragem por transportadora no servidor é mantida, além das políticas RLS.
+    if (!usuarioConsulta.ehAdmin) q = q.eq('transportadora', usuarioConsulta.transportadora);
+    const texto = (campo, valor) => {
+      if (valor) q = q.ilike(campo, `%${valor.replace(/[%,()]/g, '')}%`);
+    };
+    texto('container', filtros.container);
+    texto('ordem', filtros.ordem);
+    texto('armador', filtros.armador);
+    texto('placa', filtros.placa);
+    texto('transportadora', filtros.transportadora);
+    if (filtros.dataRetirada) q = q.eq('data_retirada', filtros.dataRetirada);
+    if (filtros.cargaPulmao) q = q.eq('carga_pulmao', filtros.cargaPulmao);
+    if (filtros.tipoCarga) q = q.eq('tipo_carga', filtros.tipoCarga);
+    if (filtros.dataInicio) q = q.gte('created_at', `${filtros.dataInicio}T00:00:00`);
+    if (filtros.dataFim) {
+      const fim = new Date(`${filtros.dataFim}T00:00:00`);
+      fim.setDate(fim.getDate() + 1);
+      q = q.lt('created_at', `${fim.getFullYear()}-${String(fim.getMonth()+1).padStart(2,'0')}-${String(fim.getDate()).padStart(2,'0')}T00:00:00`);
+    }
+    const status = filtros.status || filtroStatusAtivo;
+    if (status === 'ag. carregamento') {
+      q = q.in('status', ['ag. carregamento', 'ag. locação', 'ag. locacao']);
+    } else if (status === 'liberado') {
+      q = q.in('status', ['liberado', 'liberada']);
+    } else if (status) q = q.eq('status', status);
+    return q;
+  }
+
+  async function prepararConsulta() {
+    if (usuarioConsulta) return true;
+    if (!clienteSupabase) throw new Error('Cliente Supabase indisponível.');
+    const { data: { user }, error: erroAuth } = await clienteSupabase.auth.getUser();
+    if (erroAuth) throw erroAuth;
+    if (!user) { window.location.href = 'login.html'; return false; }
+    const { data: ud, error } = await clienteSupabase.from('usuarios')
+      .select('perfil,status,transportadora').eq('email', user.email).single();
+    if (error) throw error;
+    const perfil = (ud?.perfil || '').trim().toLowerCase();
+    const status = (ud?.status || '').trim().toLowerCase();
+    const ehAdmin = ['master','mestre'].includes(perfil) || (perfil === 'administrador' && (!status || status === 'aprovado'));
+    if (!ehAdmin && !ud?.transportadora?.trim()) throw new Error('Usuário sem autorização para consultar processos.');
+    usuarioConsulta = {ehAdmin, transportadora:ud?.transportadora?.trim() || ''};
+    return true;
+  }
+
+  function atualizarPaginacao() {
+    const maxPagina = Math.max(1, Math.ceil(totalRegistros / TAMANHO_PAGINA));
+    document.getElementById('pagina-info').textContent = `Página ${paginaAtual+1} de ${maxPagina} • ${totalRegistros.toLocaleString('pt-BR')} registros`;
+    document.getElementById('pagina-anterior').disabled = paginaAtual === 0 || consultaEmAndamento;
+    document.getElementById('pagina-proxima').disabled = paginaAtual >= maxPagina-1 || consultaEmAndamento;
+    if (ultimaConsulta) document.getElementById('consulta-feedback').textContent = `Exibindo ${dadosCompletos.length} registro(s) nesta página • Última consulta ${new Date(ultimaConsulta).toLocaleTimeString('pt-BR')}`;
   }
 
   async function carregarProcessos() {
+    if (consultaEmAndamento) { novaConsultaPendente = true; return; }
+    consultaEmAndamento = true;
+    const pedido = ++tentativaConsulta;
+    const feedback = document.getElementById('consulta-feedback');
+    feedback.textContent = 'Consultando processos no Supabase...';
     try {
-      if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
-
-      const { data: { user } } = await clienteSupabase.auth.getUser();
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      const { data: userData } = await clienteSupabase
-        .from('usuarios')
-        .select('perfil, transportadora')
-        .eq('email', user.email)
-        .single();
-
-      const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
-      const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
-
-      let query = clienteSupabase.from('coletas').select('*');
-      if (!ehAdmin && userData?.transportadora) {
-        query = query.eq('transportadora', userData.transportadora);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+      if (!(await prepararConsulta())) return;
+      // Os filtros são capturados no momento da consulta; nenhum histórico é descartado.
+      const filtros = filtrosAplicados || obterFiltroAtual();
+      const inicio = paginaAtual*TAMANHO_PAGINA;
+      const { data, count, error } = await obterConsultaBase(filtros, true)
+        .order('created_at', { ascending:false })
+        .order('id', { ascending:false })
+        .range(inicio, inicio+TAMANHO_PAGINA-1);
       if (error) throw error;
-
+      if (pedido !== tentativaConsulta) return;
       dadosCompletos = data || [];
+      totalRegistros = count ?? dadosCompletos.length;
+      if (paginaAtual && totalRegistros && inicio >= totalRegistros) {
+        paginaAtual = Math.max(0, Math.ceil(totalRegistros/TAMANHO_PAGINA)-1);
+        novaConsultaPendente = true;
+      }
+      ultimaConsulta = Date.now();
       atualizarTudo();
-    } catch (error) {
-      console.error('Erro ao carregar processos:', error);
-      alert('Erro ao carregar processos: ' + (error?.message || error));
+    } catch (erro) {
+      console.error('Falha na consulta de processos:', erro);
+      feedback.textContent = 'Falha ao consultar: ' + (erro?.message || erro) + '. Clique em Filtrar para tentar novamente.';
+    } finally {
+      consultaEmAndamento = false;
+      if (carregamentoInicial) { hideLoading(); carregamentoInicial = false; }
+      atualizarPaginacao();
+      if (novaConsultaPendente) {
+        novaConsultaPendente = false;
+        carregarProcessos();
+      }
     }
   }
 
@@ -1002,7 +1015,7 @@
       return;
     }
 
-    dados.forEach(d => {
+    const linhas = dados.map(d => {
       const rule = getFreeTimeRuleCached(d.armador);
       const diasTotal = rule ? rule.dias : '-';
       const diasRest = rule && d.data_retirada ? calcularDiasRestantes(d.data_retirada, rule.dias) : null;
@@ -1018,25 +1031,25 @@
 
       const loc = d.localizacao || 'N/A';
       const localizacaoHtml = (loc !== 'N/A' && loc !== 'GPS Bloqueado' && loc !== 'Sem GPS')
-        ? `<span class="loc-link" onclick="abrirMapa('${encodeURIComponent(loc)}')">📍 Local</span>`
-        : loc;
+        ? `<button type="button" class="loc-link" data-mapa="${escaparHtml(encodeURIComponent(loc))}" style="background:none;border:none">📍 Local</button>`
+        : escaparHtml(loc);
 
       const tipoCarga = d.tipo_carga || 'N/A';
       const tipoBadgeClass = getTipoBadgeClass(tipoCarga);
 
-      tbody.innerHTML += `
+      return `
         <tr>
           <td class="col-nowrap">
             <span class="status-badge" style="background-color:${statusColor};">${statusText}</span>
           </td>
-          <td>${d.ordem || 'N/A'}</td>
+          <td>${escaparHtml(d.ordem || 'N/A')}</td>
           <td class="col-nowrap">${d.data_retirada ? formatarDataISO(d.data_retirada) : 'N/A'}</td>
-          <td>${d.container || 'N/A'}</td>
-          <td>${d.armador || 'N/A'}</td>
-          <td>${d.transportadora || 'N/A'}</td>
-          <td>${d.placa || 'N/A'}</td>
-          <td><span class="badge-tipo ${d.carga_pulmao === 'Carga' ? 'badge-resfriado' : 'badge-congelado'}">${d.carga_pulmao || 'N/A'}</span></td>
-          <td><span class="badge-tipo ${tipoBadgeClass}">${tipoCarga}</span></td>
+          <td>${escaparHtml(d.container || 'N/A')}</td>
+          <td>${escaparHtml(d.armador || 'N/A')}</td>
+          <td>${escaparHtml(d.transportadora || 'N/A')}</td>
+          <td>${escaparHtml(d.placa || 'N/A')}</td>
+          <td><span class="badge-tipo ${d.carga_pulmao === 'Carga' ? 'badge-resfriado' : 'badge-congelado'}">${escaparHtml(d.carga_pulmao || 'N/A')}</span></td>
+          <td><span class="badge-tipo ${tipoBadgeClass}">${escaparHtml(tipoCarga)}</span></td>
           <td>${diasTotal}</td>
           <td>${diasRest !== null ? diasRest : '-'}</td>
           <td class="${vencido ? 'vencido-sim' : 'vencido-nao'}">${vencido ? 'SIM' : 'NÃO'}</td>
@@ -1048,10 +1061,11 @@
         </tr>
       `;
     });
+    tbody.innerHTML = linhas.join('');
   }
 
   function atualizarTudo() {
-    const dados = obterDadosFiltrados();
+    const dados = dadosCompletos;
     atualizarChips();
     atualizarFiltrosDinamicos();
     renderGraficos(dados);
@@ -1059,7 +1073,9 @@
   }
 
   function aplicarFiltros() {
-    atualizarTudo();
+    filtrosAplicados = obterFiltroAtual();
+    paginaAtual = 0;
+    carregarProcessos();
   }
 
   function limparFiltros() {
@@ -1071,12 +1087,26 @@
     filtroFreeTimeAtivo = null;
     filtroAtrasoAtivo = null;
     filtroTransportadoraAtiva = null;
-    atualizarTudo();
+    filtrosAplicados = obterFiltroAtual();
+    paginaAtual = 0;
+    carregarProcessos();
   }
 
-  function exportarExcel() {
+  async function exportarExcel() {
     try {
-      const dados = obterDadosFiltrados();
+      if (!(await prepararConsulta())) return;
+      const filtros = filtrosAplicados || obterFiltroAtual();
+      const dados = [];
+      const LOTE = 500;
+      document.getElementById('consulta-feedback').textContent = 'Preparando exportação Excel...';
+      for (let inicio=0; ; inicio+=LOTE) {
+        const {data, error} = await obterConsultaBase(filtros)
+          .order('created_at', {ascending:false}).order('id', {ascending:false}).range(inicio, inicio+LOTE-1);
+        if (error) throw error;
+        dados.push(...(data||[]));
+        if (!data || data.length < LOTE) break;
+        if (dados.length >= 30000) throw new Error('Exportação superior a 30.000 registros: utilize filtros mais específicos.');
+      }
       if (dados.length === 0) {
         alert('Nenhum dado para exportar.');
         return;
@@ -1112,9 +1142,10 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Containers');
       XLSX.writeFile(wb, 'Processos_Container.xlsx');
+      atualizarPaginacao();
     } catch (error) {
       console.error('Erro ao exportar Excel:', error);
-      alert('Ocorreu um erro ao gerar o arquivo Excel.');
+      document.getElementById('consulta-feedback').textContent = 'Erro na exportação: ' + (error?.message || error);
     }
   }
 
@@ -1292,7 +1323,7 @@
     }
   });
 
-  window.addEventListener('load', async () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     showLoading();
     try {
       const ok = await verificarAcesso();
@@ -1353,10 +1384,10 @@
 
       if (refreshInterval) clearInterval(refreshInterval);
       refreshInterval = setInterval(() => {
-        if (document.visibilityState === 'visible') {
+        if (document.visibilityState === 'visible' && Date.now() - ultimaConsulta >= 60000) {
           carregarProcessos();
         }
-      }, 20000);
+      }, 60000);
 
       atualizarFiltrosDinamicos();
     } finally {
@@ -1365,40 +1396,33 @@
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
+    if (document.visibilityState === 'visible' && Date.now() - ultimaConsulta > 15000) {
       carregarProcessos();
     }
   });
 
-  document.getElementById('filtroDataInicio').addEventListener('change', atualizarTudo);
-  document.getElementById('filtroDataFim').addEventListener('change', atualizarTudo);
-  document.getElementById('filtroDataRetirada').addEventListener('change', atualizarTudo);
-  document.getElementById('filtroArmador').addEventListener('input', () => {
-    clearTimeout(window._tArmador);
-    window._tArmador = setTimeout(atualizarTudo, 120);
+  const debounceConsulta = (() => {
+    let t;
+    return () => { clearTimeout(t); t = setTimeout(aplicarFiltros, 450); };
+  })();
+  for (const id of ['filtroDataInicio','filtroDataFim','filtroDataRetirada','filtroCargaPulmao','filtroTipoCarga','filtroStatus']) {
+    document.getElementById(id).addEventListener('change', aplicarFiltros);
+  }
+  for (const id of ['filtroArmador','filtroContainer','filtroOrdem','filtroPlaca','filtroTransportadora']) {
+    document.getElementById(id).addEventListener('input', debounceConsulta);
+  }
+  document.getElementById('pagina-anterior').addEventListener('click', () => {
+    if (paginaAtual > 0) { paginaAtual--; carregarProcessos(); }
   });
-  document.getElementById('filtroContainer').addEventListener('input', () => {
-    clearTimeout(window._tContainer);
-    window._tContainer = setTimeout(atualizarTudo, 120);
+  document.getElementById('pagina-proxima').addEventListener('click', () => {
+    if ((paginaAtual+1)*TAMANHO_PAGINA < totalRegistros) { paginaAtual++; carregarProcessos(); }
   });
-  document.getElementById('filtroOrdem').addEventListener('input', () => {
-    clearTimeout(window._tOrdem);
-    window._tOrdem = setTimeout(atualizarTudo, 120);
-  });
-  document.getElementById('filtroPlaca').addEventListener('input', () => {
-    clearTimeout(window._tPlaca);
-    window._tPlaca = setTimeout(atualizarTudo, 120);
-  });
-  document.getElementById('filtroTransportadora').addEventListener('input', () => {
-    clearTimeout(window._tTransp);
-    window._tTransp = setTimeout(atualizarTudo, 120);
-  });
-  document.getElementById('filtroCargaPulmao').addEventListener('change', atualizarTudo);
-  document.getElementById('filtroTipoCarga').addEventListener('change', atualizarTudo);
-  document.getElementById('filtroStatus').addEventListener('change', () => {
-    filtroStatusAtivo = document.getElementById('filtroStatus').value || null;
-    atualizarTudo();
+  document.getElementById('table-body').addEventListener('click', e => {
+    const foto = e.target.closest('[data-foto]');
+    if (foto) { abrirFoto(foto.dataset.foto, foto.dataset.titulo); return; }
+    const mapa = e.target.closest('[data-mapa]');
+    if (mapa) abrirMapa(mapa.dataset.mapa);
   });
 </script>
-</body>
+<script src="js/i18n-global.js"></script><script src="js/navigation-fast.js" defer></script></body>
 </html>

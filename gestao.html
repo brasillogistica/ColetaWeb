@@ -1,14 +1,1081 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+<head><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://ekmcgifpvqrdgcikvepe.supabase.co" crossorigin>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel de Gestão | ColetaWeb</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Baixar Chart.js e plugin em paralelo com o HTML, sem fazer o evento
+       DOMContentLoaded esperar pela rede. O plugin executa após Chart.js. -->
+  <script>
+    window.coletawebGraficosProntos = new Promise(resolve => {
+      const fontes = [
+        'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js'
+      ];
+      let restantes = fontes.length;
+      let falhou = false;
+      fontes.forEach(src => {
+        const script = document.createElement('script');
+        script.async = false; // Mantem a ordem de execucao das bibliotecas.
+        script.src = src;
+        script.onload = () => {
+          if (--restantes === 0) resolve(!falhou && !!window.Chart && !!window.ChartDataLabels);
+        };
+        script.onerror = () => {
+          falhou = true;
+          if (--restantes === 0) resolve(false);
+        };
+        document.head.appendChild(script);
+      });
+    });
+  </script>
+  <!-- Excel é carregado somente quando o usuário solicita exportação. -->
+  <!-- CW-GESTAO-CSS-GLOBAL-INICIO -->
+<style data-cw-source="css/style.css">
+:root {
+    --navy: #2d4b5e;
+    --gold: #c5b68d;
+    --red: #E84D53;
+    --bg: #f2f2f2;
+    --white: #ffffff;
+    --grey: #6c757d;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--navy);
+    padding: 20px;
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+    background: transparent;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: url('assets/fundo-menu.jpg') center center / cover no-repeat;
+    z-index: -2;
+    pointer-events: none;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.14);
+    z-index: -1;
+    pointer-events: none;
+}
+
+img,
+video,
+canvas,
+iframe {
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+.page-shell {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.60);
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(197, 182, 141, 0.50);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(4px);
+}
+
+.header-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 22px;
+    gap: 16px;
+}
+
+.header-left {
+    flex: 0 0 160px;
+    font-size: 24px;
+    font-weight: 800;
+    user-select: none;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.header-left .m { color: var(--navy); }
+.header-left .f { color: var(--red); }
+
+.header-center {
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+}
+
+#welcome-message {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 0;
+    line-height: 1.2;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.45);
+}
+
+.header-subtitle {
+    font-size: 0.78rem;
+    color: var(--navy);
+    opacity: 0.8;
+    margin-top: 2px;
+}
+
+.header-right {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.language-picker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    flex: 0 0 265px;
+    width: 265px;
+    min-width: 265px;
+    gap: 8px;
+    padding: 7px 12px;
+    border: 1px solid #d0d8df;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.language-picker select {
+    box-sizing: border-box;
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    padding-right: 4px;
+    background: transparent;
+    border: 0;
+    outline-offset: 3px;
+    color: var(--navy);
+    font: inherit;
+    cursor: pointer;
+}
+
+.language-picker > span { flex: 0 0 auto; white-space: nowrap; }
+.header-right .btn-sair { flex: 0 0 70px; width: 70px; white-space: nowrap; }
+
+@media (max-width: 1050px) and (min-width: 769px) {
+    .header-left { flex-basis: 120px; }
+    .language-label { display: none; }
+    .language-picker { flex-basis: 200px; width: 200px; min-width: 200px; }
+}
+
+@media (max-width: 768px) {
+    .language-label { display: none; }
+    .language-picker { flex: 0 1 205px; width: 205px; min-width: 0; }
+    .header-right { flex-wrap: wrap; }
+}
+
+.btn-main {
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+    letter-spacing: 0.2px;
+}
+
+.btn-main:hover {
+    filter: brightness(0.96);
+    transform: translateY(-1px);
+}
+
+.btn-sair {
+    background: white;
+    border: 1.5px solid var(--red);
+    color: var(--red);
+    padding: 8px 16px;
+    width: 100%;
+    max-width: 100px;
+    font-size: 10px;
+    border-radius: 99px;
+}
+
+.workspace-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    min-height: calc(100vh - 170px);
+    width: 100%;
+}
+
+.workspace-main {
+    display: flex;
+    gap: 22px;
+    align-items: stretch;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+}
+
+.menu-column {
+    flex: 0 0 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-self: stretch;
+    justify-content: flex-start;
+}
+
+.side-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.container-btn {
+    position: relative;
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid rgba(255,255,255,.05);
+    border-radius: 10px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .55px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.03),
+        0 1px 4px rgba(0,0,0,.04);
+    transition: transform .16s ease, filter .16s ease, box-shadow .16s ease, opacity .16s ease;
+    text-align: center;
+    opacity: 0.96;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.container-btn span {
+    position: relative;
+    z-index: 5;
+    font-size: 13px;
+    line-height: 1.12;
+    text-align: center;
+    text-shadow: none;
+    letter-spacing: .2px;
+}
+
+.container-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    background:
+        linear-gradient(180deg,
+            rgba(255,255,255,.02) 0%,
+            rgba(255,255,255,.01) 50%,
+            rgba(0,0,0,.01) 100%);
+    z-index: 1;
+}
+
+.container-btn::after {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.04);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.container-btn .corner {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: rgba(0,0,0,.06);
+    z-index: 4;
+    border-radius: 2px;
+}
+
+.container-btn .corner.tl { top: 4px; left: 4px; }
+.container-btn .corner.tr { top: 4px; right: 4px; }
+.container-btn .corner.bl { bottom: 4px; left: 4px; }
+.container-btn .corner.br { bottom: 4px; right: 4px; }
+
+.container-btn .top-bar,
+.container-btn .bottom-bar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,.02);
+    z-index: 3;
+}
+
+.container-btn .top-bar { top: 0; }
+.container-btn .bottom-bar { bottom: 0; }
+
+.container-btn .door-lines {
+    display: none;
+}
+
+.container-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(0.985) saturate(0.88);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.03),
+        0 2px 6px rgba(0,0,0,.05);
+    opacity: 1;
+}
+
+.container-btn:active {
+    transform: translateY(0) scale(.996);
+}
+
+.container-blue { background: linear-gradient(180deg, #697a82 0%, #5e6f77 100%); }
+.container-sand { background: linear-gradient(180deg, #b2aa97 0%, #a29681 100%); }
+.container-red { background: linear-gradient(180deg, #c77a7d 0%, #b0686c 100%); }
+.container-dark { background: linear-gradient(180deg, #60747d 0%, #52636b 100%); }
+
+.calendar-area {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.calendar-box {
+    width: 100%;
+    max-width: 720px;
+    min-width: 0;
+}
+
+#calendar-header {
+    text-align: center;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 12px;
+    font-size: 1rem;
+}
+
+.calendar-grid,
+#calendar-grid {
+    display: grid !important;
+    grid-template-columns: 50px repeat(7, minmax(0, 1fr)) !important;
+    grid-auto-flow: row;
+    gap: 1px;
+    background: #eee;
+    border: 1px solid #ddd;
+    margin-top: 0;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.cal-cell {
+    background: white;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    min-width: 0;
+}
+
+.cal-cell.head {
+    background: var(--navy);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 10px;
+}
+
+.week-number {
+    color: var(--gold);
+    background: #f9f9f9;
+    font-weight: 800;
+}
+
+.today {
+    color: var(--red) !important;
+    font-weight: 900 !important;
+    font-size: 16px !important;
+    border: 1px solid var(--red);
+    border-radius: 4px;
+}
+
+.weekend {
+    background: #f0f7ff !important;
+    color: var(--navy) !important;
+    font-weight: 700 !important;
+}
+
+.footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #000;
+    padding: 10px 12px 4px;
+    margin-top: 2px;
+    user-select: none;
+    letter-spacing: 0.2px;
+    position: relative;
+    z-index: 1;
+    opacity: 0.82;
+}
+
+#full-calendar-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.98);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 40px;
+}
+
+.close-full-calendar {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--navy);
+}
+
+#full-calendar-modal h2 {
+    text-align: center;
+    color: var(--navy);
+    margin-bottom: 30px;
+}
+
+#full-calendar-content {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.annual-day {
+    padding: 8px;
+    border: 1px solid #eee;
+    font-size: 13px;
+    color: var(--navy);
+}
+
+.annual-weekend {
+    background: #f0f7ff;
+}
+
+#loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.8);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--gold);
+    border-top-color: var(--navy);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+#foto-modal,
+#mapa-modal,
+#modal-data-deposito {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.mapa-container {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    width: 90%;
+    max-width: 800px;
+    height: 80vh;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.mapa-container iframe {
+    width: 100%;
+    height: calc(100% - 40px);
+    border: none;
+    border-radius: 10px;
+}
+
+.fechar-mapa,
+.fechar-foto {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 32px;
+    color: var(--navy);
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 10;
+}
+
+#container-img {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.1s;
+}
+
+#foto-ampliada {
+    max-width: 90%;
+    max-height: 90%;
+    user-select: none;
+}
+
+.modal-deposito-box {
+    background: white;
+    padding: 30px 35px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    text-align: center;
+    border: 1px solid var(--gold);
+}
+
+.modal-deposito-box p {
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--navy);
+    font-size: 18px;
+}
+
+.modal-deposito-box input[type="date"] {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--navy);
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+}
+
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.sem-dados {
+    text-align: center;
+    padding: 15px;
+    color: #888;
+}
+
+.vencido-sim {
+    color: var(--red) !important;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #1e2f3a;
+}
+
+.btn-status {
+    background: var(--navy);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    margin: 0 2px;
+    font-weight: 700;
+}
+
+.btn-status:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.btn-confirm {
+    border: none;
+    padding: 4px 8px;
+    margin: 0 2px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.btn-sim { background: #81c784; color: white; }
+.btn-nao { background: #e57373; color: white; }
+.btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.thumbs-up {
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.thumbs-up.show { opacity: 1; }
+
+.loc-link {
+    color: var(--navy);
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.badge-tipo {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-resfriado { background: #d4edff; color: #004085; }
+.badge-congelado { background: #d1ecf1; color: #0c5460; }
+
+/* ===== LOGIN ===== */
+body.login-page,
+body.login,
+body.page-login {
+    padding: 0;
+    overflow: hidden;
+}
+
+body.login-page .page-shell,
+body.login .page-shell,
+body.page-login .page-shell {
+    display: none;
+}
+
+.login-container,
+#login-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+
+.login-card,
+#login-card {
+    width: 100%;
+    max-width: 430px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(197, 182, 141, 0.45);
+    border-radius: 22px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    backdrop-filter: blur(8px);
+    padding: 24px 22px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+}
+
+.login-card *,
+#login-card * {
+    box-sizing: border-box;
+}
+
+.logo,
+.login-logo,
+.brand,
+.brand-name,
+#logo,
+#brand-name,
+.header-left {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 800;
+    color: var(--navy);
+    font-size: 24px;
+    line-height: 1.1;
+    text-align: center;
+}
+
+.login-title,
+#login-title,
+.login-card h1,
+.login-card h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--navy);
+    text-align: center;
+    margin: 6px 0 4px;
+    line-height: 1.15;
+}
+
+.login-form,
+#login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.login-form label,
+#login-form label {
+    display: block;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+}
+
+.login-form input,
+#login-form input,
+.login-card input,
+#login-card input {
+    width: 100%;
+    height: 34px;
+    border: 1px solid #aab2bb;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 1.2;
+    color: var(--navy);
+    background: rgba(255,255,255,0.92);
+    outline: none;
+}
+
+.login-form input::placeholder,
+#login-form input::placeholder,
+.login-card input::placeholder,
+#login-card input::placeholder {
+    font-size: 13px;
+    color: #8a96a3;
+}
+
+.login-form input:focus,
+#login-form input:focus,
+.login-card input:focus,
+#login-card input:focus {
+    border-color: var(--navy);
+    box-shadow: 0 0 0 2px rgba(45, 75, 94, 0.12);
+}
+
+.login-button,
+#login-button,
+.login-card button,
+#login-card button {
+    width: 100%;
+    height: 36px;
+    border: none;
+    border-radius: 18px;
+    background: var(--red);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+    text-transform: uppercase;
+}
+
+.login-button:hover,
+#login-button:hover,
+.login-card button:hover,
+#login-card button:hover {
+    filter: brightness(0.96);
+    transform: translateY(-1px);
+}
+
+.login-button:active,
+#login-button:active,
+.login-card button:active,
+#login-card button:active {
+    transform: translateY(0);
+}
+
+.login-row,
+#login-row {
+    width: 100%;
+}
+
+.login-helper,
+#login-helper {
+    font-size: 12px;
+    color: var(--grey);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    body { padding: 10px; background-attachment: scroll; }
+
+    .card {
+        padding: 15px !important;
+        border-radius: 18px !important;
+    }
+
+    .header-card {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+        text-align: center;
+        padding: 14px;
+        border-radius: 18px;
+    }
+
+    .header-left,
+    .header-right {
+        flex: 0 0 auto;
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    #welcome-message { font-size: 1.15rem; }
+    .header-subtitle { font-size: 0.75rem; }
+
+    .workspace-card {
+        padding: 14px;
+        border-radius: 18px;
+        min-height: auto;
+    }
+
+    .workspace-main {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .menu-column {
+        width: 100%;
+        flex: 0 0 100%;
+    }
+
+    .container-btn {
+        min-height: 40px;
+        font-size: 11px;
+        border-radius: 10px;
+    }
+
+    .container-btn span {
+        font-size: 13px;
+    }
+
+    .calendar-area {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .calendar-box {
+        max-width: 100%;
+    }
+
+    #calendar-header { font-size: 0.95rem; }
+
+    .calendar-grid,
+    #calendar-grid {
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        grid-template-columns: 30px repeat(7, minmax(0, 1fr)) !important;
+    }
+
+    .cal-cell {
+        padding: 8px !important;
+        font-size: 11px !important;
+    }
+
+    .cal-cell.head {
+        font-size: 10px !important;
+        padding: 8px !important;
+    }
+
+    #full-calendar-modal {
+        padding: 15px !important;
+    }
+
+    #full-calendar-content {
+        grid-template-columns: 1fr !important;
+        padding: 10px !important;
+        gap: 12px !important;
+    }
+
+    .login-card,
+    #login-card {
+        max-width: 94vw;
+        padding: 22px 18px 16px;
+        border-radius: 20px;
+    }
+
+    .logo,
+    .login-logo,
+    .brand,
+    .brand-name,
+    #logo,
+    #brand-name,
+    .header-left {
+        font-size: 24px;
+    }
+
+    .login-title,
+    #login-title,
+    .login-card h1,
+    .login-card h2 {
+        font-size: 18px;
+    }
+
+    .login-form input,
+    #login-form input,
+    .login-card input,
+    #login-card input {
+        font-size: 13px;
+        height: 34px;
+    }
+}
+
+@media (max-width: 480px) {
+    body { padding: 8px; }
+
+    .header-card,
+    .workspace-card {
+        padding: 12px;
+    }
+
+    #welcome-message {
+        font-size: 1.03rem;
+    }
+
+    .container-btn {
+        min-height: 38px;
+        font-size: 10px;
+    }
+
+    .container-btn span {
+        font-size: 12px;
+    }
+
+    .footer {
+        font-size: 0.72rem;
+        color: #000;
+    }
+
+    .login-card,
+    #login-card {
+        padding: 20px 16px 14px;
+    }
+
+    .login-form input,
+    #login-form input,
+    .login-card input,
+    #login-card input {
+        font-size: 12px;
+        height: 33px;
+    }
+
+    .login-button,
+    #login-button,
+    .login-card button,
+    #login-card button {
+        height: 35px;
+        font-size: 14px;
+    }
+}
+</style>
+<!-- CW-GESTAO-CSS-GLOBAL-FIM -->
   <style>
     :root {
       --navy: #2d4b5e;
@@ -30,26 +1097,15 @@
       width: 100%;
       max-width: none;
       margin: 0;
-      transition: background-color 0.18s ease, opacity 0.18s ease;
     }
 
-    body.is-updating { background: #f6f6f6; }
-
+    /* Transicionar o dashboard inteiro força repintura dos cinco canvas.
+       A animação fica somente nos gráficos, sem disputar a GPU com os cards. */
     .header-card,
     .filter-bar,
     .table-container,
     .card {
       width: 100%;
-      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    body.is-updating .header-card,
-    body.is-updating .filter-bar,
-    body.is-updating .table-container,
-    body.is-updating .card {
-      transform: translateY(1px);
-      opacity: 0.98;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.04);
     }
 
     .header-card {
@@ -332,7 +1388,8 @@
 
     tr:nth-child(even) td { background-color: #f9f9f9; }
 
-    .row-appear { animation: rowFade 0.22s ease both; }
+    /* Animar centenas de linhas ao mesmo tempo concorria com os gráficos. */
+    .row-appear { animation: none; }
 
     @keyframes rowFade {
       from { opacity: 0; transform: translateY(4px); }
@@ -659,7 +1716,23 @@
       th, td { font-size: 8px !important; }
     }
   </style>
-</head>
+<!-- CW-GESTAO-CSS-FUNDO-INICIO -->
+<style data-cw-source="css/site-background.css">
+/* Fundo institucional compartilhado por todas as paginas do ColetaWeb. */
+html { min-height: 100%; }
+body {
+  min-height: 100vh;
+  background-image: url('assets/fundo-menu.jpg') !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+@media (max-width: 768px) {
+  body { background-attachment: scroll !important; }
+}
+</style>
+<!-- CW-GESTAO-CSS-FUNDO-FIM --></head>
 <body>
 <div id="loading-overlay"><div class="spinner"></div></div>
 
@@ -747,6 +1820,9 @@
 
   <div class="card card-right">
     <div class="chart-title">Containers por Transportadora</div>
+    <div style="font-size:8px; font-weight:700; color:#667085; text-align:center; margin:-2px 0 4px;">
+      Exibe automaticamente somente transportadoras liberadas com movimentação no filtro atual.
+    </div>
     <div style="flex:1; position:relative; min-height:0; overflow:hidden;">
       <canvas id="chartTransportadora"></canvas>
     </div>
@@ -806,7 +1882,22 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<!-- CW-GESTAO-CLIENTE-SUPABASE-INICIO -->
+<script data-cw-source="js/script.js#bootstrap">
+document.addEventListener('DOMContentLoaded', () => {
+// Configuração do Supabase
+const SUPABASE_URL = 'https://ekmcgifpvqrdgcikvepe.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbWNnaWZwdnFyZGdjaWt2ZXBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDY4NTgsImV4cCI6MjA5NTE4Mjg1OH0.sLIg__XSOSM7VD95FcUDr2ZCuDFCxxCWlF98sJkyBTg';
+
+// Inicialização segura
+globalThis.clienteSupabase = (typeof supabase !== 'undefined')
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+
+}, { once: true });
+</script>
+<!-- CW-GESTAO-CLIENTE-SUPABASE-FIM -->
 <script>
   const FREE_TIME_RULES = {
     "PIL": { dias: 30, custo: 100 },
@@ -840,10 +1931,65 @@
   let filtroFreeTimeAtivo = null;
   let filtroAtrasoAtivo = null;
   let filtroTransportadoraAtiva = null;
+
+  // Controle temporário das transportadoras exibidas no gráfico.
+  // Quando toda a operação estiver liberada para todas as transportadoras,
+  // basta alterar para false.
+  const RESTRINGIR_TRANSPORTADORAS_OPERACAO = true;
+
+  const TRANSPORTADORAS_OPERACAO = [
+    { nome: 'DALLASTRA', aliases: ['DALLASTRA'] },
+    { nome: 'TFX FAUSTINO TRANSPORTE LTDA', aliases: ['TFX', 'TFX FAUSTINO', 'TFX FAUSTINO TRANSPORTE LTDA', 'TFX FAUSTINO TRANSPORTES LTDA'] },
+    { nome: 'ORLANDO TRANSPORTES LTDA', aliases: ['ORLANDO', 'ORLANDO TRANSPORTES', 'ORLANDO TRANSPORTES LTDA'] },
+    { nome: 'LUIZ MAURO HERGERT E CIA LTDA', aliases: ['LUIZ MAURO HERGERT', 'LUIZ MAURO HERGERT E CIA LTDA'] },
+    { nome: 'TRANSMARONI TRANSPORTES BRASIL RODOVIARIOS LTDA', aliases: ['TRANSMARONI', 'TRANS MARONI', 'TRANS MAMONI', 'MAMONI', 'TRANSMARONI TRANSPORTES BRASIL RODOVIARIOS LTDA', 'TRANSMARONI TRANSPORTES BRASIL RODOVIÁRIOS LTDA', 'TRANS MAMONI TRANSPORTES BRASIL RODOVIARIOS LTDA', 'TRANS MAMONI TRANSPORTES BRASIL RODOVIÁRIOS LTDA'] },
+    { nome: 'AGREGA MAIS TRANSPORTES EIRELI', aliases: ['AGREGA', 'AGREGA MAIS', 'AGREGA MAIS TRANSPORTES EIRELI', 'ACREGA', 'ACREGA MAIS', 'ACREGA MAIS TRANSPORTES EIRELI'] }
+  ];
+
+  function normalizarNomeTransportadora(valor) {
+    return String(valor || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .replace(/[.\-_/]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function obterTransportadoraCanonica(valor) {
+    const atual = normalizarNomeTransportadora(valor);
+    if (!atual) return '';
+
+    for (const item of TRANSPORTADORAS_OPERACAO) {
+      const aliases = [item.nome, ...(item.aliases || [])];
+      for (const alias of aliases) {
+        const a = normalizarNomeTransportadora(alias);
+        if (!a) continue;
+        if (atual === a || atual.includes(a) || a.includes(atual)) {
+          return item.nome;
+        }
+      }
+    }
+    return '';
+  }
+
+  function nomeTransportadoraGrafico(valor) {
+    const original = String(valor || '').trim();
+    if (!RESTRINGIR_TRANSPORTADORAS_OPERACAO) return original || 'N/A';
+    return obterTransportadoraCanonica(original);
+  }
+
+  function correspondeTransportadoraGrafico(valorRegistro, valorFiltro) {
+    const a = nomeTransportadoraGrafico(valorRegistro);
+    const b = nomeTransportadoraGrafico(valorFiltro);
+    if (a && b) return normalizarNomeTransportadora(a) === normalizarNomeTransportadora(b);
+    return normalizarNomeTransportadora(valorRegistro) === normalizarNomeTransportadora(valorFiltro);
+  }
   let refreshInterval = null;
   let charts = {};
   let lastSignature = '';
   let carregandoInicial = true;
+  let dadosAguardandoGraficos = false;
 
   // FOTO ZOOM
   let fotoZoom = 1;
@@ -869,14 +2015,6 @@
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
-  }
-
-  function beginSoftTransition() {
-    document.body.classList.add('is-updating');
-    clearTimeout(window._softTransitionTimer);
-    window._softTransitionTimer = setTimeout(() => {
-      document.body.classList.remove('is-updating');
-    }, 180);
   }
 
   function parseDataValida(valor) {
@@ -1020,7 +2158,7 @@
       if (filtroAtrasoAtivo === 'no_prazo' && emAtraso) return false;
     }
 
-    if (filtroTransportadoraAtiva && ignoreKey !== 'transportadora' && (d.transportadora || '').trim().toUpperCase() !== filtroTransportadoraAtiva.toUpperCase()) return false;
+    if (filtroTransportadoraAtiva && ignoreKey !== 'transportadora' && !correspondeTransportadoraGrafico(d.transportadora || '', filtroTransportadoraAtiva)) return false;
 
     return true;
   }
@@ -1033,14 +2171,19 @@
   function atualizarDatalist(id, values) {
     const datalist = document.getElementById(id);
     if (!datalist) return;
-    datalist.innerHTML = '';
-    Array.from(new Set(values.filter(Boolean)))
-      .sort((a, b) => String(a).localeCompare(String(b)))
-      .forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v;
-        datalist.appendChild(opt);
-      });
+    const opcoes = Array.from(new Set(values.filter(Boolean)))
+      .sort((a, b) => String(a).localeCompare(String(b)));
+    // Não recriar centenas de <option> quando o filtro não mudou seus valores.
+    const assinatura = JSON.stringify(opcoes);
+    if (datalist._assinaturaGestao === assinatura) return;
+    datalist._assinaturaGestao = assinatura;
+    const fragmento = document.createDocumentFragment();
+    opcoes.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      fragmento.appendChild(opt);
+    });
+    datalist.replaceChildren(fragmento);
   }
 
   function getStatusLabel(status) {
@@ -1131,21 +2274,27 @@
     });
   }
 
-  function atualizarFiltrosDinamicos() {
+  function atualizarFiltrosDinamicos(dadosAtuais = null) {
     const filtros = obterFiltroAtual();
 
     const baseArmador = dadosCompletos.filter(d => matchFilters(d, filtros, 'armador'));
-    const baseContainer = dadosCompletos.filter(d => matchFilters(d, filtros, 'container'));
+    // Container e placa não são campos filtráveis neste painel. A mesma base
+    // já calculada serve para ambos, evitando duas varreduras completas.
+    const baseGeral = dadosAtuais || obterDadosFiltrados();
     const baseOrdem = dadosCompletos.filter(d => matchFilters(d, filtros, 'ordem'));
-    const basePlaca = dadosCompletos.filter(d => matchFilters(d, filtros, 'placa'));
     const baseTransp = dadosCompletos.filter(d => matchFilters(d, filtros, 'transportadora'));
     const baseStatus = dadosCompletos.filter(d => matchFilters(d, filtros, 'status'));
 
     atualizarDatalist('listaArmador', baseArmador.map(d => d.armador || ''));
-    atualizarDatalist('listaContainer', baseContainer.map(d => d.container || ''));
+    atualizarDatalist('listaContainer', baseGeral.map(d => d.container || ''));
     atualizarDatalist('listaOrdem', baseOrdem.map(d => d.ordem || ''));
-    atualizarDatalist('listaPlaca', basePlaca.map(d => d.placa || ''));
-    atualizarDatalist('listaTransportadora', baseTransp.map(d => d.transportadora || ''));
+    atualizarDatalist('listaPlaca', baseGeral.map(d => d.placa || ''));
+    const transportadorasFiltro = RESTRINGIR_TRANSPORTADORAS_OPERACAO
+      ? Array.from(new Set(baseTransp
+          .map(d => nomeTransportadoraGrafico(d.transportadora || ''))
+          .filter(Boolean)))
+      : baseTransp.map(d => d.transportadora || '');
+    atualizarDatalist('listaTransportadora', transportadorasFiltro);
 
     const statusSelect = document.getElementById('filtroStatus');
     if (statusSelect) {
@@ -1286,11 +2435,33 @@
     resetarZoomFoto();
   }
 
+  let contextoAcessoInicial = null;
+  const diagnosticoGestaoAtivo = new URLSearchParams(location.search).get('diagnostico') === '1';
+  const metricasGestao = {};
+  function medirGestao(etapa, ms) {
+    if (!diagnosticoGestaoAtivo) return;
+    metricasGestao[etapa] = `${Math.round(ms)} ms`;
+    let painel = document.getElementById('diagnostico-gestao');
+    if (!painel) {
+      painel = document.createElement('aside');
+      painel.id = 'diagnostico-gestao';
+      painel.setAttribute('role', 'status');
+      painel.style.cssText = 'position:fixed;bottom:12px;right:12px;z-index:10000;background:#17394bea;color:white;padding:12px 16px;border-radius:12px;box-shadow:0 6px 22px #0005;max-width:340px;font:12px/1.6 Arial,sans-serif;white-space:pre-line;pointer-events:none';
+      document.body.appendChild(painel);
+    }
+    painel.textContent = 'DIAGNÓSTICO DE DESEMPENHO\n' +
+      Object.entries(metricasGestao).map(([nome, tempo]) => `${nome}: ${tempo}`).join('\n');
+    console.info('[ColetaWeb Gestão] ' + etapa + ': ' + Math.round(ms) + ' ms');
+  }
   async function verificarAcesso() {
     try {
       if (!clienteSupabase) return false;
 
-      const { data: { user } } = await clienteSupabase.auth.getUser();
+      // A leitura da sessao local evita uma chamada extra ao Auth antes
+      // da consulta do perfil. A autorizacao continua vindo de usuarios.
+      const { data: { session }, error: erroSessao } = await clienteSupabase.auth.getSession();
+      if (erroSessao) throw erroSessao;
+      const user = session?.user;
       if (!user) {
         window.location.href = 'login.html';
         return false;
@@ -1321,6 +2492,7 @@
         return false;
       }
 
+      contextoAcessoInicial = { usuario: user, userData };
       return true;
     } catch (error) {
       console.error('Erro em verificarAcesso:', error);
@@ -1339,8 +2511,10 @@
     const custoMensalMap = new Map();
 
     for (const d of dados) {
-      const t = d.transportadora || 'N/A';
-      transpMap.set(t, (transpMap.get(t) || 0) + 1);
+      const t = nomeTransportadoraGrafico(d.transportadora || '');
+      if (t) {
+        transpMap.set(t, (transpMap.get(t) || 0) + 1);
+      }
 
       const st = getEffectiveStatus(d);
       if (statusCount.has(st)) statusCount.set(st, statusCount.get(st) + 1);
@@ -1411,7 +2585,7 @@
       type: 'bar',
       data: { labels: [], datasets: [{ data: [], backgroundColor: [colors.gold, colors.navy, colors.red], borderRadius: 3, barPercentage: 0.6, categoryPercentage: 0.75 }] },
       options: {
-        animation: { duration: 560, easing: 'easeOutQuart' },
+        animation: { duration: 280, easing: 'easeOutCubic' },
         responsive: true,
         maintainAspectRatio: false,
         onClick: (evt, elements) => {
@@ -1450,7 +2624,7 @@
       type: 'bar',
       data: { labels: [], datasets: [{ data: [], backgroundColor: [colors.navy, colors.navy, colors.gold, colors.gold, colors.red], borderRadius: 3, barPercentage: 0.6, categoryPercentage: 0.75 }] },
       options: {
-        animation: { duration: 560, easing: 'easeOutQuart' },
+        animation: { duration: 280, easing: 'easeOutCubic' },
         responsive: true,
         maintainAspectRatio: false,
         onClick: (evt, elements) => {
@@ -1483,7 +2657,7 @@
       type: 'bar',
       data: { labels: [], datasets: [{ data: [], backgroundColor: [colors.navy, colors.red], borderRadius: 3, barPercentage: 0.5, categoryPercentage: 0.6 }] },
       options: {
-        animation: { duration: 560, easing: 'easeOutQuart' },
+        animation: { duration: 280, easing: 'easeOutCubic' },
         responsive: true,
         maintainAspectRatio: false,
         onClick: (evt, elements) => {
@@ -1516,7 +2690,7 @@
       type: 'bar',
       data: { labels: [], datasets: [{ data: [], backgroundColor: colors.navy, borderRadius: 3, barPercentage: 0.55, categoryPercentage: 0.7 }] },
       options: {
-        animation: { duration: 560, easing: 'easeOutQuart' },
+        animation: { duration: 280, easing: 'easeOutCubic' },
         responsive: true,
         indexAxis: 'y',
         maintainAspectRatio: false,
@@ -1526,24 +2700,43 @@
           filtroTransportadoraAtiva = (filtroTransportadoraAtiva === label) ? null : label;
           atualizarTudo();
         },
+        layout: { padding: { right: 24 } },
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } },
-          datalabels: { display: false }
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw} container(s)` } },
+          datalabels: {
+            display: true,
+            anchor: 'end',
+            align: 'right',
+            offset: 4,
+            clip: false,
+            clamp: true,
+            color: colors.navy,
+            font: { weight: '800', size: 9 },
+            formatter: v => Number(v) > 0 ? String(v) : ''
+          }
         },
         scales: {
-          x: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } },
-          y: { ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy }, grid: { display: false } }
+          x: {
+            beginAtZero: true,
+            grace: '15%',
+            ticks: { precision: 0, font: { size: 8, weight: 'bold' }, color: colors.navy },
+            grid: { display: false }
+          },
+          y: {
+            ticks: { font: { size: 8, weight: 'bold' }, color: colors.navy },
+            grid: { display: false }
+          }
         }
       },
-      plugins: []
+      plugins: [ChartDataLabels]
     });
 
     charts.custo = new Chart(document.getElementById('chartCusto'), {
       type: 'line',
       data: { labels: [], datasets: [{ label: 'Custo (USD)', data: [], borderColor: colors.red, backgroundColor: 'rgba(232, 77, 83, 0.1)', borderWidth: 2, pointBackgroundColor: colors.red, pointBorderColor: '#fff', pointBorderWidth: 1, pointRadius: 4, tension: 0.2, fill: true }] },
       options: {
-        animation: { duration: 560, easing: 'easeOutQuart' },
+        animation: { duration: 280, easing: 'easeOutCubic' },
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -1565,45 +2758,43 @@
     });
   }
 
-  function setChartData(chart, labels, values) {
+  function setChartData(chart, labels, values, backgroundColor, animar = true) {
     chart.data.labels = labels;
     chart.data.datasets[0].data = values;
-    chart.update();
+    if (backgroundColor) chart.data.datasets[0].backgroundColor = backgroundColor;
+    // Mantem a animacao dos filtros, com uma unica atualizacao por grafico.
+    // Antes cada grafico era atualizado duas vezes sem necessidade.
+    chart.update(animar ? 'default' : 'none');
   }
 
-  function renderGraficos(dadosFiltrados) {
+  function renderGraficos(dadosFiltrados, animar = true) {
     const prep = prepararGraficos(dadosFiltrados);
     const colors = { navy: '#2d4b5e', gold: '#c5b68d', red: '#E84D53' };
 
-    setChartData(charts.status, prep.statusLabels, prep.statusValues);
-    charts.status.data.datasets[0].backgroundColor = [colors.gold, colors.navy, colors.red];
-    charts.status.update();
+    setChartData(charts.status, prep.statusLabels, prep.statusValues, [colors.gold, colors.navy, colors.red], animar);
 
-    setChartData(charts.freeTime, Object.keys(prep.faixas), Object.values(prep.faixas));
-    charts.freeTime.data.datasets[0].backgroundColor = [colors.navy, colors.navy, colors.gold, colors.gold, colors.red];
-    charts.freeTime.update();
+    setChartData(charts.freeTime, Object.keys(prep.faixas), Object.values(prep.faixas), [colors.navy, colors.navy, colors.gold, colors.gold, colors.red], animar);
 
-    setChartData(charts.atraso, ['No Prazo', 'Em Atraso'], [prep.noPrazo, prep.atrasados]);
-    charts.atraso.data.datasets[0].backgroundColor = [colors.navy, colors.red];
-    charts.atraso.update();
+    setChartData(charts.atraso, ['No Prazo', 'Em Atraso'], [prep.noPrazo, prep.atrasados], [colors.navy, colors.red], animar);
 
-    setChartData(charts.transp, prep.transpLabels, prep.transpValues);
-    charts.transp.update();
+    setChartData(charts.transp, prep.transpLabels, prep.transpValues, undefined, animar);
 
-    setChartData(charts.custo, prep.custoMensalLabels, prep.custoMensalValues);
-    charts.custo.update();
+    setChartData(charts.custo, prep.custoMensalLabels, prep.custoMensalValues, undefined, animar);
   }
 
-  function renderTabela(dados) {
+  let geracaoTabela = 0;
+  let geracaoFiltrosDinamicos = 0;
+  function renderTabela(dados, emLotes = false) {
+    const geracao = ++geracaoTabela;
     const tbody = document.getElementById('table-body');
-    tbody.innerHTML = '';
 
     if (dados.length === 0) {
       tbody.innerHTML = '<tr><td colspan="20" class="sem-dados">Nenhum container encontrado.</td></tr>';
       return;
     }
 
-    dados.forEach(d => {
+    const fragmento = document.createDocumentFragment();
+    function criarLinha(d) {
       const rule = getFreeTimeRuleCached(d.armador);
       const ftTotal = rule ? rule.dias : '-';
       const valorDiario = rule ? rule.custo : null;
@@ -1650,17 +2841,46 @@
         <td>${fotoLink(fotoLiberado, 'LIB.')}</td>
         <td>${fotoLink(fotoDepositado, 'DEP.')}</td>
       `;
-      tbody.appendChild(tr);
-    });
+      return tr;
+    }
+
+    // Criar as linhas fora da tela em lotes de até ~5 ms por frame. Assim,
+    // a tabela completa continua disponível sem travar a animação dos canvas.
+    let indice = 0;
+    function proximoLote() {
+      if (geracao !== geracaoTabela) return;
+      const inicio = performance.now();
+      let processados = 0;
+      do {
+        fragmento.appendChild(criarLinha(dados[indice++]));
+        processados++;
+      } while (indice < dados.length && processados < 35 &&
+               (!emLotes || performance.now() - inicio < 5));
+      if (indice < dados.length) {
+        requestAnimationFrame(proximoLote);
+      } else {
+        tbody.replaceChildren(fragmento);
+      }
+    }
+    if (emLotes && dados.length > 35) requestAnimationFrame(proximoLote);
+    else proximoLote();
   }
 
-  function atualizarTudo() {
-    beginSoftTransition();
+  function atualizarTudo(animar = true) {
+    const inicioFiltro = performance.now();
     const dados = obterDadosFiltrados();
     atualizarChips();
-    atualizarFiltrosDinamicos();
-    renderGraficos(dados);
-    renderTabela(dados);
+    // A primeira atualização visível é dos gráficos. As opções de filtros e
+    // centenas de linhas são montadas depois, sem bloquear seus frames.
+    renderGraficos(dados, animar === true);
+    renderTabela(dados, dados.length > 35);
+    const geracao = ++geracaoFiltrosDinamicos;
+    // Não fazer seis varreduras e recriar listas durante os 280 ms de
+    // animação. Sugestões de filtro são atualizadas logo após o movimento.
+    setTimeout(() => {
+      if (geracao === geracaoFiltrosDinamicos) atualizarFiltrosDinamicos(dados);
+    }, animar === true ? 300 : 30);
+    if (animar === true) medirGestao('Filtro: gráficos atualizados', performance.now() - inicioFiltro);
   }
 
   function aplicarFiltrosForm() {
@@ -1678,13 +2898,30 @@
     atualizarTudo();
   }
 
-  function exportarExcel() {
+  let promessaExcelGestao = null;
+  function carregarBibliotecaExcelGestao() {
+    if (window.XLSX?.utils) return Promise.resolve(window.XLSX);
+    if (promessaExcelGestao) return promessaExcelGestao;
+    promessaExcelGestao = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      script.async = true;
+      script.onload = () => window.XLSX?.utils ? resolve(window.XLSX) : reject(new Error('Biblioteca Excel indisponível.'));
+      script.onerror = () => reject(new Error('Não foi possível carregar a biblioteca Excel.'));
+      document.head.appendChild(script);
+    }).catch(error => { promessaExcelGestao = null; throw error; });
+    return promessaExcelGestao;
+  }
+
+  async function exportarExcel() {
     try {
       const dados = obterDadosFiltrados();
       if (dados.length === 0) {
         alert('Nenhum dado para exportar.');
         return;
       }
+
+      const XLSX = await carregarBibliotecaExcelGestao();
 
       const exportData = dados.map(d => {
         const rule = getFreeTimeRuleCached(d.armador);
@@ -1729,21 +2966,30 @@
     }
   }
 
+  let consultaGestaoEmAndamento = false;
   async function carregarTodos() {
+    if (consultaGestaoEmAndamento) return;
+    consultaGestaoEmAndamento = true;
     try {
       if (!clienteSupabase) throw new Error('clienteSupabase não foi carregado.');
-
-      const { data: { user } } = await clienteSupabase.auth.getUser();
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
+      let userData;
+      if (contextoAcessoInicial) {
+        // Reutiliza SOMENTE na primeira consulta o perfil que acabou de ser
+        // validado. Atualizacoes posteriores voltam a consultar permissoes.
+        userData = contextoAcessoInicial.userData;
+        contextoAcessoInicial = null;
+      } else {
+        // Refresh: a sessao local evita /auth/v1/user a cada 20 segundos.
+        // O perfil continua sendo conferido no banco e os dados seguem RLS.
+        const { data: { session }, error: erroSessao } = await clienteSupabase.auth.getSession();
+        if (erroSessao) throw erroSessao;
+        const user = session?.user;
+        if (!user) { window.location.href = 'login.html'; return; }
+        const result = await clienteSupabase.from('usuarios')
+          .select('perfil, transportadora').eq('email', user.email).single();
+        if (result.error) throw result.error;
+        userData = result.data;
       }
-
-      const { data: userData } = await clienteSupabase
-        .from('usuarios')
-        .select('perfil, transportadora')
-        .eq('email', user.email)
-        .single();
 
       const perfil = userData ? userData.perfil.trim().toLowerCase() : '';
       const ehAdmin = (perfil === 'master' || perfil === 'mestre' || perfil === 'administrador');
@@ -1753,7 +2999,9 @@
         query = query.eq('transportadora', userData.transportadora);
       }
 
+      const inicioDados = performance.now();
       const { data, error } = await query.order('created_at', { ascending: false });
+      medirGestao('Consulta coletas (Supabase)', performance.now() - inicioDados);
       if (error) throw error;
 
       const novoDado = data || [];
@@ -1763,11 +3011,22 @@
 
       lastSignature = novaAssinatura;
       dadosCompletos = novoDado;
-      atualizarTudo();
+      const inicioRender = performance.now();
+      // Gráficos imediatos, sem animação na abertura; filtros animam em 280 ms.
+      if (charts.status) {
+        atualizarTudo(false);
+        medirGestao('Preparação de gráficos e tabela', performance.now() - inicioRender);
+      } else {
+        // Os dados já podem chegar enquanto Chart.js termina de baixar.
+        // Deixar prontos para o primeiro frame, sem uma segunda consulta.
+        dadosAguardandoGraficos = true;
+      }
       carregandoInicial = false;
     } catch (err) {
       console.error(err);
       alert('Erro ao carregar dados: ' + (err?.message || err));
+    } finally {
+      consultaGestaoEmAndamento = false;
     }
   }
 
@@ -1835,12 +3094,57 @@
     });
   }
 
-  window.onload = async () => {
-    if (await verificarAcesso()) {
+  document.addEventListener('DOMContentLoaded', async () => {
+    medirGestao('HTML/CSS/JS até DOM pronto', performance.now());
+    if (diagnosticoGestaoAtivo) {
+      const navegacao = performance.getEntriesByType('navigation')[0];
+      if (navegacao) {
+        medirGestao('HTML recebido da rede', navegacao.responseEnd);
+        medirGestao('Após HTML: CSS e scripts', Math.max(0, navegacao.domContentLoadedEventStart - navegacao.responseEnd));
+      }
+      // Detalhar os recursos que podem estar causando a espera de ~1,2 s.
+      // Alguns CDNs não expõem Resource Timing; não mostrar valores zerados.
+      const recursos = performance.getEntriesByType('resource');
+      [
+        ['Biblioteca Supabase JS', 'supabase-js@2'],
+        ['Biblioteca Chart.js', 'Chart.js/3.9.1/chart.min.js'],
+        ['Rótulos dos gráficos', 'chartjs-plugin-datalabels/2.1.0']
+      ].forEach(([descricao, identificador]) => {
+        const entrada = recursos.find(r => r.name.includes(identificador));
+        if (entrada && entrada.duration > 1) medirGestao(descricao, entrada.duration);
+      });
+    }
+    const inicioPainel = performance.now();
+    const inicioAcesso = performance.now();
+    const acessoPermitido = await verificarAcesso();
+    medirGestao('Autenticação e perfil', performance.now() - inicioAcesso);
+    if (acessoPermitido) {
+      // A consulta ao banco e o download das bibliotecas agora acontecem
+      // simultaneamente. Antes a consulta só começava após os CDNs terminarem.
+      const consultaInicial = carregarTodos();
+      const inicioAguardarBibliotecas = performance.now();
+      const graficosDisponiveis = await window.coletawebGraficosProntos;
+      medirGestao('Espera bibliotecas após perfil', performance.now() - inicioAguardarBibliotecas);
+      if (!graficosDisponiveis) {
+        console.error('Chart.js ou plugin de rótulos não foi carregado.');
+        await consultaInicial;
+        alert('Não foi possível carregar as bibliotecas dos gráficos. Verifique a conexão e atualize a página.');
+        return;
+      }
       initCharts();
       syncStatusCheckboxes();
       registrarEventosFoto();
-      await carregarTodos();
+      if (dadosAguardandoGraficos) {
+        dadosAguardandoGraficos = false;
+        const inicioRender = performance.now();
+        atualizarTudo(false);
+        medirGestao('Preparação de gráficos e tabela', performance.now() - inicioRender);
+      }
+      await consultaInicial;
+      medirGestao('Total desde DOM pronto', performance.now() - inicioPainel);
+      // Este é o numero comparável entre V8 e V9: do clique/navegacao até
+      // os graficos receberem os dados, independentemente do DOMContentLoaded.
+      medirGestao('Gráficos prontos desde navegação', performance.now());
 
       if (refreshInterval) clearInterval(refreshInterval);
       refreshInterval = setInterval(() => {
@@ -1849,7 +3153,7 @@
         }
       }, 20000);
     }
-  };
+  });
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
@@ -1885,14 +3189,14 @@
 
   ['filtroDataInicio','filtroDataFim','filtroDataRetirada'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('change', atualizarTudo);
+    if (el) el.addEventListener('change', () => atualizarTudo(true));
   });
 
   const elArmador = document.getElementById('filtroArmador');
   if (elArmador) {
     elArmador.addEventListener('input', () => {
       clearTimeout(window._tArmador);
-      window._tArmador = setTimeout(atualizarTudo, 120);
+      window._tArmador = setTimeout(() => atualizarTudo(true), 220);
     });
   }
 
@@ -1900,7 +3204,7 @@
   if (elOrdem) {
     elOrdem.addEventListener('input', () => {
       clearTimeout(window._tOrdem);
-      window._tOrdem = setTimeout(atualizarTudo, 120);
+      window._tOrdem = setTimeout(() => atualizarTudo(true), 220);
     });
   }
 
@@ -1908,9 +3212,461 @@
   if (elTransportadora) {
     elTransportadora.addEventListener('input', () => {
       clearTimeout(window._tTransp);
-      window._tTransp = setTimeout(atualizarTudo, 120);
+      window._tTransp = setTimeout(() => atualizarTudo(true), 220);
     });
   }
 </script>
-</body>
+<!-- CW-GESTAO-IDIOMA-INICIO -->
+<script data-cw-source="js/i18n-global.js">
+/* ColetaWeb: tradução de rótulos de interface, inclusive conteúdo renderizado dinamicamente.
+   Não altera valores enviados ao banco, identificadores ou dados digitados pelo usuário. */
+(function () {
+  'use strict';
+  const PAIRS = [
+    // Navegação, acesso e controles
+    ['SAIR','LOG OUT','SALIR'],['ENTRAR','SIGN IN','INGRESAR'],['SENHA','PASSWORD','CONTRASEÑA'],['E-MAIL','EMAIL','CORREO ELECTRÓNICO'],
+    ['VOLTAR','BACK','VOLVER'],['Voltar','Back','Volver'],['Cancelar','Cancel','Cancelar'],['CANCELAR','CANCEL','CANCELAR'],
+    ['Confirmar','Confirm','Confirmar'],['CONFIRMAR','CONFIRM','CONFIRMAR'],['OK','OK','ACEPTAR'],['SALVAR','SAVE','GUARDAR'],
+    ['Salvar','Save','Guardar'],['ATUALIZAR','REFRESH','ACTUALIZAR'],['Atualizar','Refresh','Actualizar'],
+    ['Fechar','Close','Cerrar'],['FECHAR','CLOSE','CERRAR'],['Limpar','Clear','Limpiar'],['LIMPAR','CLEAR','LIMPIAR'],
+    ['Filtrar','Filter','Filtrar'],['BUSCAR','SEARCH','BUSCAR'],['Buscar','Search','Buscar'],
+    ['Todos','All','Todos'],['TODOS','ALL','TODOS'],['Todas','All','Todas'],['TODAS','ALL','TODAS'],
+    ['SELECIONE...','SELECT...','SELECCIONE...'],['Carregando...','Loading...','Cargando...'],
+    ['CRIAR','CREATE','CREAR'],['Criar','Create','Crear'],['NOVO REGISTRO','NEW RECORD','NUEVO REGISTRO'],
+    ['Anterior','Previous','Anterior'],['Próxima','Next','Siguiente'],['Página 1','Page 1','Página 1'],
+    ['Desenvolvido por Leandro Brasil • 2026','Developed by Leandro Brasil • 2026','Desarrollado por Leandro Brasil • 2026'],
+    // Menus
+    ['SOLICITAR CONTÊINER','REQUEST CONTAINER','SOLICITAR CONTENEDOR'],
+    ['REGISTRAR COLETA','REGISTER PICKUP','REGISTRAR RECOGIDA'],
+    ['PROCESSOS - CONTAINER','CONTAINER PROCESSES','PROCESOS - CONTENEDOR'],
+    ['PAINEL DE GESTÃO','MANAGEMENT DASHBOARD','PANEL DE GESTIÓN'],
+    ['ANÁLISE PROCESSOS','PROCESS ANALYSIS','ANÁLISIS DE PROCESOS'],
+    ['GERENCIAMENTO','ADMINISTRATION','ADMINISTRACIÓN'],
+    ['CADASTRAR TRANSPORTADORA','REGISTER CARRIER','REGISTRAR TRANSPORTISTA'],
+    ['Sistema ColetaWeb - Logística Internacional','ColetaWeb System - International Logistics','Sistema ColetaWeb - Logística Internacional'],
+    ['CALENDÁRIO ANUAL','YEARLY CALENDAR','CALENDARIO ANUAL'],
+    // Campos mais recorrentes
+    ['ORDEM','ORDER','ORDEN'],['Ordem','Order','Orden'],['TIPO','TYPE','TIPO'],['TIPO DE CARGA','CARGO TYPE','TIPO DE CARGA'],
+    ['TIPO DE SOLICITAÇÃO','REQUEST TYPE','TIPO DE SOLICITUD'],['CARGA','CARGO','CARGA'],['Carga','Cargo','Carga'],
+    ['PULMÃO','BUFFER STOCK','PULMÓN'],['Pulmão','Buffer stock','Pulmón'],['Carga / Pulmão','Cargo / Buffer stock','Carga / Pulmón'],
+    ['Carga/Pulmão','Cargo/Buffer','Carga/Pulmón'],['TRANSPORTADORA','CARRIER','TRANSPORTISTA'],
+    ['Transportadora','Carrier','Transportista'],['TRANSPORTADOR','CARRIER','TRANSPORTISTA'],
+    ['ARMADOR','SHIPPING LINE','NAVIERA'],['Armador','Shipping line','Naviera'],
+    ['ARMADOR SOLICITADO','REQUESTED SHIPPING LINE','NAVIERA SOLICITADA'],
+    ['ARMADOR CONFIRMADO','CONFIRMED SHIPPING LINE','NAVIERA CONFIRMADA'],
+    ['QUANTIDADE','QUANTITY','CANTIDAD'],['QTD.','QTY.','CANT.'],['QTDE.','QTY.','CANT.'],
+    ['QUANTIDADE DE CONTÊINERES','NUMBER OF CONTAINERS','CANTIDAD DE CONTENEDORES'],
+    ['QUANTIDADE DE CONTAINERS','NUMBER OF CONTAINERS','CANTIDAD DE CONTENEDORES'],
+    ['CONTÊINER','CONTAINER','CONTENEDOR'],['CONTAINER','CONTAINER','CONTENEDOR'],
+    ['CONTÊINERES LIBERADOS','RELEASED CONTAINERS','CONTENEDORES LIBERADOS'],
+    ['DEPOT DE COLETA','PICKUP DEPOT','DEPÓSITO DE RECOGIDA'],['DEPOT','DEPOT','DEPÓSITO'],
+    ['LOCAL CARREGAMENTO','LOADING LOCATION','LUGAR DE CARGA'],['LOCAL DE CARREGAMENTO','LOADING LOCATION','LUGAR DE CARGA'],
+    ['ORIGEM','ORIGIN','ORIGEN'],['ORIGEM DO CARREGAMENTO','LOADING ORIGIN','ORIGEN DE CARGA'],
+    ['INDÚSTRIA','PLANT','PLANTA'],['ARMAZÉM','WAREHOUSE','ALMACÉN'],
+    ['TEMPERATURA','TEMPERATURE','TEMPERATURA'],['REGIÃO','REGION','REGIÓN'],['REGIÃO DE COLETA','PICKUP REGION','REGIÓN DE RECOGIDA'],
+    ['DATA COLETA','PICKUP DATE','FECHA DE RECOGIDA'],['DATA DE COLETA','PICKUP DATE','FECHA DE RECOGIDA'],
+    ['DATA DA COLETA (PREVISTA)','EXPECTED PICKUP DATE','FECHA PREVISTA DE RECOGIDA'],
+    ['PCP - DATA DO CARREGAMENTO','PCP - LOADING DATE','PCP - FECHA DE CARGA'],
+    ['DATA DA RETIRADA','PICKUP DATE','FECHA DE RETIRO'],['Data Retirada','Pickup date','Fecha de retiro'],
+    ['Retirada','Pickup','Retiro'],['Data Registro','Record date','Fecha de registro'],
+    ['DATA REGISTRO','RECORD DATE','FECHA DE REGISTRO'],['Data Finalizado','Completion date','Fecha de finalización'],
+    ['STATUS','STATUS','ESTADO'],['Status','Status','Estado'],['AÇÃO','ACTION','ACCIÓN'],['Ações','Actions','Acciones'],
+    ['OBSERVAÇÃO','NOTE','OBSERVACIÓN'],['OBSERVAÇÃO DO BOOKING','BOOKING NOTE','OBSERVACIÓN DEL BOOKING'],
+    ['Placa','License plate','Matrícula'],['PLACA','LICENSE PLATE','MATRÍCULA'],
+    ['Localização','Location','Ubicación'],['Transp.','Carrier','Transp.'],['até','to','hasta'],
+    ['Descrição','Description','Descripción'],['Destino','Destination','Destino'],['País','Country','País'],
+    ['PERFIL','ROLE','PERFIL'],['Perfil','Role','Perfil'],['TIPO DE HISTÓRICO','HISTORY TYPE','TIPO DE HISTORIAL'],
+    // Booking e Pulmão
+    ['GESTÃO DE SOLICITAÇÕES','REQUEST MANAGEMENT','GESTIÓN DE SOLICITUDES'],
+    ['Filtrar transportadora','Filter carrier','Filtrar transportista'],['Filtrar status','Filter status','Filtrar estado'],
+    ['AG. BOOKING','WAITING FOR BOOKING','PEND. BOOKING'],
+    ['LIBERADO PARA COLETA','RELEASED FOR PICKUP','LIBERADO PARA RECOGIDA'],
+    ['COLETADO','PICKED UP','RECOGIDO'],['AG. CARREGAMENTO','WAITING FOR LOADING','PEND. CARGA'],
+    ['LIBERADO','RELEASED','LIBERADO'],['DEPOSITADO','DEPOSITED','DEPOSITADO'],
+    ['Buscar ordem / tipo','Search order / type','Buscar orden / tipo'],
+    ['VER HISTÓRICO','VIEW HISTORY','VER HISTORIAL'],['HISTÓRICO DE BOOKING E UTILIZAÇÃO DE CONTÊINERES','BOOKING AND CONTAINER USAGE HISTORY','HISTORIAL DE BOOKING Y USO DE CONTENEDORES'],
+    ['ATUALIZAR HISTÓRICO','REFRESH HISTORY','ACTUALIZAR HISTORIAL'],
+    ['Pesquisar ordem, contêiner, armador ou depot','Search order, container, shipping line or depot','Buscar orden, contenedor, naviera o depósito'],
+    ['Tipo de histórico','History type','Tipo de historial'],
+    ['CONFIRMAÇÕES DE BOOKING','BOOKING CONFIRMATIONS','CONFIRMACIONES DE BOOKING'],
+    ['UTILIZAÇÕES DE CONTÊINERES','CONTAINER USAGE','USO DE CONTENEDORES'],
+    ['BAIXAR HISTÓRICO EXCEL','DOWNLOAD HISTORY EXCEL','DESCARGAR HISTORIAL EXCEL'],
+    ['ETAPA','STAGE','ETAPA'],['STATUS / ORIGEM','STATUS / ORIGIN','ESTADO / ORIGEN'],
+    ['PULMÃO — CONTROLE DE CONTÊINERES','BUFFER STOCK — CONTAINER CONTROL','PULMÓN — CONTROL DE CONTENEDORES'],
+    ['Saldo confirmado por transportadora e armador','Confirmed balance by carrier and shipping line','Saldo confirmado por transportista y naviera'],
+    ['ATUALIZAR SALDOS','REFRESH BALANCES','ACTUALIZAR SALDOS'],
+    ['Confirmados','Confirmed','Confirmados'],['Disponíveis','Available','Disponibles'],
+    ['Em operação','In operation','En operación'],['Utilizados / finalizados','Used / completed','Utilizados / finalizados'],
+    ['BOOKING CONFIRMADO!','BOOKING CONFIRMED!','¡BOOKING CONFIRMADO!'],
+    ['OBSERVAÇÃO DA SOLICITAÇÃO','REQUEST NOTE','OBSERVACIÓN DE LA SOLICITUD'],
+    ['Mensagem para a transportadora / justificativa da troca de armador','Message to carrier / reason for changing shipping line','Mensaje al transportista / motivo del cambio de naviera'],
+    ['SALVAR OBSERVAÇÃO','SAVE NOTE','GUARDAR OBSERVACIÓN'],
+    ['CONFIRMAR ARMADOR','CONFIRM SHIPPING LINE','CONFIRMAR NAVIERA'],
+    ['Confira os dados antes de liberar esta solicitação para a transportadora.','Review the information before releasing this request to the carrier.','Revise los datos antes de liberar la solicitud al transportista.'],
+    ['OBSERVAÇÃO PARA A TRANSPORTADORA','NOTE TO CARRIER','OBSERVACIÓN PARA EL TRANSPORTISTA'],
+    ['O número do contêiner será registrado somente no menu REGISTRAR COLETA.','The container number will only be recorded in REGISTER PICKUP.','El número de contenedor solo se registrará en REGISTRAR RECOGIDA.'],
+    ['CONFIRMAR E LIBERAR','CONFIRM AND RELEASE','CONFIRMAR Y LIBERAR'],
+    // Solicitação
+    ['+ ADICIONAR SOLICITAÇÃO','+ ADD REQUEST','+ AÑADIR SOLICITUD'],
+    ['IMPORTAR EXCEL','IMPORT EXCEL','IMPORTAR EXCEL'],['BAIXAR MODELO EXCEL','DOWNLOAD EXCEL TEMPLATE','DESCARGAR PLANTILLA EXCEL'],
+    ['— Clique no ícone para ver as instruções de importação.','— Click the icon to see import instructions.','— Haga clic en el icono para ver las instrucciones de importación.'],
+    ['Atenção — Importação Excel','Attention — Excel Import','Atención — Importación Excel'],
+    ['A planilha deve conter as colunas, nesta sequência:','The spreadsheet must contain these columns in this order:','La hoja debe contener estas columnas en este orden:'],
+    ['Para solicitações PULMÃO:','For BUFFER STOCK requests:','Para solicitudes de PULMÓN:'],
+    ['deixe as colunas ORDEM, PCP, ORIGEM e LOCAL CARREGAMENTO vazias.','leave ORDER, PCP, ORIGIN and LOADING LOCATION blank.','deje vacías las columnas ORDEN, PCP, ORIGEN y LUGAR DE CARGA.'],
+    ['ENTENDI','GOT IT','ENTENDIDO'],['Solicitações para enviar','Requests to submit','Solicitudes para enviar'],
+    ['ENVIAR PARA BOOKING','SEND TO BOOKING','ENVIAR A BOOKING'],
+    ['ATUALIZAR MINHAS SOLICITAÇÕES','REFRESH MY REQUESTS','ACTUALIZAR MIS SOLICITUDES'],
+    ['Minhas solicitações','My requests','Mis solicitudes'],
+    // Coleta
+    ['NOVO REGISTRO / RETOMAR PROCESSO','NEW RECORD / RESUME PROCESS','NUEVO REGISTRO / REANUDAR PROCESO'],
+    ['Nenhum registro aberto.','No open record.','Ningún registro abierto.'],
+    ['1) Selecione o tipo de carga.','1) Select the cargo type.','1) Seleccione el tipo de carga.'],
+    ['(OBRIGATÓRIA PARA PULMÃO)','(REQUIRED FOR BUFFER STOCK)','(OBLIGATORIA PARA PULMÓN)'],
+    ['Contêiner disponível no pulmão: informe a ordem de carregamento antes de iniciar um novo registro.','Buffer container available: enter the loading order before starting a new record.','Contenedor disponible en pulmón: indique la orden de carga antes de iniciar un registro.'],
+    ['TIRAR FOTO (RIC) — 1/4','TAKE PHOTO (RIC) — 1/4','TOMAR FOTO (RIC) — 1/4'],
+    ['TIRAR FOTO (PAINEL GENSET) — 2/4','TAKE PHOTO (GENSET PANEL) — 2/4','TOMAR FOTO (PANEL GENSET) — 2/4'],
+    ['ORDENS LIBERADAS','RELEASED ORDERS','ÓRDENES LIBERADAS'],
+    ['Consultando Booking...','Checking Booking...','Consultando Booking...'],
+    ['Selecione a ordem confirmada pelo Booking. Informe contêiner e placa para iniciar o processo.','Select the Booking-confirmed order. Enter container and license plate to begin.','Seleccione la orden confirmada por Booking. Informe contenedor y matrícula para comenzar.'],
+    ['ORDEM EM OPERAÇÃO','ORDER IN OPERATION','ORDEN EN OPERACIÓN'],
+    ['LIMPAR BUSCA','CLEAR SEARCH','LIMPIAR BÚSQUEDA'],
+    ['Nenhum processo selecionado.','No process selected.','Ningún proceso seleccionado.'],
+    ['0 registros em andamento.','0 records in progress.','0 registros en curso.'],
+    ['Registro salvo com sucesso!','Record saved successfully!','¡Registro guardado correctamente!'],
+    ['Selecione a data','Select date','Seleccione la fecha'],
+    ['Deseja iniciar um novo registro? O processo atual será limpo da tela.','Start a new record? The current process will be cleared from the screen.','¿Desea iniciar un nuevo registro? El proceso actual se quitará de la pantalla.'],
+    // Processos, gestão, análise e administração
+    ['Processos - Container','Container Processes','Procesos - Contenedor'],
+    ['Preparando consulta...','Preparing query...','Preparando consulta...'],
+    ['Dias Rest.','Days Left','Días Rest.'],['Vencido?','Overdue?','¿Vencido?'],
+    ['Selecione a data do depósito','Select deposit date','Seleccione la fecha de depósito'],
+    ['Painel de Gestão – Progresso dos Containers','Management Dashboard – Container Progress','Panel de Gestión – Progreso de Contenedores'],
+    ['Ordens por Status','Orders by Status','Órdenes por Estado'],
+    ['Free Time Consumido (%)','Free Time Used (%)','Free Time Consumido (%)'],
+    ['Depositados em Atraso','Overdue Deposits','Depósitos Atrasados'],
+    ['Containers por Transportadora','Containers by Carrier','Contenedores por Transportista'],
+    ['Exibe automaticamente somente transportadoras liberadas com movimentação no filtro atual.','Only approved carriers with movement in the current filter are shown.','Solo se muestran transportistas habilitados con movimientos en el filtro actual.'],
+    ['Custo Total em Atraso (USD)','Total Overdue Cost (USD)','Costo Total Atrasado (USD)'],
+    ['Registros de Containers','Container Records','Registros de Contenedores'],
+    ['Tipologia','Type','Tipología'],['FT Total','Total Free Time','Free Time Total'],
+    ['FT Restante','Free Time Left','Free Time Restante'],['Dias Venc.','Days Overdue','Días Vencidos'],
+    ['Valor Diário','Daily Amount','Importe Diario'],['Valor Total','Total Amount','Importe Total'],
+    ['Foto RIC','RIC Photo','Foto RIC'],['Foto AG.','Waiting Photo','Foto Pend.'],
+    ['Foto LIB.','Release Photo','Foto Liberación'],['Foto DEP.','Deposit Photo','Foto Depósito'],
+    ['Gerenciamento de Usuários','User Management','Gestión de Usuarios'],
+    ['Adicionar novo usuário (cadastre antes em Authentication)','Add new user (register in Authentication first)','Añadir usuario (registrar antes en Authentication)'],
+    ['Administrador','Administrator','Administrador'],['Usuários cadastrados','Registered users','Usuarios registrados'],
+    ['NOVA TRANSPORTADORA','NEW CARRIER','NUEVO TRANSPORTISTA'],['NOME DA TRANSPORTADORA','CARRIER NAME','NOMBRE DEL TRANSPORTISTA'],
+    ['Data Finalizado','Completion Date','Fecha Finalizada'],
+    ['Tipo de Carga','Cargo Type','Tipo de Carga'],['Regra da Análise','Analysis Rule','Regla del Análisis'],
+    ['Selecione a data do carregamento','Select loading date','Seleccione la fecha de carga'],
+    ['EXPORTAR EXCEL','EXPORT TO EXCEL','EXPORTAR A EXCEL'],['Exportar Excel','Export to Excel','Exportar a Excel'],
+    ['RESFRIADO','CHILLED','REFRIGERADO'],['CONGELADO','FROZEN','CONGELADO'],
+    ['CONGELADO COM GENSET','FROZEN WITH GENSET','CONGELADO CON GENSET'],
+    ['Resfriado','Chilled','Refrigerado'],['Congelado com GenSet','Frozen with GenSet','Congelado con GenSet'],
+    ['Congelado','Frozen','Congelado'],
+    // Análise de processos e faturamento
+    ['Análise Processos','Process Analysis','Análisis de Procesos'],
+    ['Ainda não há dados mensais para esta visão.','No monthly data is available for this view yet.','Todavía no hay datos mensuales para esta vista.'],
+    ['Ano','Year','Año'],['Análise acumulada atual • mês da dta_embarque','Current cumulative analysis • shipment date month','Análisis acumulado actual • mes de embarque'],
+    ['Análise acumulada atual • mês do Carregamento','Current cumulative analysis • loading month','Análisis acumulado actual • mes de carga'],
+    ['Arquivo faturado como referência','Billed file as reference','Archivo facturado como referencia'],
+    ['Atualizar histórico','Refresh history','Actualizar historial'],
+    ['Auditoria das ordens GEN SET faturadas','Audit of invoiced GENSET orders','Auditoría de órdenes GENSET facturadas'],
+    ['Base do gráfico','Chart basis','Base del gráfico'],['Buscar Ordem / Container','Search Order / Container','Buscar Orden / Contenedor'],
+    ['Carregamento','Loading','Carga'],['Carregando histórico...','Loading history...','Cargando historial...'],
+    ['Cobertura ColetaWeb','ColetaWeb coverage','Cobertura ColetaWeb'],
+    ['Como o ColetaWeb realiza o cruzamento das ordens faturadas.','How ColetaWeb matches billed orders.','Cómo ColetaWeb cruza las órdenes facturadas.'],
+    ['Comparativo mensal • Arquivo faturado x ColetaWeb','Monthly comparison • Billing file vs. ColetaWeb','Comparación mensual • Archivo facturado vs. ColetaWeb'],
+    ['Conferência Transportadora','Carrier Verification','Verificación de Transportista'],
+    ['Conferência da transportadora','Carrier verification','Verificación del transportista'],
+    ['Conferência do processo','Process verification','Verificación del proceso'],
+    ['Conferência transportadora','Carrier verification','Verificación del transportista'],
+    ['Container ColetaWeb','ColetaWeb Container','Contenedor ColetaWeb'],
+    ['Cruzamento principal pela ORDEM','Main match by ORDER','Cruce principal por ORDEN'],
+    ['DIVERGENTE','MISMATCH','DIVERGENTE'],['Divergente','Mismatch','Divergente'],
+    ['E-mail','Email','Correo electrónico'],['Etapa ColetaWeb','ColetaWeb Stage','Etapa ColetaWeb'],
+    ['Exportar Resultado','Export Results','Exportar Resultado'],
+    ['Faturada + em aberto','Billed + open','Facturada + abierta'],
+    ['Faturada + finalizada','Billed + completed','Facturada + finalizada'],
+    ['Faturada + sem registro','Billed + no record','Facturada + sin registro'],
+    ['Faturada no arquivo','Billed in file','Facturada en el archivo'],
+    ['Faturadas e finalizadas no ColetaWeb','Billed and completed in ColetaWeb','Facturadas y finalizadas en ColetaWeb'],
+    ['Faturadas em aberto no ColetaWeb','Billed and open in ColetaWeb','Facturadas y abiertas en ColetaWeb'],
+    ['Faturadas encontradas no ColetaWeb','Billed and found in ColetaWeb','Facturadas encontradas en ColetaWeb'],
+    ['Faturadas sem registro no ColetaWeb','Billed without ColetaWeb record','Facturadas sin registro en ColetaWeb'],
+    ['Faturado no arquivo','Billed in file','Facturado en el archivo'],
+    ['Filtrar histórico','Filter history','Filtrar historial'],
+    ['GAP • sem registro','GAP • no record','GAP • sin registro'],
+    ['GEN SET ColetaWeb','ColetaWeb GENSET','GENSET ColetaWeb'],
+    ['GEN SET faturadas no arquivo','GENSET billed in file','GENSET facturados en el archivo'],
+    ['Histórico acumulado • mês da dta_embarque','Cumulative history • shipment month','Historial acumulado • mes de embarque'],
+    ['Histórico de análises','Analysis history','Historial de análisis'],
+    ['Importar Excel','Import Excel','Importar Excel'],
+    ['Importe o arquivo faturado para iniciar a análise.','Import the billed file to start analysis.','Importe el archivo facturado para iniciar el análisis.'],
+    ['Nro. Container Arquivo','Container No. in File','N.º Contenedor del Archivo'],
+    ['Ordens GEN SET faturadas x ColetaWeb','Billed GENSET orders vs. ColetaWeb','Órdenes GENSET facturadas vs. ColetaWeb'],
+    ['Ordens fora do escopo GEN SET / transportadoras liberadas não entram na análise.','Orders outside GENSET scope / approved carriers are excluded from analysis.','Las órdenes fuera del alcance GENSET / transportistas habilitados quedan excluidas.'],
+    ['País Destino Final','Final Destination Country','País de Destino Final'],
+    ['Processando...','Processing...','Procesando...'],
+    ['Registrada no ColetaWeb','Recorded in ColetaWeb','Registrada en ColetaWeb'],
+    ['Regra de cruzamento','Matching rule','Regla de cruce'],
+    ['SEM REGISTRO','NO RECORD','SIN REGISTRO'],['Sem registro','No record','Sin registro'],
+    ['Situação','Situation','Situación'],['Situação da ordem','Order status','Estado de la orden'],
+    ['Status ColetaWeb','ColetaWeb Status','Estado ColetaWeb'],
+    ['Tipo Carga ColetaWeb','ColetaWeb Cargo Type','Tipo de Carga ColetaWeb'],
+    ['Todas liberadas','All approved','Todas habilitadas'],
+    ['Transportadora Arquivo','Carrier in File','Transportista del Archivo'],
+    ['Transportadora ColetaWeb','ColetaWeb Carrier','Transportista ColetaWeb'],
+    ['Transportadora do arquivo','Carrier in file','Transportista del archivo'],
+    ['Transportadoras liberadas nesta análise','Approved carriers in this analysis','Transportistas habilitados en este análisis'],
+    ['Voltar à análise atual','Return to current analysis','Volver al análisis actual'],
+    ['Volume mensal e cobertura','Monthly volume and coverage','Volumen mensual y cobertura'],
+    ['Último mês exibido','Last displayed month','Último mes mostrado'],
+    ['AG. CARREG.','WAITING LOAD','PEND. CARGA'],['LIBER.','RELEASED','LIBER.'],['DEPOS.','DEPOSITED','DEPOS.'],
+    ['0 ordem(ns)','0 order(s)','0 orden(es)'],['1º ORDEM','1st ORDER','1.ª ORDEN'],
+    ['Seg','Mon','Lun'],['Ter','Tue','Mar'],['Qua','Wed','Mié'],['Qui','Thu','Jue'],
+    ['Sex','Fri','Vie'],['Sáb','Sat','Sáb'],['Dom','Sun','Dom'],
+    ['Saldo disponível = quantidade confirmada − registros iniciados. A finalização libera o contêiner físico para outra ordem, mas não devolve o saldo já consumido desta solicitação.','Available balance = confirmed quantity − started records. Completion releases the physical container for another order but does not restore this request’s consumed balance.','Saldo disponible = cantidad confirmada − registros iniciados. La finalización libera el contenedor físico para otra orden, pero no devuelve el saldo consumido de esta solicitud.'],
+    ['Confira o ARMADOR, informe o DEPOT e confirme. O número do contêiner será registrado pela transportadora em REGISTRAR COLETA.','Check the SHIPPING LINE, enter the DEPOT and confirm. The carrier enters the container number in REGISTER PICKUP.','Verifique la NAVIERA, indique el DEPÓSITO y confirme. El transportista registrará el contenedor en REGISTRAR RECOGIDA.'],
+    ['Cada ORDEM do arquivo é procurada no ColetaWeb somente dentro das transportadoras liberadas. O cruzamento principal continua sendo pela','Each ORDER in the file is searched in ColetaWeb only among approved carriers. The main match remains by','Cada ORDEN del archivo se busca en ColetaWeb solo entre los transportistas habilitados. El cruce principal sigue siendo por'],
+    ['Depois de encontrar a ordem, o sistema verifica se o processo está finalizado ou em aberto e apresenta tipo de carga, container, transportadora e demais informações.','After finding the order, the system checks whether the process is completed or open and shows cargo type, container, carrier and other details.','Tras encontrar la orden, el sistema verifica si el proceso está finalizado o abierto y muestra tipo de carga, contenedor, transportista y demás información.'],
+    ['O sistema compara a transportadora do arquivo com a transportadora do ColetaWeb e sinaliza','The system compares the carrier in the file with the ColetaWeb carrier and flags','El sistema compara el transportista del archivo con el de ColetaWeb y señala'],
+    ['O sistema primeiro localiza a ORDEM. Somente depois confere status, etapa, tipo de carga, container, transportadora e demais dados.','The system first locates the ORDER, then checks status, stage, cargo type, container, carrier and other details.','El sistema primero localiza la ORDEN y después comprueba estado, etapa, tipo de carga, contenedor, transportista y demás datos.'],
+    ['contém GEN SET e cuja transportadora está na lista liberada. Cada novo arquivo completa a base já salva, sem apagar os períodos anteriores.','contains GENSET and whose carrier is on the approved list. Each new file adds to the stored data without deleting earlier periods.','contiene GENSET y cuyo transportista figura en la lista habilitada. Cada archivo nuevo completa los datos guardados sin borrar períodos anteriores.'],
+    ['Cada importação fica salva no Supabase.','Every import is saved in Supabase.','Cada importación se guarda en Supabase.'],
+    ['• depois STATUS e demais informações.','• then STATUS and other details.','• después ESTADO y demás información.'],
+    ['1º ORDEM','1st ORDER','1.ª ORDEN'],
+    ['Análise Processos | ColetaWeb','Process Analysis | ColetaWeb','Análisis de Procesos | ColetaWeb'],
+    ['Cadastro Transportadora | ColetaWeb','Carrier Registration | ColetaWeb','Registro de Transportista | ColetaWeb'],
+    ['Painel de Gestão | ColetaWeb','Management Dashboard | ColetaWeb','Panel de Gestión | ColetaWeb'],
+    ['Processos - Container | ColetaWeb','Container Processes | ColetaWeb','Procesos - Contenedor | ColetaWeb'],
+    ['Solicitar Contêiner | ColetaWeb','Request Container | ColetaWeb','Solicitar Contenedor | ColetaWeb'],
+    ['Gerenciamento | ColetaWeb','Administration | ColetaWeb','Administración | ColetaWeb'],
+    ['Registro | ColetaWeb','Record | ColetaWeb','Registro | ColetaWeb'],
+    ['Login - ColetaWeb','Sign in - ColetaWeb','Ingreso - ColetaWeb']
+  ];
+
+  const dictionaries = { en: new Map(), es: new Map() };
+  for (const [pt,en,es] of PAIRS) {
+    dictionaries.en.set(pt,en); dictionaries.es.set(pt,es);
+    dictionaries.en.set(pt.toLocaleUpperCase('pt-BR'), en.toUpperCase());
+    dictionaries.es.set(pt.toLocaleUpperCase('pt-BR'), es.toUpperCase());
+  }
+  let lang = 'pt-BR';
+  const cacheKey = email => 'coletaweb:idioma:' + String(email || '').toLowerCase();
+  let observer;
+  function translateValue(value) {
+    if (lang === 'pt-BR' || !value) return value;
+    const dict = dictionaries[lang];
+    const trimmed = value.trim();
+    const fixed = dict.get(trimmed);
+    if (fixed) return value.replace(trimmed, fixed);
+    const patterns = [
+      [/^(\d+) registros em andamento\.$/, lang === 'en' ? '$1 records in progress.' : '$1 registros en curso.'],
+      [/^Página (\d+)$/, lang === 'en' ? 'Page $1' : 'Página $1'],
+      [/^(\d+) solicitações? para enviar$/i, lang === 'en' ? '$1 requests to submit' : '$1 solicitudes para enviar']
+    ];
+    for (const [rx,replacement] of patterns) {
+      if (rx.test(trimmed)) return value.replace(trimmed, trimmed.replace(rx,replacement));
+    }
+    return value;
+  }
+  const IGNORE = 'SCRIPT,STYLE,CODE,PRE,TEXTAREA,SVG,CANVAS,OPTION';
+  function visit(root) {
+    // Em portugues, nao existe transformacao a fazer. Evita percorrer cada
+    // linha recriada nas tabelas durante atualizacoes em tempo real.
+    if (lang === 'pt-BR') return;
+    if (!root || root.nodeType === 8) return;
+    if (root.nodeType === 3) {
+      const p = root.parentElement;
+      if (!p || p.closest('[translate="no"],[data-no-translate],'+IGNORE)) return;
+      const next = translateValue(root.nodeValue);
+      if (next !== root.nodeValue) root.nodeValue = next;
+      return;
+    }
+    if (root.nodeType !== 1) return;
+    if (root.matches(IGNORE) || root.closest('[translate="no"],[data-no-translate]')) return;
+    for (const attr of ['placeholder','title','aria-label']) {
+      if (!root.hasAttribute(attr)) continue;
+      const original = root.getAttribute(attr);
+      const next = translateValue(original);
+      if (original !== next) root.setAttribute(attr,next);
+    }
+    if (root.tagName === 'SELECT') {
+      for (const option of root.options) {
+        // Garante que a tradução do rótulo não altere o valor usado pelo formulário.
+        if (!option.hasAttribute('value')) option.setAttribute('value', option.value);
+        const current = option.textContent;
+        const next = translateValue(current);
+        if (current !== next) option.textContent = next;
+      }
+    }
+    for (const node of root.childNodes) visit(node);
+  }
+  function setLanguage(next) {
+    const resolved = ['pt-BR','en','es'].includes(next) ? next : 'pt-BR';
+    if (resolved === lang) return;
+    lang = resolved;
+    document.documentElement.lang = lang;
+    document.title = translateValue(document.title);
+    // Quando a preferência mudar em outra aba, restaurar rótulos exige recarregar.
+    if (observer) observer.disconnect();
+    if (document.body) visit(document.body);
+    if (observer) observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+  }
+  async function init() {
+    const client = typeof clienteSupabase !== 'undefined' ? clienteSupabase : null;
+    let cached = null;
+    if (!cached) { try { cached = localStorage.getItem('coletaweb:ultimo-idioma'); } catch (_) {} }
+    setLanguage(cached || 'pt-BR');
+    observer = new MutationObserver(mutations => {
+      observer.disconnect();
+      for (const mutation of mutations) {
+        if (mutation.type === 'characterData') visit(mutation.target);
+        else if (mutation.type === 'attributes') visit(mutation.target);
+        else for (const added of mutation.addedNodes) visit(added);
+      }
+      observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+    });
+    observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+    window.addEventListener('storage', event => {
+      if (event.key === 'coletaweb:ultimo-idioma' && event.newValue && event.newValue !== lang) location.reload();
+    });
+    // A traducao e a observacao do DOM ja estao ativas. Consultas de rede
+    // nao podem deixar a pagina parecer travada durante a navegacao.
+    if (client) void (async () => {
+      try {
+        const { data: sessionData } = await client.auth.getSession();
+        const user = sessionData?.session?.user;
+        if (!user) return;
+        const userCached = localStorage.getItem(cacheKey(user.email));
+        if (['pt-BR','en','es'].includes(userCached) && userCached !== lang) setLanguage(userCached);
+        const { data, error } = await client.rpc('cw_obter_idioma');
+        if (!error && ['pt-BR','en','es'].includes(data)) {
+          setLanguage(data);
+          try { localStorage.setItem(cacheKey(user.email), data); localStorage.setItem('coletaweb:ultimo-idioma', data); } catch (_) {}
+        }
+      } catch (error) { console.warn('Idioma remoto indisponível:', error); }
+    })();
+  }
+  window.ColetaGlobalI18n = { setLanguage, get current() { return lang; } };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
+})();
+</script>
+<!-- CW-GESTAO-IDIOMA-FIM --><!-- CW-GESTAO-NAVEGACAO-INICIO -->
+<script data-cw-source="js/navigation-fast.js">
+/* Antecipacao leve de paginas sem mudar login, perfil ou navegacao. */
+(function () {
+  'use strict';
+  const cached = new Set();
+  function prefetch(url) {
+    try {
+      const resolved = new URL(url, location.href);
+      if (resolved.origin !== location.origin || !resolved.pathname.endsWith('.html')) return;
+      if (resolved.pathname === location.pathname || cached.has(resolved.href)) return;
+      cached.add(resolved.href);
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.as = 'document';
+      link.href = resolved.href;
+      document.head.appendChild(link);
+    } catch (_) {}
+  }
+  // Ao voltar de um submenu, o navegador ja pode ter buscado a Home.
+  if (!/\/index\.html$/i.test(location.pathname) && !location.pathname.endsWith('/')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => prefetch('index.html'), { once:true });
+    else prefetch('index.html');
+  }
+  // Descobre URLs de links e botoes com onclick="location.href=...".
+  function prepare(event) {
+    const target = event.target?.closest?.('a[href],button[onclick],input[onclick]');
+    if (!target) return;
+    const href = target.getAttribute('href');
+    if (href) { prefetch(href); return; }
+    const code = target.getAttribute('onclick') || '';
+    const match = code.match(/(?:window\.)?location\.href\s*=\s*['"]([^'"]+\.html)['"]/i);
+    if (match) prefetch(match[1]);
+  }
+  document.addEventListener('pointerover', prepare, { passive:true });
+  document.addEventListener('pointerdown', prepare, { passive:true });
+  document.addEventListener('focusin', prepare, { passive:true });
+  const originHome = /(?:\/index\.html|\/)$/i.test(location.pathname);
+  const markerKey = 'coletaweb:retorno-home';
+  if (originHome) {
+    // Um link rel=prefetch pode ser ignorado pelo Chrome e não garantir o
+    // aproveitamento em arquivos locais. Buscar/EXECUTAR as bibliotecas em
+    // segundo plano, depois que a Home estiver ociosa, aquece o cache HTTP
+    // normal e permite reutilizar o codigo no primeiro acesso à Gestao.
+    const prepararGestao = () => {
+      if (navigator.connection?.saveData || /(?:^|\b)2g\b/i.test(navigator.connection?.effectiveType || '')) return;
+      prefetch('gestao.html');
+      [
+        'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js'
+      ].forEach(src => {
+        const script = document.createElement('script');
+        // Scripts dinamicos com async=false executam na ordem de insercao:
+        // Chart.js precisa estar disponivel quando o plugin for inicializado.
+        script.async = false;
+        script.src = src;
+        script.dataset.coletawebPreload = 'gestao';
+        script.onerror = () => console.debug('[ColetaWeb] Biblioteca da Gestao sera carregada ao acessar o painel.');
+        document.head.appendChild(script);
+      });
+    };
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(prepararGestao, { timeout: 1800 });
+    } else {
+      setTimeout(prepararGestao, 600);
+    }
+    // Registro valido somente para a navegacao seguinte desta aba.
+    try { sessionStorage.removeItem(markerKey); } catch (_) {}
+    document.addEventListener('click', function (event) {
+      const item=event.target?.closest?.('button[onclick],a[href]');
+      if (!item) return;
+      const code=item.getAttribute('onclick') || '';
+      const href=item.getAttribute('href') || code.match(/(?:window\.)?location\.href\s*=\s*['"]([^'"]+\.html)['"]/i)?.[1];
+      if (!href) return;
+      try {
+        const target=new URL(href,location.href);
+        if (target.origin===location.origin && target.pathname.endsWith('.html')) {
+          sessionStorage.setItem(markerKey,JSON.stringify({path:target.pathname,at:Date.now()}));
+        }
+      } catch (_) {}
+    }, true);
+  } else {
+    // Um reload da pagina interna invalida a suposicao sobre o historico.
+    const nav=performance.getEntriesByType('navigation')[0];
+    if (nav?.type==='reload') try { sessionStorage.removeItem(markerKey); } catch (_) {}
+  }
+  // Se o menu foi aberto diretamente a partir da Home, voltar pelo historico
+  // permite ao navegador restaurar a tela da memoria (bfcache), sem recriar
+  // o documento nem consultar o Supabase. Em acessos diretos, usa o link normal.
+  document.addEventListener('click', function (event) {
+    const button=event.target?.closest?.('button[onclick],a[href]');
+    if (!button) return;
+    const link=button.getAttribute('href') || button.getAttribute('onclick') || '';
+    if (!/index\.html/i.test(link)) return;
+    try {
+      const previous=document.referrer ? new URL(document.referrer) : null;
+      const here=new URL(location.href);
+      let veioDaHome=!!previous && previous.origin===here.origin && /\/index\.html$/i.test(previous.pathname);
+      if (!veioDaHome) {
+        // document.referrer pode vir vazio em paginas locais/file://.
+        const saved=JSON.parse(sessionStorage.getItem(markerKey) || 'null');
+        veioDaHome=!!saved && saved.path===here.pathname && Date.now()-saved.at<120000;
+      }
+      if (!veioDaHome || history.length<=1) return;
+      try { sessionStorage.removeItem(markerKey); } catch (_) {}
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      history.back();
+    } catch (_) { /* sem referrer: deixa o onclick/href original funcionar */ }
+  }, true);
+})();
+</script>
+<!-- CW-GESTAO-NAVEGACAO-FIM --></body>
 </html>

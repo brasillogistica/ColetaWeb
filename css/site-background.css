@@ -1,0 +1,13 @@
+/* Fundo institucional compartilhado por todas as paginas do ColetaWeb. */
+html { min-height: 100%; }
+body {
+  min-height: 100vh;
+  background-image: url('../assets/fundo-menu.jpg') !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+@media (max-width: 768px) {
+  body { background-attachment: scroll !important; }
+}

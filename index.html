@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+<head><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://ekmcgifpvqrdgcikvepe.supabase.co" crossorigin>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
   <title>Home | ColetaWeb</title>
-</head>
+  <style>
+    /* Exibe o conjunto de menus somente depois de calcular as permissões. */
+    .side-menu { visibility: hidden; }
+    .side-menu.menus-prontos { visibility: visible; }
+    /* Itens administrativos permanecem ocultos até a verificação de perfil. */
+  </style>
+<link rel="stylesheet" href="css/site-background.css"></head>
 <body>
   <div class="page-shell">
     <div class="card header-card">
@@ -16,11 +22,12 @@
 
       <div class="header-center">
         <h1 id="welcome-message">Carregando...</h1>
-        <div class="header-subtitle">Sistema ColetaWeb - Logística Internacional</div>
+        <div class="header-subtitle" data-i18n="subtitle">Sistema ColetaWeb - Logística Internacional</div>
       </div>
 
       <div class="header-right">
-        <button class="btn-main btn-sair" onclick="fazerLogout()">SAIR</button>
+        <label class="language-picker" for="language-select"><span aria-hidden="true">🌐</span><span class="language-label" data-i18n="language">Idioma</span><select id="language-select" aria-label="Idioma do sistema"><option value="pt-BR">Português (Brasil)</option><option value="en">English</option><option value="es">Español</option></select></label>
+        <button class="btn-main btn-sair" onclick="fazerLogout()" data-i18n="logout">SAIR</button>
       </div>
     </div>
 
@@ -28,6 +35,14 @@
       <div class="workspace-main">
         <div class="menu-column">
           <div class="side-menu">
+            <button class="container-btn container-sand" onclick="window.location.href='solicitacao-transporte.html'">
+              <span>SOLICITAR CONTÊINER</span><div class="top-bar"></div><div class="bottom-bar"></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+            </button>
+            <div id="booking-container" style="display:none;">
+            <button class="container-btn container-blue" onclick="window.location.href='booking.html'" style="width:100%">
+                <span>BOOKING</span><div class="top-bar"></div><div class="bottom-bar"></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+              </button>
+            </div>
             <button class="container-btn container-blue" onclick="window.location.href='coleta.html'">
               <span>REGISTRAR COLETA</span>
               <div class="top-bar"></div>
@@ -37,7 +52,6 @@
               <div class="corner bl"></div>
               <div class="corner br"></div>
             </button>
-
             <button class="container-btn container-sand" onclick="window.location.href='processos.html'">
               <span>PROCESSOS - CONTAINER</span>
               <div class="top-bar"></div>
@@ -47,21 +61,8 @@
               <div class="corner bl"></div>
               <div class="corner br"></div>
             </button>
-
-            <div id="analise-processos-container" style="display:none;">
-              <button class="container-btn container-dark" onclick="window.location.href='analise-processos.html'">
-                <span>ANÁLISE PROCESSOS</span>
-                <div class="top-bar"></div>
-                <div class="bottom-bar"></div>
-                <div class="corner tl"></div>
-                <div class="corner tr"></div>
-                <div class="corner bl"></div>
-                <div class="corner br"></div>
-              </button>
-            </div>
-
             <div id="admin-container" style="display:none; flex-direction: column; gap: 12px;">
-              <button class="container-btn container-blue" onclick="window.location.href='gestao.html'">
+            <button class="container-btn container-blue" onclick="window.location.href='gestao.html'">
                 <span>PAINEL DE GESTÃO</span>
                 <div class="top-bar"></div>
                 <div class="bottom-bar"></div>
@@ -70,8 +71,18 @@
                 <div class="corner bl"></div>
                 <div class="corner br"></div>
               </button>
-
-              <button class="container-btn container-red" onclick="window.location.href='admin.html'">
+              <div id="analise-processos-container" style="display:none;">
+            <button class="container-btn container-dark" onclick="window.location.href='analise-processos.html'">
+                <span>ANÁLISE PROCESSOS</span>
+                <div class="top-bar"></div>
+                <div class="bottom-bar"></div>
+                <div class="corner tl"></div>
+                <div class="corner tr"></div>
+                <div class="corner bl"></div>
+                <div class="corner br"></div>
+              </button>
+              </div>
+            <button class="container-btn container-red" onclick="window.location.href='admin.html'">
                 <span>GERENCIAMENTO</span>
                 <div class="top-bar"></div>
                 <div class="bottom-bar"></div>
@@ -80,8 +91,7 @@
                 <div class="corner bl"></div>
                 <div class="corner br"></div>
               </button>
-
-              <button class="container-btn container-dark" onclick="window.location.href='cadastro-transportadora.html'">
+            <button class="container-btn container-dark" onclick="window.location.href='cadastro-transportadora.html'">
                 <span>CADASTRAR TRANSPORTADORA</span>
                 <div class="top-bar"></div>
                 <div class="bottom-bar"></div>
@@ -125,66 +135,96 @@
     <div class="spinner"></div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/idioma.js"></script>
   <script>
-    function normalizarValorMenu(valor) {
-      return String(valor || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim()
-        .toLowerCase();
-    }
-
-    async function configurarMenuAnaliseProcessos() {
-      const container = document.getElementById('analise-processos-container');
-      if (!container) return;
-
-      try {
-        // Usa a mesma regra de permissão já existente no ColetaWeb.
-        // A função checarPermissaoMaster também aceita Administrador aprovado.
-        const permitido = (typeof checarPermissaoMaster === 'function')
-          ? await checarPermissaoMaster()
-          : false;
-
-        // Master/Administrador: mostra. User: esconde.
-        container.style.display = permitido ? 'block' : 'none';
-      } catch (error) {
-        console.error('Erro ao configurar menu Análise Processos:', error);
-        container.style.display = 'none';
+    // Calendário montado em memória e inserido em uma só operação.
+    function renderCalendarRapido() {
+      const now = new Date();
+      const ano = now.getFullYear(), mes = now.getMonth();
+      const header = document.getElementById('calendar-header');
+      const grid = document.getElementById('calendar-grid');
+      if (!grid) return;
+      if (header) {
+        const nomeMes = now.toLocaleString(window.ColetaIdioma?.current || 'pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
+        header.innerHTML = `<span style="display:inline-block;vertical-align:middle">${nomeMes}</span><button onclick="expandCalendar()" style="margin-left:10px;cursor:pointer;background:var(--navy);color:white;border:none;border-radius:50%;width:25px;height:25px;font-weight:800;font-size:16px">+</button>`;
       }
+      const primeiroDia = new Date(ano, mes, 1).getDay();
+      const quantidadeDias = new Date(ano, mes + 1, 0).getDate();
+      let semana = getWeekNumber(new Date(ano, mes, 1));
+      const html = [`<div class="cal-cell week-number">${semana}</div>`];
+      for (let i = 0; i < (primeiroDia === 0 ? 6 : primeiroDia - 1); i++) html.push('<div class="cal-cell"></div>');
+      for (let dia = 1; dia <= quantidadeDias; dia++) {
+        const diaSemana = new Date(ano, mes, dia).getDay();
+        const classes = ['cal-cell','day-number'];
+        if (dia === now.getDate()) classes.push('today');
+        if (diaSemana === 0 || diaSemana === 6) classes.push('weekend');
+        html.push(`<div class="${classes.join(' ')}">${dia}</div>`);
+        if (diaSemana === 0 && dia < quantidadeDias) html.push(`<div class="cal-cell week-number">${++semana}</div>`);
+      }
+      grid.querySelectorAll('.day-number,.week-number,.cal-cell:not(.head)').forEach(el => el.remove());
+      grid.insertAdjacentHTML('beforeend', html.join(''));
     }
 
+    // Inicialização em uma única etapa: sem consultas repetidas de permissão.
     async function verificarInicializacao() {
-      if (typeof clienteSupabase === 'undefined' || !clienteSupabase) {
-        setTimeout(verificarInicializacao, 300);
-        return;
-      }
-
+      const menu = document.querySelector('.side-menu');
+      const admin = document.getElementById('admin-container');
+      const analise = document.getElementById('analise-processos-container');
+      const booking = document.getElementById('booking-container');
       try {
-        const { data: { session } } = await clienteSupabase.auth.getSession();
-
+        if (!clienteSupabase) throw new Error('Supabase não carregado.');
+        const { data, error } = await clienteSupabase.auth.getSession();
+        if (error) throw error;
+        const session = data?.session;
         if (!session) {
-          window.location.href = 'login.html';
+          location.replace('login.html');
           return;
         }
 
-        const parteEmail = session.user.email.split('@')[0];
-        const nomeFormatado = parteEmail
-          .split(/[._-]/)
-          .map(p => p.charAt(0).toUpperCase() + p.slice(1))
-          .join(' ');
+        const email = session.user.email || '';
+        const parteEmail = email.split('@')[0];
+        const nomeFormatado = parteEmail.split(/[._-]/)
+          .map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+        await window.ColetaIdioma.init(email, nomeFormatado);
+        // Mostrar somente os menus comuns após confirmar uma sessão válida.
+        // Os menus privilegiados permanecem ocultos até a consulta de perfil terminar.
+        if (menu) menu.classList.add('menus-prontos');
+        renderCalendarRapido();
 
-        document.getElementById('welcome-message').innerText = 'Bem-vindo, ' + nomeFormatado;
+        // Uma única consulta para exibir o menu inteiro simultaneamente.
+        // Em caso de erro, mantém os itens restritos ocultos.
+        const { data: usuario, error: erroPerfil } = await clienteSupabase
+          .from('usuarios')
+          .select('perfil, status')
+          .eq('email', email)
+          .maybeSingle();
+        if (erroPerfil) console.error('Não foi possível consultar o perfil:', erroPerfil);
+        const perfil = String(usuario?.perfil || '').trim().toLowerCase();
+        const status = String(usuario?.status || '').trim().toLowerCase();
+        const autorizado = !erroPerfil && (
+          perfil === 'master' || perfil === 'mestre' ||
+          (perfil === 'administrador' && (status === '' || status === 'aprovado'))
+        );
 
-        renderCalendar();
-        await inicializarPainel();
-        await configurarMenuAnaliseProcessos();
+        // Aplica todas as permissões antes de exibir qualquer botão.
+        admin.style.display = autorizado ? 'flex' : 'none';
+        analise.style.display = autorizado ? 'block' : 'none';
+        booking.style.display = autorizado ? 'block' : 'none';
       } catch (error) {
-        console.error('Erro ao inicializar:', error);
+        console.error('Falha ao iniciar menu:', error);
+        if (admin) admin.style.display = 'none';
+        if (analise) analise.style.display = 'none';
+        if (booking) booking.style.display = 'none';
+        const welcome = document.getElementById('welcome-message');
+        if (welcome) welcome.textContent = 'ColetaWeb';
+        if (typeof renderCalendarRapido === 'function') renderCalendarRapido();
+      } finally {
+        if (menu) menu.classList.add('menus-prontos');
       }
     }
-
-    window.addEventListener('load', verificarInicializacao);
+    // Não espera imagens e recursos externos terminarem para começar.
+    document.addEventListener('DOMContentLoaded', verificarInicializacao, { once: true });
   </script>
-</body>
+<script src="js/navigation-fast.js" defer></script></body>
 </html>

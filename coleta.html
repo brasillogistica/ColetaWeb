@@ -1,8 +1,8 @@
 <!DOCTYPE html><html lang="pt-BR">
-<head>
+<head><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://ekmcgifpvqrdgcikvepe.supabase.co" crossorigin>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/style.css" />
   <title>Registro | ColetaWeb</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -336,6 +336,126 @@
 
 .fields-grid .form-group input::placeholder {
   color: #8a8a8a;
+}
+
+/* Formulário de coleta: controles alinhados e hierarquia visual discreta. */
+.coleta-tipo-grupo {
+  margin: 12px 0 15px;
+}
+.coleta-tipo-grupo > label {
+  text-align: center;
+  font-size: 10px;
+  color: var(--navy);
+  margin-bottom: 7px;
+  letter-spacing: .65px;
+}
+.coleta-tipo-opcoes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 0;
+}
+.coleta-tipo-opcoes .btn-option {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 10px;
+  border: 1px solid #cbd6de;
+  border-radius: 11px;
+  background: #f8fafb;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .25px;
+  box-shadow: none;
+}
+.coleta-tipo-opcoes .btn-option:hover {
+  background: #eef3f6;
+  border-color: var(--navy);
+}
+.coleta-tipo-opcoes .btn-option.active,
+.coleta-tipo-opcoes .btn-option.active:hover {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.coleta-form-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.coleta-form-grid > .form-group {
+  min-width: 0;
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  padding: 7px 10px;
+  background: #f8fafb;
+  border: 1px solid #e1e7eb;
+  border-radius: 9px;
+}
+.coleta-form-grid > .form-group:nth-child(n+4) {
+  grid-column: span 3;
+}
+.coleta-form-grid .form-group label {
+  text-align: center;
+  color: #566b7b;
+  font-size: 9px;
+  letter-spacing: .45px;
+  margin-bottom: 3px;
+}
+.coleta-form-grid .form-group input,
+.coleta-form-grid .form-group select {
+  min-height: 26px;
+  padding: 3px 0;
+  font-size: 12px;
+  border-bottom: 1px solid #bac8d0;
+  text-align: center;
+}
+.coleta-form-grid .form-group input::placeholder { text-align: center; }
+.coleta-form-grid .form-group small { text-align: center; }
+.coleta-form-grid .form-group input:focus,
+.coleta-form-grid .form-group select:focus {
+  border-bottom: 2px solid var(--navy);
+}
+.coleta-form-grid .form-group small {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.coleta-form-grid #armador {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  padding-right: 0;
+}
+.campo-data-retirada { position: relative; }
+.campo-data-retirada #dataRetirada { padding-right: 29px; }
+.campo-data-retirada #dataRetirada::-webkit-calendar-picker-indicator { opacity: 0; }
+.campo-data-retirada .botao-calendario {
+  position: absolute;
+  right: 8px;
+  bottom: 10px;
+  width: 27px;
+  height: 27px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--navy);
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.campo-data-retirada .botao-calendario:hover { background: #e5ecf0; }
+.campo-data-retirada .botao-calendario:focus-visible { outline: 2px solid var(--navy); }
+@media (max-width: 900px) {
+  .coleta-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .coleta-form-grid > .form-group,
+  .coleta-form-grid > .form-group:nth-child(n+4) { grid-column: span 1; }
+}
+@media (max-width: 600px) {
+  .coleta-tipo-opcoes { grid-template-columns: 1fr; }
+  .coleta-form-grid { grid-template-columns: 1fr; }
 }
 
 .aviso-duplicidade {
@@ -676,8 +796,33 @@
     height: 88vh !important;
   }
 }
-  </style>
-</head>
+  
+/* V20 – duas filas independentes de trabalho */
+.layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(245px,280px) minmax(245px,280px)!important;align-items:start;gap:12px}
+.layout>.form-panel{min-width:0}
+.layout>.search-panel{min-width:0;width:100%;position:sticky;top:14px;max-height:calc(100vh - 28px)}
+.search-panel .results-list{min-height:150px}
+.liberadas-panel h3{text-align:center;line-height:1.3}
+.liberadas-panel .liberada-item{display:block;width:100%;border:1px solid #e8e0c8;border-radius:12px;background:#fff;padding:9px;margin-bottom:7px;cursor:pointer;text-align:left;color:var(--navy);font-family:inherit}
+.liberadas-panel .liberada-item:hover,.liberadas-panel .liberada-item:focus-visible{border-color:var(--navy);background:#f4f8fa;outline:none}
+.lib-top{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:11px;font-weight:800}
+.lib-tag{font-size:9px;border-radius:30px;background:#e5f4ea;color:#187349;padding:4px 6px;white-space:nowrap}
+.lib-meta{font-size:10px;line-height:1.6;margin-top:4px;overflow-wrap:anywhere}
+.lib-alert{font-size:10px;margin:9px 0;color:#64748b;line-height:1.4}
+@media(max-width:1300px){.layout{grid-template-columns:minmax(0,1fr) minmax(205px,250px) minmax(205px,250px)!important}}
+@media(max-width:1070px){.layout{grid-template-columns:repeat(2,minmax(0,1fr))!important}.layout>.form-panel{grid-column:1/-1}.layout>.search-panel{position:relative;top:0;max-height:430px}}
+@media(max-width:650px){.layout{grid-template-columns:1fr!important}.layout>.form-panel{grid-column:auto}.layout>.search-panel{max-height:400px}}
+
+/* V22: aviso de observação não intrusivo */
+.booking-obs-banner{display:flex;align-items:flex-start;gap:9px;background:#fffaf0;border:1px solid #dfc887;border-left:3px solid #ba8c29;border-radius:10px;padding:9px 12px;margin:10px 0;font-size:11px;color:#2d4b5e;line-height:1.45}
+.booking-obs-banner[hidden]{display:none!important}
+.booking-obs-banner .booking-obs-symbol{flex:none;font-size:16px;line-height:1.1;color:#a97913}
+.booking-obs-banner strong{display:block;font-size:10px;letter-spacing:.2px;margin-bottom:2px}
+.booking-obs-message{white-space:pre-wrap;overflow-wrap:anywhere}
+.lib-obs-icon{display:inline-flex;justify-content:center;align-items:center;width:19px;height:19px;border-radius:50%;color:#926400;background:#fff0c5;border:1px solid #e2c279;font-size:12px;font-weight:900;flex:none}
+.lib-top .lib-obs-icon{margin-left:6px;margin-right:auto}
+</style>
+<link rel="stylesheet" href="css/site-background.css"></head>
 <body>
 <div class="page-shell">
   <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center;">
@@ -695,28 +840,27 @@
       <h2 class="form-title">NOVO REGISTRO / RETOMAR PROCESSO</h2>  <div id="resumoRegistroAtual" class="etapa-box">Nenhum registro aberto.</div>
   <div id="infoEtapa" class="etapa-box">1) Selecione o tipo de carga.</div>
 
-  <div class="form-group">
+  <div class="form-group coleta-tipo-grupo">
     <label>TIPO DE CARGA</label>
-    <div class="option-buttons-container">
+    <div class="option-buttons-container coleta-tipo-opcoes">
       <button id="btnResfriado" type="button" class="btn-option" onclick="selecionarTipoCarga('Resfriado', this)">Resfriado</button>
       <button id="btnCongeladoGenSet" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado com GenSet', this)">Congelado com GenSet</button>
       <button id="btnCongelado" type="button" class="btn-option" onclick="selecionarTipoCarga('Congelado', this)">Congelado</button>
     </div>
   </div>
 
-  <div class="form-group" id="grupoCargaPulmao" style="display:none;">
-    <label>CARGA OU PULMÃO</label>
-    <div class="option-buttons-container">
-      <button id="btnCarga" type="button" class="btn-option" onclick="selecionarCargaPulmao('Carga', this)">Carga</button>
-      <button id="btnPulmao" type="button" class="btn-option" onclick="selecionarCargaPulmao('Pulmão', this)">Pulmão</button>
-    </div>
-  </div>
-
+  <!-- O tipo Carga/Pulmão é herdado automaticamente do Booking. -->
   <div id="blocoCampos" style="display:block;">
-    <div class="fields-grid">
-      <div class="form-group">
+    <div class="fields-grid coleta-form-grid">
+      <div class="form-group campo-data-retirada">
         <label>DATA DA RETIRADA</label>
         <input type="date" id="dataRetirada" disabled>
+        <button type="button" class="botao-calendario" onclick="abrirCalendarioRetirada()" aria-label="Selecionar data da retirada" title="Selecionar data da retirada">📅</button>
+      </div>
+      <div class="form-group">
+        <label>CONTAINER</label>
+        <input type="text" id="containerInput" placeholder="Ex.: MSCU1234567" maxlength="11" minlength="11" pattern="[A-Z]{4}[0-9]{7}" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" disabled>
+        <small id="armadorAutoAviso" class="armador-auto-aviso" aria-live="polite" style="display:none;"></small>
       </div>
       <div class="form-group">
         <label>ARMADOR</label>
@@ -739,40 +883,37 @@
         </select>
       </div>
       <div class="form-group">
-        <label>CONTAINER</label>
-        <input type="text" id="containerInput" placeholder="Digite o número do container" disabled>
-      </div>
-      <div class="form-group">
-        <label>ORDEM</label>
+        <label>ORDEM <span id="ordemObrigatoriaPulmao" style="display:none;color:#b45309;font-weight:700;">(OBRIGATÓRIA PARA PULMÃO)</span></label>
         <input type="text" id="ordem" placeholder="Digite a ORDEM (aceita letras, números e símbolos)" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <small id="avisoOrdemPulmao" style="display:none;color:#92400e;">Contêiner disponível no pulmão: informe a ordem de carregamento antes de iniciar um novo registro.</small>
       </div>
       <div class="form-group">
         <label>PLACA</label>
         <input type="text" id="placa" placeholder="Digite a placa" disabled>
       </div>
     </div>
+    <div id="bookingObsBanner" class="booking-obs-banner" role="note" hidden>
+      <span class="booking-obs-symbol" aria-hidden="true">⚠</span>
+      <div><strong>OBSERVAÇÃO DO BOOKING</strong><span id="bookingObsMensagem" class="booking-obs-message"></span></div>
+    </div>
     <div id="avisoDuplicidade" class="aviso-duplicidade" role="alert"></div>
   </div>
 
   <div id="blocoRic" class="foto-bloco" style="display:none;">
-    <h3 id="labelRic">ETAPA 1/4 - FOTO DO RIC</h3>
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
     <button type="button" id="btnRicCapture" class="btn-main" onclick="acionarCamera('cameraInput')"
       style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
-      <span style="font-size:17px;">📷</span> TIRAR FOTO (RIC)
+      <span style="font-size:17px;">📷</span> TIRAR FOTO (RIC) — 1/4
     </button>
-    <div id="statusRic" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
     <img id="preview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização RIC">
   </div>
 
   <div id="genset-section" class="foto-bloco" style="display:none;">
-    <h3 id="labelGenset">ETAPA 2/4 - FOTO DO GENSET</h3>
     <input type="file" id="gensetInput" accept="image/*" capture="environment" style="display:none;">
     <button type="button" id="btnGensetCapture" class="btn-main" onclick="acionarCamera('gensetInput')"
       style="background: var(--gold); padding:9px 14px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:99px; margin-bottom:8px; color:var(--navy); font-size:11px;">
-      <span style="font-size:17px;">📷</span> TIRAR FOTO (PAINEL GENSET)
+      <span style="font-size:17px;">📷</span> TIRAR FOTO (PAINEL GENSET) — 2/4
     </button>
-    <div id="statusGenset" style="font-size:11px; color:var(--red); font-weight:bold; margin-top:4px; text-align:center;"></div>
     <img id="gensetPreview" class="preview-mini" style="display:none; margin-top:8px;" alt="Pré-visualização GENSET">
   </div>
 
@@ -781,8 +922,16 @@
   <button class="btn-main botao-salvar" id="btnSalvar" style="background:#E84D53;" onclick="salvarColeta()" disabled>SALVAR</button>
 </section>
 
+<aside class="card-panel search-panel liberadas-panel" id="painel-ordens-liberadas">
+  <h3>ORDENS LIBERADAS</h3>
+  <div class="search-row"><input id="buscaLiberadas" placeholder="Buscar ordem / armador" autocomplete="off" aria-label="Buscar ordens liberadas"></div>
+  <div class="search-count" id="liberadasCount">Consultando Booking...</div>
+  <div class="lib-alert">Selecione a ordem confirmada pelo Booking. Informe contêiner e placa para iniciar o processo.</div>
+  <div class="results-list" id="listaLiberadas" aria-live="polite"></div>
+</aside>
+
 <aside class="card-panel search-panel">
-  <h3>Retomar registro</h3>
+  <h3>ORDEM EM OPERAÇÃO</h3>
   <div class="search-row">
     <input type="text" id="buscaContainer" placeholder="Digite o container..." autocomplete="off">
     <button type="button" class="btn-main" style="background:var(--navy);" onclick="buscarContainers()">BUSCAR</button>
@@ -825,7 +974,155 @@
       </div>
     </div>
   </div>
-</div><script src="script.js"></script><script>
+</div><script src="js/script.js"></script><script>
+
+  // Mesma regra de VERIFICADOR!B3: XLOOKUP(LEFT(A3,4),BASE!A2:A200,BASE!B2:B200)
+  // Sem correspondência: "leasing". A lista abaixo reproduz a coluna COMPANY da BASE.
+  const BASE_PREFIXOS_EMPRESA = {"AMCU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","ANNU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","APHU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","APLU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","APRU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","APZU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","CGMU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","CMAU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","CMNU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","CNCU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","CSFU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","CSOU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","CZLU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","DVRU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","ECMU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","KLCU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","MMCU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","NOLU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","NOSU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","OPDU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","OTAU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","SMUU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","SOFU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","STMU":"CMA CGM DO BRASIL AGENCIA MARITIMA LTDA","CCLU":"COSCO SHIPPING DEVELOPMENT (ASIA) CO.,LTD","CSLU":"COSCO SHIPPING DEVELOPMENT (ASIA) CO.,LTD","CSNU":"COSCO SHIPPING DEVELOPMENT (ASIA) CO.,LTD","BSDU":"COSCO SHIPPING DEVELOPMENT (ASIA) CO.,LTD","VECU":"COSCO SHIPPING DEVELOPMENT (ASIA) CO.,LTD","GHMU":"GUANGDONG HYUNDAI CONTAINER CO.,LTD.","CASU":"HAPAG LLOYD","CMUU":"HAPAG LLOYD","CPSU":"HAPAG LLOYD","CSQU":"HAPAG LLOYD","CSVU":"HAPAG LLOYD","DAYU":"HAPAG LLOYD","FANU":"HAPAG LLOYD","HAMU":"HAPAG LLOYD","HLBU":"HAPAG LLOYD","HLCU":"HAPAG LLOYD","HLXU":"HAPAG LLOYD","ITAU":"HAPAG LLOYD","IVLU":"HAPAG LLOYD","LNXU":"HAPAG LLOYD","MOMU":"HAPAG LLOYD","NDSU":"HAPAG LLOYD","NIDU":"HAPAG LLOYD","QIBU":"HAPAG LLOYD","QNNU":"HAPAG LLOYD","TLEU":"HAPAG LLOYD","TMMU":"HAPAG LLOYD","UACU":"HAPAG LLOYD","UAEU":"HAPAG LLOYD","UASU":"HAPAG LLOYD","LZTU":"LIANYUNGANG COSCO SHIPPING SPECIAL EQUIPMENT MANUFACTURING CO., LTD.","YZTU":"LIANYUNGANG COSCO SHIPPING SPECIAL EQUIPMENT MANUFACTURING CO., LTD.","APMU":"MAERSK BRASIL BRASMAR LTDA","CADU":"MAERSK BRASIL BRASMAR LTDA","CNIU":"MAERSK BRASIL BRASMAR LTDA","COZU":"MAERSK BRASIL BRASMAR LTDA","ENAU":"MAERSK BRASIL BRASMAR LTDA","FAAU":"MAERSK BRASIL BRASMAR LTDA","FRLU":"MAERSK BRASIL BRASMAR LTDA","GRIU":"MAERSK BRASIL BRASMAR LTDA","HASU":"MAERSK BRASIL BRASMAR LTDA","KHJU":"MAERSK BRASIL BRASMAR LTDA","KHLU":"MAERSK BRASIL BRASMAR LTDA","KNLU":"MAERSK BRASIL BRASMAR LTDA","LOTU":"MAERSK BRASIL BRASMAR LTDA","MAEU":"MAERSK BRASIL BRASMAR LTDA","MALU":"MAERSK BRASIL BRASMAR LTDA","MCAU":"MAERSK BRASIL BRASMAR LTDA","MCHU":"MAERSK BRASIL BRASMAR LTDA","MCRU":"MAERSK BRASIL BRASMAR LTDA","MHHU":"MAERSK BRASIL BRASMAR LTDA","MIEU":"MAERSK BRASIL BRASMAR LTDA","MMAU":"MAERSK BRASIL BRASMAR LTDA","MNBU":"MAERSK BRASIL BRASMAR LTDA","MRFU":"MAERSK BRASIL BRASMAR LTDA","MRKU":"MAERSK BRASIL BRASMAR LTDA","MRSU":"MAERSK BRASIL BRASMAR LTDA","MSAU":"MAERSK BRASIL BRASMAR LTDA","MSFU":"MAERSK BRASIL BRASMAR LTDA","MSKU":"MAERSK BRASIL BRASMAR LTDA","MSWU":"MAERSK BRASIL BRASMAR LTDA","MVIU":"MAERSK BRASIL BRASMAR LTDA","MWCU":"MAERSK BRASIL BRASMAR LTDA","MWMU":"MAERSK BRASIL BRASMAR LTDA","OCLU":"MAERSK BRASIL BRASMAR LTDA","POCU":"MAERSK BRASIL BRASMAR LTDA","PONU":"MAERSK BRASIL BRASMAR LTDA","SCMU":"MAERSK BRASIL BRASMAR LTDA","SEAU":"MAERSK BRASIL BRASMAR LTDA","SUDU":"MAERSK BRASIL BRASMAR LTDA","TORU":"MAERSK BRASIL BRASMAR LTDA","MCIU":"MAERSK BRASIL BRASMAR LTDA","GTIU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MADU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MEDU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSBU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSCU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSDU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSGU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSMU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSNU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSPU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSTU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSVU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSYU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","MSZU":"MSC MEDITERRANEAN SHIPING DO BRASIL LTDA","ONEU":"OCEAN NETWORK EXPRESS (LATIN AMERICA) AGENCIA MARITIMA LTDA","PCIU":"PACIFIC INTERNATIONAL LINES (PTE) LTD.","PIDU":"PACIFIC INTERNATIONAL LINES (PTE) LTD.","PILU":"PACIFIC INTERNATIONAL LINES (PTE) LTD.","MCPU":"SEALAND MAERSK ASIA PTE LTD","ZCLU":"ZIM AMERICAN INTEGRATED SHIPPING SERVICES CO LLC","ZCSU":"ZIM AMERICAN INTEGRATED SHIPPING SERVICES CO LLC","ZIMU":"ZIM AMERICAN INTEGRATED SHIPPING SERVICES CO LLC","ZMOU":"ZIM AMERICAN INTEGRATED SHIPPING SERVICES CO LLC","ZWFU":"ZIM WORLD FREIGHT PVT LTD","HMMU":"HMM CO., LTD.","HDMU":"HMM CO., LTD.","KOCU":"HMM CO., LTD.","YMLU":"YANG MING MARINE TRANSPORT CORP.","YMMU":"YANG MING MARINE TRANSPORT CORP.","EGSU":"AGENCIA DE VAPORES GRIEG S/A","EMCU":"AGENCIA DE VAPORES GRIEG S/A","EGHU":"AGENCIA DE VAPORES GRIEG S/A","EISU":"AGENCIA DE VAPORES GRIEG S/A","HMCU":"AGENCIA DE VAPORES GRIEG S/A"};
+
+  function avisarArmadorAuto(mensagem, classe='') {
+    const aviso = document.getElementById('armadorAutoAviso');
+    if (!aviso) return;
+    const texto = String(mensagem || '');
+    const instrucaoInicial = /^(Informe o prefixo de 4 letras|Digite as 4 primeiras letras)/i.test(texto);
+    aviso.textContent = instrucaoInicial ? '' : texto;
+    aviso.style.display = instrucaoInicial || !texto ? 'none' : 'block';
+    aviso.className = 'armador-auto-aviso ' + classe;
+  }
+  function abrirCalendarioRetirada() {
+    const campo = document.getElementById('dataRetirada');
+    if (!campo || campo.disabled) return;
+    try {
+      if (typeof campo.showPicker === 'function') campo.showPicker();
+      else campo.focus();
+    } catch (_) { campo.focus(); }
+  }
+  function adicionarOpcaoSeFaltar(campo, valor) {
+    if (valor && ![...campo.options].some(o=>o.value===valor)) campo.add(new Option(valor,valor));
+  }
+  const ARMADORES_POR_EMPRESA = {
+    'CMA CGM DO BRASIL AGENCIA MARITIMA LTDA':'CMA CGM',
+    'COSCO SHIPPING DEVELOPMENT (ASIA) CO.,LTD':'COSCO',
+    'HAPAG LLOYD':'HAPAG LLOYD',
+    'MAERSK BRASIL BRASMAR LTDA':'MAERSK',
+    'MSC MEDITERRANEAN SHIPING DO BRASIL LTDA':'MSC',
+    'ZIM AMERICAN INTEGRATED SHIPPING SERVICES CO LLC':'ZIM',
+    'ZIM WORLD FREIGHT PVT LTD':'ZIM',
+    'PACIFIC INTERNATIONAL LINES (PTE) LTD.':'PIL',
+    'HMM CO., LTD.':'HMM',
+    'YANG MING MARINE TRANSPORT CORP.':'YANG MING',
+    'OCEAN NETWORK EXPRESS (LATIN AMERICA) AGENCIA MARITIMA LTDA':'ONE',
+    'SEALAND MAERSK ASIA PTE LTD':'MAERSK'
+  };
+  function armadorDoFabricante(empresa) {
+    return ARMADORES_POR_EMPRESA[empresa] || null;
+  }
+  function validarContainer() {
+    const campo = document.getElementById('containerInput');
+    const valor = (campo?.value || '').trim().toUpperCase();
+    return /^[A-Z]{4}[0-9]{7}$/.test(valor);
+  }
+  function validarArmadorBooking(mostrarMensagem = false) {
+    if (!bookingSelecionado?.armador || registroId) return true;
+    const prefixo = document.getElementById('containerInput').value.slice(0,4);
+    const empresa = BASE_PREFIXOS_EMPRESA[prefixo];
+    const encontrado = armadorDoFabricante(empresa);
+    const confirmado = String(bookingSelecionado.armador).trim().toUpperCase();
+    const divergente = encontrado && encontrado.toUpperCase() !== confirmado;
+    if (divergente && mostrarMensagem) {
+      mostrarAlerta(`Armador divergente: o prefixo ${prefixo} indica ${encontrado}, mas a coluna ARMADOR do Booking confirma ${bookingSelecionado.armador}. O armador deve ser igual ao Booking. Verifique o contêiner antes de salvar.`);
+    }
+    return !divergente;
+  }
+  function atualizarEdicaoArmador() {
+    const select = document.getElementById('armador');
+    if (!select) return;
+    const origem = select.dataset.origemArmador;
+    // Registro vinculado ao Booking: armador fixo, inclusive ao retomar um processo.
+    const vinculadoAoBooking = !!bookingSelecionado?.armador || !!registroAtual?.cw_solicitacao_id;
+    if (bookingSelecionado?.armador && !registroId) {
+      adicionarOpcaoSeFaltar(select, bookingSelecionado.armador);
+      select.value = bookingSelecionado.armador;
+      select.dataset.origemArmador = 'booking';
+    }
+    // O campo é somente leitura em todas as etapas: o operador nunca escolhe o armador.
+    select.disabled = true;
+    select.title = vinculadoAoBooking
+      ? 'Armador definido pelo Booking: não pode ser alterado neste registro.'
+      : origem === 'prefixo' ? 'Identificado automaticamente pela aba BASE da planilha' : '';
+  }
+  function aplicarArmadorDoPrefixo() {
+    const container = document.getElementById('containerInput');
+    const armador = document.getElementById('armador');
+    if (!container || !armador) return;
+    // Aceita exclusivamente 4 letras e, na sequência, até 7 números.
+    const bruto = container.value.toUpperCase();
+    const letras = (bruto.match(/^[A-Z]*/) || [''])[0].slice(0,4);
+    const valor = letras + (letras.length === 4 ? bruto.slice(4).replace(/[^0-9]/g,'').slice(0,7) : '');
+    if (container.value !== valor) {
+      const posicao = container.selectionStart;
+      container.value = valor;
+      if (posicao != null) container.setSelectionRange(posicao,posicao);
+    }
+    // LEFT(A3,4) na planilha: exatamente as quatro primeiras letras; não usar substring de outra posição.
+    const prefixo = /^[A-Z]{4}/.test(valor) ? valor.slice(0,4) : '';
+    const empresa = prefixo ? BASE_PREFIXOS_EMPRESA[prefixo] : null;
+    const prefixoAnterior = armador.dataset.ultimoPrefixo || '';
+    if (prefixoAnterior !== prefixo && armador.dataset.origemArmador === 'manual') {
+      armador.value = '';
+      armador.dataset.origemArmador = '';
+    }
+    armador.dataset.ultimoPrefixo = prefixo;
+
+    if (registroId) {
+      avisarArmadorAuto('Processo existente: armador salvo preservado.');
+      atualizarEdicaoArmador();
+      return;
+    }
+    if (bookingSelecionado && bookingSelecionado.armador) {
+      // Booking é a fonte obrigatória para o armador operacional, inclusive leasing.
+      adicionarOpcaoSeFaltar(armador,bookingSelecionado.armador);
+      armador.value = bookingSelecionado.armador;
+      armador.dataset.origemArmador = 'booking';
+      const divergente = !validarArmadorBooking();
+      avisarArmadorAuto(divergente
+        ? `ATENÇÃO: código ${prefixo} indica ${armadorDoFabricante(empresa)}, mas o armador do Booking é ${bookingSelecionado.armador}. Confira o contêiner; não será possível salvar com divergência.`
+        : empresa
+          ? `Armador confirmado pelo Booking: ${bookingSelecionado.armador}. Prefixo ${prefixo}: ${empresa}.`
+          : `Prefixo ${prefixo || 'incompleto'}: leasing/sem correspondência. Armador fixo conforme Booking: ${bookingSelecionado.armador}.`,
+        divergente ? 'erro' : 'sucesso');
+      atualizarEdicaoArmador();
+      return;
+    }
+    if (!prefixo) {
+      if (armador.dataset.origemArmador==='prefixo') armador.value='';
+      armador.dataset.origemArmador='leasing';
+      avisarArmadorAuto('', '');
+      atualizarEdicaoArmador();
+      return;
+    }
+    if (!empresa || empresa.trim().toLowerCase()==='leasing') {
+      if (armador.dataset.origemArmador==='prefixo') armador.value='';
+      armador.dataset.origemArmador='leasing';
+      avisarArmadorAuto(`Código ${prefixo} identificado como leasing/sem correspondência. Utilize a solicitação liberada pelo Booking para definir o armador.`, 'atencao');
+      atualizarEdicaoArmador();
+      return;
+    }
+    // Espelha literalmente o resultado da coluna "ARMADOR FABRICANTE DO CONTAINER" da aba VERIFICADOR.
+    adicionarOpcaoSeFaltar(armador,empresa);
+    armador.value=empresa;
+    armador.dataset.origemArmador='prefixo';
+    avisarArmadorAuto(`VERIFICADOR: ${empresa} — código ${prefixo}. Preenchido automaticamente.`, 'sucesso');
+    atualizarEdicaoArmador();
+  }
+  document.getElementById('containerInput')?.addEventListener('input', aplicarArmadorDoPrefixo, true);
+  document.getElementById('containerInput')?.addEventListener('change', aplicarArmadorDoPrefixo, true);
+  document.getElementById('armador')?.addEventListener('change', function(){
+    if (this.dataset.origemArmador==='prefixo' || this.dataset.origemArmador==='booking') return;
+    this.dataset.origemArmador='manual';
+    if (this.value) avisarArmadorAuto('Armador selecionado manualmente (leasing).', 'atencao');
+  });
+
   const DRAFT_KEY = 'coletaweb_draft_v14';
   const STORAGE_BUCKET = 'coletas-fotos';
   const STORAGE_BASE = 'https://ekmcgifpvqrdgcikvepe.supabase.co/storage/v1/object/public/coletas-fotos/';
@@ -1025,7 +1322,7 @@
 
   function tipoExigeOrdem() {
     const t = normalizarTexto(tipoCargaSelecionado);
-    return t === 'resfriado' || t === 'congelado com genset' || t === 'congelado';
+    return cargaPulmaoSelecionado === 'Pulmão' || t === 'resfriado' || t === 'congelado com genset' || t === 'congelado';
   }
 
   function obterUrlFoto(nomeOuUrl) {
@@ -1043,7 +1340,8 @@
   }
 
   function textoBotaoFoto(etapa) {
-    return etapa === 'ric' ? 'TIRAR FOTO (RIC)' : 'TIRAR FOTO (PAINEL GENSET)';
+    const passo = { ric:'1/4', genset1:'2/4', genset2:'3/4', genset3:'4/4' }[etapa] || '2/4';
+    return etapa === 'ric' ? `TIRAR FOTO (RIC) — ${passo}` : `TIRAR FOTO (PAINEL GENSET) — ${passo}`;
   }
 
   function obterEtapaDoRegistro(reg) {
@@ -1536,7 +1834,14 @@
       const el = document.getElementById(id);
       if (el) el.disabled = !liberado;
     });
-    document.getElementById('grupoCargaPulmao').style.display = tipoCargaSelecionado ? 'block' : 'none';
+    atualizarEdicaoArmador();
+    const ordemPulmao = cargaPulmaoSelecionado === 'Pulmão';
+    const marca = document.getElementById('ordemObrigatoriaPulmao');
+    const aviso = document.getElementById('avisoOrdemPulmao');
+    if (marca) marca.style.display = ordemPulmao ? 'inline' : 'none';
+    if (aviso) aviso.style.display = ordemPulmao && !registroId ? 'block' : 'none';
+    const ordemCampo = document.getElementById('ordem');
+    if (ordemCampo) ordemCampo.required = ordemPulmao;
   }
 
   function aplicarBotoesAtivos() {
@@ -1554,11 +1859,7 @@
       document.getElementById(mapa[tipoCargaSelecionado]).classList.add('active');
     }
 
-    document.getElementById('btnCarga').classList.remove('active');
-    document.getElementById('btnPulmao').classList.remove('active');
-
-    if (cargaPulmaoSelecionado === 'Carga') document.getElementById('btnCarga').classList.add('active');
-    if (cargaPulmaoSelecionado === 'Pulmão') document.getElementById('btnPulmao').classList.add('active');
+    // Carga/Pulmão é metadado da solicitação Booking, não uma escolha manual.
   }
 
   function atualizarInterfaceEtapa() {
@@ -1572,21 +1873,15 @@
     const btnSalvar = document.getElementById('btnSalvar');
     const btnRicCapture = document.getElementById('btnRicCapture');
     const btnGensetCapture = document.getElementById('btnGensetCapture');
-    const labelRic = document.getElementById('labelRic');
-    const labelGenset = document.getElementById('labelGenset');
-    const statusRic = document.getElementById('statusRic');
-    const statusGenset = document.getElementById('statusGenset');
 
     const bloqueioDuplicidade = !registroId && (verificandoDuplicidade || Boolean(duplicidadeEncontrada));
-    const ready = tipoCargaSelecionado && cargaPulmaoSelecionado && camposObrigatoriosPreenchidos() && !bloqueioDuplicidade;
+    const ready = tipoCargaSelecionado && cargaPulmaoSelecionado && camposObrigatoriosPreenchidos() && validarContainer() && validarArmadorBooking() && !bloqueioDuplicidade;
 
     if (!ready) {
       blocoRic.style.display = 'none';
       blocoGenset.style.display = 'none';
       btnSalvar.disabled = true;
       btnSalvar.innerText = 'SALVAR';
-      statusRic.textContent = '';
-      statusGenset.textContent = '';
       return;
     }
 
@@ -1596,16 +1891,10 @@
     if (etapaFluxo === 'ric') {
       blocoRic.style.display = 'block';
       blocoGenset.style.display = 'none';
-      labelRic.textContent = textoEtapa('ric');
-      statusRic.textContent = textoEtapa('ric');
-      statusGenset.textContent = '';
       btnRicCapture.classList.toggle('bloqueado', modalDepositoAberto);
     } else {
       blocoRic.style.display = 'none';
       blocoGenset.style.display = 'block';
-      labelGenset.textContent = textoEtapa(etapaFluxo);
-      statusRic.textContent = '';
-      statusGenset.textContent = textoEtapa(etapaFluxo);
       btnGensetCapture.classList.toggle('bloqueado', modalDepositoAberto);
     }
 
@@ -1632,16 +1921,15 @@
     btn.classList.add('active');
 
     tipoCargaSelecionado = tipo;
+    if (!cargaPulmaoSelecionado) cargaPulmaoSelecionado = bookingSelecionado?.tipo === 'PULMÃO' ? 'Pulmão' : 'Carga';
     etapaFluxo = 'ric';
     salvarRascunho();
     atualizarInterfaceEtapa();
   }
 
-  function selecionarCargaPulmao(valor, btn) {
-    document.getElementById('btnCarga').classList.remove('active');
-    document.getElementById('btnPulmao').classList.remove('active');
-    btn.classList.add('active');
-    cargaPulmaoSelecionado = valor;
+  function selecionarCargaPulmao(valor) {
+    // Mantém o tipo do Booking para persistência e relatórios, sem botões na tela.
+    cargaPulmaoSelecionado = valor === 'Pulmão' ? 'Pulmão' : 'Carga';
     salvarRascunho();
     atualizarInterfaceEtapa();
   }
@@ -1649,6 +1937,7 @@
   function preencherCamposRestaurados(campos) {
     if (!campos) return;
     document.getElementById('dataRetirada').value = campos.data_retirada || '';
+    adicionarOpcaoSeFaltar(document.getElementById('armador'),campos.armador || '');
     document.getElementById('armador').value = campos.armador || '';
     document.getElementById('placa').value = campos.placa || '';
     document.getElementById('containerInput').value = campos.container || '';
@@ -1799,12 +2088,20 @@
     });
   }
 
+  let consultaRegistrosEmAndamento = false;
+  let consultaRegistrosPendente = false;
   async function carregarRegistrosEmAndamento() {
+    if (consultaRegistrosEmAndamento) { consultaRegistrosPendente = true; return; }
+    consultaRegistrosEmAndamento = true;
     try {
       const cliente = getCliente();
       if (!cliente) return;
 
-      let query = cliente.from('coletas').select('*').order('created_at', { ascending: false });
+      // A lista usa apenas campos de resumo. O registro completo e buscado
+      // pelo ID quando o operador decide retomar uma coleta.
+      let query = cliente.from('coletas')
+        .select('id,container,armador,cidade,data_retirada,status,finalizado,depositado,liberado,genset,foto_url,created_at')
+        .order('created_at', { ascending: false });
 
       if (!ehAdmin && transportadoraUsuario) {
         query = query.ilike('transportadora', transportadoraUsuario.trim());
@@ -1824,6 +2121,12 @@
     } catch (err) {
       console.error('Erro ao carregar registros:', err);
       mostrarAlerta('Erro ao carregar registros: ' + err.message);
+    } finally {
+      consultaRegistrosEmAndamento = false;
+      if (consultaRegistrosPendente) {
+        consultaRegistrosPendente = false;
+        void carregarRegistrosEmAndamento();
+      }
     }
   }
 
@@ -2040,6 +2343,8 @@
   }
 
   function limparFluxoCompleto() {
+    mostrarObservacaoBookingInline('');
+    bookingSelecionado = null;
     tipoCargaSelecionado = '';
     cargaPulmaoSelecionado = '';
     etapaFluxo = 'ric';
@@ -2064,11 +2369,11 @@
     document.getElementById('btnResfriado').classList.remove('active');
     document.getElementById('btnCongelado').classList.remove('active');
     document.getElementById('btnCongeladoGenSet').classList.remove('active');
-    document.getElementById('btnCarga').classList.remove('active');
-    document.getElementById('btnPulmao').classList.remove('active');
 
     document.getElementById('dataRetirada').value = '';
     document.getElementById('armador').value = '';
+    document.getElementById('armador').dataset.origemArmador = '';
+    avisarArmadorAuto('Informe o prefixo de 4 letras para identificar o fabricante/armador.');
     document.getElementById('placa').value = '';
     document.getElementById('containerInput').value = '';
     document.getElementById('ordem').value = '';
@@ -2079,7 +2384,6 @@
     limparPreviewRic();
     limparPreviewGenset();
 
-    document.getElementById('grupoCargaPulmao').style.display = 'none';
     document.getElementById('blocoRic').style.display = 'none';
     document.getElementById('genset-section').style.display = 'none';
     document.getElementById('galeriaFotos').innerHTML = '';
@@ -2102,9 +2406,12 @@
     const cliente = getCliente();
     if (!cliente) return mostrarAlerta('Erro: O sistema ainda está carregando.');
     if (!tipoCargaSelecionado) return mostrarAlerta('Selecione o tipo de carga.');
-    if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione se é Carga ou Pulmão.');
+    if (!cargaPulmaoSelecionado) return mostrarAlerta('Selecione uma solicitação liberada pelo Booking para iniciar o registro.');
+    if (!validarContainer()) return mostrarAlerta('Contêiner inválido. Informe exatamente 4 letras seguidas de 7 números (ex.: MSCU5051153).');
+    if (!validarArmadorBooking(true)) return;
     if (!camposObrigatoriosPreenchidos()) return mostrarAlerta('Preencha todos os campos obrigatórios.');
     if (tipoExigeOrdem() && !document.getElementById('ordem').value.trim()) return mostrarAlerta('Preencha o campo ORDEM para continuar.');
+    if (!registroId && bookingSelecionado && (!document.getElementById('containerInput').value.trim())) return mostrarAlerta('Informe o contêiner retirado antes de continuar.');
     if (!registroId && await verificarDuplicidadeAntesDoRegistro()) return;
     if (!fotoAtualDataUrl) return mostrarAlerta('Tire a foto da etapa atual.');
 
@@ -2157,9 +2464,14 @@
   async function confirmarDataDeposito() {
     const cliente = getCliente();
     const dataEscolhida = document.getElementById('input-data-deposito').value;
+    if (cargaPulmaoSelecionado === 'Pulmão' && !document.getElementById('ordem').value.trim()) {
+      return mostrarAlerta('Para utilizar um contêiner do PULMÃO, informe a ORDEM do novo carregamento antes de iniciar o registro.');
+    }
     if (!dataEscolhida) return alert('Selecione uma data.');
     if (!fotoPendenteNome) return alert('Erro: foto pendente não encontrada.');
     if (!modalDataCampo) return alert('Erro: etapa não encontrada.');
+    if (!validarContainer()) return mostrarAlerta('Contêiner inválido: são obrigatórias 4 letras e 7 números.');
+    if (!validarArmadorBooking(true)) return;
 
     try {
       setSalvando(true);
@@ -2198,6 +2510,7 @@
           status: 'ag. carregamento',
           finalizado: false,
           tipo_carga: tipoCargaSelecionado,
+          cw_solicitacao_id: bookingSelecionado?.id || null,
           created_at: new Date().toISOString()
         };
 
@@ -2222,6 +2535,7 @@
         atualizarInterfaceEtapa();
         renderGaleria();
         await carregarRegistrosEmAndamento();
+        await carregarBookingLiberados();
 
         mostrarMensagemFotoSalva('RIC');
         return;
@@ -2322,15 +2636,11 @@
       registroSelecionadoId = draft.registroSelecionadoId || null;
 
       if (draft.campos) preencherCamposRestaurados(draft.campos);
+      if (draft.campos && !registroId) aplicarArmadorDoPrefixo();
 
       if (tipoCargaSelecionado) {
         const map = { 'Resfriado': 'btnResfriado', 'Congelado com GenSet': 'btnCongeladoGenSet', 'Congelado': 'btnCongelado' };
         const id = map[tipoCargaSelecionado];
-        if (id) document.getElementById(id).classList.add('active');
-      }
-
-      if (cargaPulmaoSelecionado) {
-        const id = cargaPulmaoSelecionado === 'Carga' ? 'btnCarga' : 'btnPulmao';
         if (id) document.getElementById(id).classList.add('active');
       }
 
@@ -2350,6 +2660,7 @@
   }
 
   async function abrirRegistroParaContinuar(id) {
+    mostrarObservacaoBookingInline('');
     try {
       const registroBruto = await buscarRegistroCompletoNoBanco(id);
       if (!registroBruto) {
@@ -2424,7 +2735,7 @@
     salvarRascunho();
   });
 
-  window.addEventListener('load', async () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     try {
       document.getElementById('buscaContainer').value = '';
       registrarEventosZoom();
@@ -2434,8 +2745,10 @@
       vincularModalFoto();
 
       if (await verificarAcesso()) {
-        await carregarRegistrosEmAndamento();
+        // O rascunho local fica disponivel antes de completar as consultas.
         await restaurarRascunho();
+        // As listas independentes sao consultadas em paralelo, sem espera fixa.
+        await Promise.all([carregarRegistrosEmAndamento(), carregarBookingLiberados()]);
         if (!termoBuscaAtual) filtrarResultadosBusca();
         atualizarInterfaceEtapa();
 
@@ -2450,6 +2763,112 @@
     }
   });
 
+  // V20: a lista de liberadas ignora solicitações já iniciadas. Status e quantidade
+  // são validados novamente pelo banco no início do processo (ver SQL V20).
+  let bookingLiberados = [];
+  let bookingSelecionado = null;
+  let carregandoLiberadas = false;
+  function mostrarObservacaoBookingInline(texto){
+    const banner=document.getElementById('bookingObsBanner');
+    const msg=document.getElementById('bookingObsMensagem');
+    if(!banner||!msg)return;
+    const textoLimpo=String(texto||'').trim();
+    msg.textContent=textoLimpo;
+    banner.hidden=!textoLimpo;
+  }
+  function desenharLiberadas(){
+    const lista = document.getElementById('listaLiberadas');
+    if(!lista)return;
+    const termo=(document.getElementById('buscaLiberadas')?.value||'').toUpperCase().trim();
+    const itens=bookingLiberados.filter(x=>`${x.ordem||'PULMÃO'} ${x.armador||''} ${x.planta||''} ${x.depot_coleta||''}`.toUpperCase().includes(termo));
+    const count=document.getElementById('liberadasCount');
+    if(count)count.textContent=`${itens.length} ordem(ns) liberada(s).`;
+    lista.replaceChildren();
+    if(!itens.length){const vazio=document.createElement('div');vazio.className='lib-alert';vazio.textContent='Nenhuma ordem liberada disponível.';lista.append(vazio);return;}
+    for(const x of itens){
+      const el=document.createElement('button');el.type='button';el.className='liberada-item';
+      const head=document.createElement('div');head.className='lib-top';
+      const titulo=document.createElement('span');titulo.textContent=x.ordem||'PULMÃO';
+      const tag=document.createElement('span');tag.className='lib-tag';tag.textContent='LIBERADA';
+      head.append(titulo);
+      if(String(x.observacao_booking||'').trim()){
+        const atencao=document.createElement('span');atencao.className='lib-obs-icon';
+        atencao.textContent='!';atencao.title='Esta solicitação possui observação do Booking';
+        atencao.setAttribute('aria-label','Observação do Booking disponível');
+        head.append(atencao);
+      }
+      head.append(tag);
+      const meta=document.createElement('div');meta.className='lib-meta';
+      meta.textContent=`Armador: ${x.armador||'—'} | Depot: ${x.depot_coleta||'—'} | Data: ${x.data_coleta||'—'} | Disponíveis: ${x.saldo_disponivel}`;
+      el.append(head,meta);
+      el.addEventListener('click',()=>aplicarBookingSelecionado(x.id));lista.append(el);
+    }
+  }
+  async function carregarBookingLiberados(){
+    if(carregandoLiberadas||!clienteSupabase||!transportadoraUsuario)return;
+    carregandoLiberadas=true;
+    try{
+      const req=await clienteSupabase.from('cw_solicitacoes').select('id,tipo,ordem,armador,temperatura,planta,regiao,data_coleta,quantidade,status,depot_coleta,observacao_booking').eq('transportadora',transportadoraUsuario).eq('status','LIBERADO PARA COLETA').order('created_at',{ascending:false});
+      if(req.error)throw req.error;
+      const ids=(req.data||[]).map(x=>x.id).filter(Boolean);
+      const contagem=new Map();
+      // Antes eram buscadas todas as coletas de todas as transportadoras.
+      // Contar apenas vinculos das solicitacoes exibidas; pagina para nao
+      // depender do limite padrao de 1000 registros do PostgREST.
+      for(let i=0;i<ids.length;i+=75){
+        const loteIds=ids.slice(i,i+75);
+        for(let inicio=0;;inicio+=1000){
+          const ops=await clienteSupabase.from('coletas').select('cw_solicitacao_id')
+            .in('cw_solicitacao_id',loteIds)
+            .order('id',{ascending:true}).range(inicio,inicio+999);
+          if(ops.error)throw ops.error;
+          const lote=ops.data||[];
+          lote.forEach(x=>contagem.set(x.cw_solicitacao_id,(contagem.get(x.cw_solicitacao_id)||0)+1));
+          if(lote.length<1000)break;
+        }
+      }
+      bookingLiberados=(req.data||[]).map(x=>({...x,saldo_disponivel:Math.max(0,(x.quantidade||1)-(contagem.get(x.id)||0))})).filter(x=>x.saldo_disponivel>0);
+      desenharLiberadas();
+    }catch(e){console.error('ORDENS LIBERADAS:',e);const el=document.getElementById('liberadasCount');if(el)el.textContent='Erro ao consultar Booking: '+e.message;}
+    finally{carregandoLiberadas=false;}
+  }
+  function aplicarBookingSelecionado(id){
+    const x=bookingLiberados.find(r=>String(r.id)===String(id));if(!x)return;
+    if(registroId)return mostrarAlerta('Para utilizar outra ordem, finalize ou clique em NOVO REGISTRO.');
+    bookingSelecionado=x;
+    const t=(x.temperatura||'').toUpperCase();
+    const tipo=t.includes('DRY')||t.includes('-1.4')?'Resfriado':t.includes('GENSET')?'Congelado com GenSet':'Congelado';
+    selecionarTipoCarga(tipo,document.getElementById(tipo==='Resfriado'?'btnResfriado':tipo==='Congelado'?'btnCongelado':'btnCongeladoGenSet'));
+    const pulmao=x.tipo==='PULMÃO';
+    selecionarCargaPulmao(pulmao?'Pulmão':'Carga');
+    document.getElementById('ordem').value=x.ordem||'';
+    document.getElementById('containerInput').value='';
+    document.getElementById('placa').value='';
+    const arm=document.getElementById('armador');
+    if(![...arm.options].some(o=>o.value===x.armador))arm.add(new Option(x.armador,x.armador));
+    arm.value=x.armador;
+    arm.dataset.origemArmador='booking';
+    avisarArmadorAuto('Armador definido pelo Booking confirmado.', 'sucesso');
+    document.getElementById('dataRetirada').value=x.data_coleta||'';
+    salvarRascunho();atualizarInterfaceEtapa();
+    mostrarObservacaoBookingInline(x.observacao_booking);
+    document.getElementById('containerInput').focus();
+  }
+  document.getElementById('buscaLiberadas')?.addEventListener('input',desenharLiberadas);
+  window.carregarBookingLiberados=carregarBookingLiberados;
+  window.aplicarBookingSelecionado=aplicarBookingSelecionado;
+  // A primeira leitura ocorre apos verificarAcesso, quando a transportadora
+  // ja esta definida. Nao usar timer: ele causava 1,2s de espera e corrida.
+  setInterval(()=>{if(document.visibilityState==='visible'&&transportadoraUsuario)carregarBookingLiberados()},12000);
+  // Eventos em tempo real quando habilitados no Supabase; sincronização periódica de reserva.
+  document.addEventListener('DOMContentLoaded',()=>{
+    if(!clienteSupabase?.channel)return;
+    const ch=clienteSupabase.channel('coleta-ordens-v20')
+      .on('postgres_changes',{event:'*',schema:'public',table:'cw_solicitacoes'},()=>carregarBookingLiberados())
+      .on('postgres_changes',{event:'*',schema:'public',table:'coletas'},()=>{carregarBookingLiberados();carregarRegistrosEmAndamento()})
+      .subscribe();
+    window.addEventListener('pagehide',()=>clienteSupabase.removeChannel(ch),{once:true});
+  });
   window.novoRegistro = novoRegistro;
   window.voltar = voltar;
   window.selecionarTipoCarga = selecionarTipoCarga;
@@ -2463,5 +2882,5 @@
   window.limparBusca = limparBusca;
   window.fecharAlerta = fecharAlerta;
   window.responderConfirmNovoRegistro = responderConfirmNovoRegistro;
-</script></body>
+</script><script src="js/i18n-global.js"></script><script src="js/navigation-fast.js" defer></script></body>
 </html>
