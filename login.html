@@ -102,7 +102,13 @@
                     return;
                 }
 
-                window.location.href = 'index.html';
+                // Só avança depois que a sessão foi realmente persistida neste navegador.
+                const { data: sessaoConfirmada, error: erroSessao } = await clienteSupabase.auth.getSession();
+                if (erroSessao || !sessaoConfirmada?.session?.access_token) {
+                    alert('Login aceito, mas a sessão não pôde ser mantida neste navegador. Abra o ColetaWeb pelo endereço publicado (http/https) e permita o armazenamento de dados do site.');
+                    return;
+                }
+                window.location.assign('index.html');
             } catch (err) {
                 console.error('Erro crítico:', err);
                 alert('Erro inesperado ao entrar.');

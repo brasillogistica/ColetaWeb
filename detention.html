@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Detention | ColetaWeb</title>
+  <link rel="stylesheet" href="css/site-background.css">
+  <link rel="stylesheet" href="css/detention.css">
+  <style>
+    /* Fundo contínuo na tela inteira, inclusive durante a rolagem da tabela. */
+    html,body{min-height:100%;background-color:#15394f!important}
+    body{background-image:none!important;isolation:isolate}
+    body::before{content:"";position:fixed;inset:0;min-height:100vh;min-height:100dvh;background:url('assets/fundo-menu.jpg') center center/cover no-repeat;z-index:-1;pointer-events:none}
+    .kpi,.kpi span,.kpi strong,.kpi small{text-align:center}
+    .records .section-title{align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:12px}
+    .records .section-title h2{text-align:center}
+    .records .filter-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:10px 0 17px}
+    .records .hero-actions{justify-content:flex-end;flex-shrink:0;gap:7px}
+    .records .hero-actions .btn{height:33px;padding:0 12px;font-size:10px}
+    .records .filters{flex:0 1 760px;min-width:0;margin:0;padding:0;background:transparent;border:0;box-shadow:none;grid-template-columns:minmax(190px,1.4fr) repeat(3,minmax(110px,1fr));gap:9px}
+    .records .field,.records .field label{text-align:center}
+    .records .field{gap:5px}
+    .records .field label{font-size:9px}
+    .records .field input,.records .field select{height:32px;padding:0 8px;font-size:11px;text-align:center;text-align-last:center}
+    .records td.left{text-align:center}
+    @media(max-width:1250px){.records .filter-toolbar{flex-wrap:wrap}.records .filters{flex:1 1 100%}.records .hero-actions{margin-left:auto}}
+    @media(max-width:700px){.records .filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:500px){.records .filters{grid-template-columns:minmax(0,1fr)}.records .hero-actions{width:100%;justify-content:center}}
+    @media(max-width:800px){.records .section-title{align-items:center;flex-direction:column}}
+  </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="js/script.js"></script>
+  <script defer src="js/detention-regras.js"></script>
+  <script defer src="js/detention.js"></script>
+</head>
+<body>
+ <main class="shell">
+  <header class="header"><div class="brand">minerva<span>foods</span></div><h1>DETENTION</h1><a class="btn outline" href="index.html">VOLTAR AO MENU</a></header>
+  <div id="mensagem" class="alert" role="status" hidden></div>
+  <section class="kpis" aria-label="Resumo de detention">
+   <article class="kpi"><span>CONTÊINERES COLETADOS</span><strong id="kpi-total">—</strong><small>Registros com retirada informada</small></article>
+   <article class="kpi"><span>DENTRO DO FREE TIME</span><strong id="kpi-livres">—</strong><small>Em operação sem cobrança</small></article>
+   <article class="kpi warn"><span>PRÓXIMOS DO VENCIMENTO</span><strong id="kpi-alertas">—</strong><small>Até 5 dias restantes</small></article>
+   <article class="kpi danger"><span>GERANDO DETENTION</span><strong id="kpi-cobrando">—</strong><small>Contêineres em operação</small></article>
+   <article class="kpi cost"><span>CUSTO TOTAL</span><strong id="kpi-valor">—</strong><small>Somente dias de detention gerados</small></article>
+  </section>
+  <section class="panel records">
+   <div class="section-title"><h2>DETALHAMENTO POR CONTÊINER</h2></div>
+   <div class="filter-toolbar">
+    <div class="filters"><div class="field"><label for="busca">BUSCAR CONTÊINER / ORDEM</label><input id="busca" placeholder="Ex.: MEDU9130570 ou O/90430"></div><div class="field"><label for="armador">ARMADOR</label><select id="armador"><option value="">TODOS</option></select></div><div class="field"><label for="tipo">TIPO</label><select id="tipo"><option value="">TODOS</option><option value="CARGA">CARGA</option><option value="PULMÃO">PULMÃO</option></select></div><div class="field"><label for="situacao">SITUAÇÃO</label><select id="situacao"><option value="">TODAS</option><option value="COBRANDO">GERANDO DETENTION</option><option value="ALERTA">VENCE EM ATÉ 5 DIAS</option><option value="LIVRE">DENTRO DO FREE TIME</option><option value="ENCERRADO">FINALIZADO</option><option value="PENDENCIA">PENDÊNCIA DE DADOS</option></select></div></div>
+    <div class="hero-actions"><span id="contador" hidden></span><span id="atualizado" hidden></span><button id="limpar" class="btn outline" type="button">LIMPAR</button><button id="atualizar" class="btn" type="button">ATUALIZAR</button><button id="exportar" class="btn outline" type="button">EXPORTAR CSV</button></div>
+   </div>
+   <div class="table-wrap"><table><thead><tr><th>CONTÊINER</th><th>TIPO</th><th>ORDEM</th><th>ARMADOR</th><th>TRANSPORTADORA</th><th>COLETA / GATE OUT</th><th>FIM / GATE IN</th><th>DIAS DECORRIDOS</th><th>FT (DIAS)</th><th>DIAS RESTANTES</th><th>DIAS DETENTION</th><th>DIÁRIA</th><th>TOTAL</th><th>SITUAÇÃO</th></tr></thead><tbody id="linhas"><tr><td colspan="14" class="empty">Carregando...</td></tr></tbody></table></div>
+  </section>
+ </main>
+</body>
+</html>

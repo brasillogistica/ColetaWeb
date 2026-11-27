@@ -1,11 +1,12 @@
 COLETAWEB - PACOTE ORGANIZADO E IDIOMAS
 
 ESTRUTURA
-- Raiz: 10 paginas HTML (index, login, solicitacao-transporte, booking,
-  coleta, processos, gestao, analise-processos, admin, cadastro-transportadora).
-- css/: style.css, booking-style.css e site-background.css.
+- Raiz: 11 paginas HTML (index, login, solicitacao-transporte, booking,
+  coleta, processos, gestao, detention, analise-processos, admin, cadastro-transportadora).
+- css/: style.css, booking-style.css, detention.css e site-background.css.
 - js/: script.js, idioma.js, i18n-global.js, booking.js,
-  solicitacao-transporte.js, unidades.js e navigation-fast.js.
+  solicitacao-transporte.js, unidades.js, navigation-fast.js,
+  detention.js e detention-regras.js.
 - assets/: fundo-menu.jpg, excel-alerta.png e icone-lapis.png.
 - modelos/: modelo_solicitar_container.xlsx.
 - sql/: INSTALAR_IDIOMA_SUPABASE.sql e VERIFICAR_IDIOMA_SUPABASE.sql.
@@ -20,6 +21,28 @@ PUBLICACAO
    e execute sql/INSTALAR_IDIOMA_SUPABASE.sql no SQL Editor.
 5. Limpe o cache do navegador (Ctrl+F5); entre e escolha o idioma na Home.
 6. Teste em cada perfil (User, Master, Administrador) e cada tela.
+
+MENU DETENTION (NOVO)
+- Arquivos alterados/criados: index.html, detention.html, css/detention.css,
+  js/detention.js e js/detention-regras.js.
+- O botao DETENTION fica na Home, visivel para Master e Administrador.
+  A tela tambem verifica o perfil antes de consultar dados.
+- A tela consulta os registros reais da tabela public.coletas (RIC) e usa
+  cw_solicitacoes para identificar CARGA/PULMAO quando houver vinculo.
+- Inicio do free time: data_retirada, tratada como GATE OUT.
+- Para armadores cuja condicao final seja GATE IN, encerra na data_finalizado
+  somente quando o registro esta finalizado; nos demais casos calcula ate hoje.
+- Regra: dias excedidos = max(0, dias corridos decorridos - FT coluna B);
+  total calculado = dias excedidos x tarifa diaria da coluna C.
+- A coluna F (FT -30%) nao e aplicada: exige confirmacao da condicao contratual.
+- BR-X CARGO: a planilha exige ON BOARD; o sistema nao possui essa data.
+  Exibe PENDENCIA e nao inclui valores provisórios no total financeiro.
+- Valores foram transcritos da planilha DETENTION.xlsx, Planilha1, linhas 3–19.
+  A moeda esta indicada apenas pelo simbolo '$' no arquivo de origem.
+- A seguranca dos dados depende tambem das politicas RLS de Supabase:
+  o painel exibe os registros que o usuario autorizado pode consultar.
+- Nao requer SQL novo; nao altera nem apaga registros do banco de dados.
+- Para atualizar tarifas, edite js/detention-regras.js e publique novamente.
 
 FUNDO DE TODAS AS TELAS
 - A imagem assets/fundo-menu.jpg agora e compartilhada nas 10 paginas por
@@ -146,3 +169,12 @@ DEPENDENCIAS EXTERNAS
 VERIFICACOES LOCAIS
 - Sintaxe dos JS externos e caminhos estaticos HTML verificados.
 - Banco e comportamento visual autenticado nao foram testados ao vivo.
+- V22 CONFIRMAÇÃO DE PULMÃO (NOVO): antes de trocar os arquivos,
+  execute sql/CONFIRMAR_QUANTIDADE_PULMAO_V22.sql no SQL Editor do Supabase.
+  Faça backup e teste em homologação. O SQL cria colunas para a quantidade
+  solicitada, quantidade real e justificativa e atualiza a validação de coleta.
+  Em Registro | ColetaWeb o card PULMÃO mostra CONFIRMAR e NÃO CONFIRMAR.
+  Em caso de divergência, informe a quantidade inteira real e a justificativa.
+  O Booking passa a apresentar a quantidade confirmada e a origem solicitada,
+  e o painel de saldos usa o valor real persistido na solicitação.
+  Substitua coleta.html e js/booking.js juntos; mantenha as demais pastas.

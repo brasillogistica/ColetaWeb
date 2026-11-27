@@ -28,7 +28,7 @@ async function pendencias(){
   carregandoMinhasSolicitacoes=true;
   try{
     const {data,error}=await clienteSupabase.from('cw_solicitacoes')
-      .select('id,tipo,ordem,pcp,planta,armador,armador_solicitado,quantidade,status,depot_coleta,observacao_booking,cw_atrelamentos(container,depot)')
+      .select('id,tipo,ordem,pcp,data_coleta,planta,armador,armador_solicitado,quantidade,status,depot_coleta,observacao_booking,cw_atrelamentos(container,depot)')
       .order('created_at',{ascending:false}).limit(300);
     if(error)throw error;
     const solicitacoes=data||[];
@@ -41,7 +41,9 @@ async function pendencias(){
       const depotConfirmado=String(s.depot_coleta||'').trim();
       const depotsAtrelados=[...new Set((s.cw_atrelamentos||[]).map(a=>String(a.depot||'').trim()).filter(Boolean))].join(', ');
       const depotExibido=depotConfirmado||depotsAtrelados||'—';
-      return `<tr class="${alterado?'linha-armador-alterado':''}"><td>${safe(s.tipo||'CARGA')}</td><td>${safe(s.ordem||'—')}</td><td>${safe(s.pcp||'—')}</td><td>${safe(s.planta||'—')}</td><td class="coluna-armador">${safe(s.armador)}${avisoAlteracao}</td><td>${s.quantidade}</td><td>${safe((s.cw_atrelamentos||[]).map(a=>a.container).join(', ')||'—')}</td><td>${safe(depotExibido)}</td><td>${safe(s.status)}</td><td class="obs-transport" title="${safe(s.observacao_booking||'')}">${safe(s.observacao_booking||'—')}</td></tr>`;
+      const dataColeta=/^\d{4}-\d{2}-\d{2}$/.test(String(s.data_coleta||'').slice(0,10))
+        ?String(s.data_coleta).slice(0,10).split('-').reverse().join('/'):'—';
+      return `<tr class="${alterado?'linha-armador-alterado':''}"><td>${safe(s.tipo||'CARGA')}</td><td>${safe(s.ordem||'—')}</td><td>${safe(s.pcp||'—')}</td><td>${safe(dataColeta)}</td><td>${safe(s.planta||'—')}</td><td class="coluna-armador">${safe(s.armador)}${avisoAlteracao}</td><td>${s.quantidade}</td><td>${safe((s.cw_atrelamentos||[]).map(a=>a.container).join(', ')||'—')}</td><td>${safe(depotExibido)}</td><td>${safe(s.status)}</td><td class="obs-transport" title="${safe(s.observacao_booking||'')}">${safe(s.observacao_booking||'—')}</td></tr>`;
     }).join('');
   }catch(e){aviso('Erro ao consultar solicitações: '+e.message,true)}
   finally{

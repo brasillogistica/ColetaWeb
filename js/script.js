@@ -2,9 +2,39 @@
 const SUPABASE_URL = 'https://ekmcgifpvqrdgcikvepe.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbWNnaWZwdnFyZGdjaWt2ZXBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDY4NTgsImV4cCI6MjA5NTE4Mjg1OH0.sLIg__XSOSM7VD95FcUDr2ZCuDFCxxCWlF98sJkyBTg';
 
+// Armazenamento de autenticação: tenta manter a sessão entre abas pelo
+// localStorage. Se a quota estiver cheia, usa sessionStorage nesta aba.
+// Não apaga rascunhos, fotos ou preferências da operação.
+const armazenamentoAuthColetaWeb = {
+    getItem(key) {
+        try {
+            const temporario = sessionStorage.getItem(key);
+            if (temporario !== null) return temporario;
+        } catch (_) {}
+        try { return localStorage.getItem(key); } catch (_) { return null; }
+    },
+    setItem(key, value) {
+        try {
+            localStorage.setItem(key, value);
+            try { sessionStorage.removeItem(key); } catch (_) {}
+        } catch (erro) {
+            if (erro?.name !== 'QuotaExceededError' && erro?.name !== 'NS_ERROR_DOM_QUOTA_REACHED') throw erro;
+            // Grava apenas o token de autenticação na aba atual, sem excluir dados.
+            sessionStorage.setItem(key, value);
+            console.warn('[ColetaWeb] Armazenamento local cheio: sessão mantida nesta aba.');
+        }
+    },
+    removeItem(key) {
+        try { localStorage.removeItem(key); } catch (_) {}
+        try { sessionStorage.removeItem(key); } catch (_) {}
+    }
+};
+
 // Inicialização segura
 const clienteSupabase = (typeof supabase !== 'undefined')
-    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { storage: armazenamentoAuthColetaWeb, persistSession: true }
+    })
     : null;
 
 // Logout global

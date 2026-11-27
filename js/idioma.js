@@ -5,19 +5,19 @@
   const D = {
     'pt-BR': {
       subtitle:'Sistema ColetaWeb - Logística Internacional', language:'Idioma', logout:'SAIR', welcome:'Bem-vindo, ',
-      buttons:['SOLICITAR CONTÊINER','BOOKING','REGISTRAR COLETA','PROCESSOS - CONTAINER','PAINEL DE GESTÃO','ANÁLISE PROCESSOS','GERENCIAMENTO','CADASTRAR TRANSPORTADORA'],
+      buttons:{solicitar:'SOLICITAR CONTÊINER',booking:'BOOKING',coleta:'REGISTRAR COLETA',processos:'PROCESSOS - CONTAINER',gestao:'PAINEL DE GESTÃO',analise:'ANÁLISE PROCESSOS',detention:'DETENTION',gerenciamento:'GERENCIAMENTO',transportadora:'CADASTRAR TRANSPORTADORA'},
       weekdays:['Nº','Seg','Ter','Qua','Qui','Sex','Sáb','Dom'], daysShort:['S','T','Q','Q','S','S','D'],
       annual:'CALENDÁRIO ANUAL', footer:'Desenvolvido por', localOnly:'Idioma salvo neste navegador. Não foi possível sincronizar com sua conta.'
     },
     en: {
       subtitle:'ColetaWeb System - International Logistics', language:'Language', logout:'LOG OUT', welcome:'Welcome, ',
-      buttons:['REQUEST CONTAINER','BOOKING','REGISTER PICKUP','CONTAINER PROCESSES','MANAGEMENT DASHBOARD','PROCESS ANALYSIS','ADMINISTRATION','REGISTER CARRIER'],
+      buttons:{solicitar:'REQUEST CONTAINER',booking:'BOOKING',coleta:'REGISTER PICKUP',processos:'CONTAINER PROCESSES',gestao:'MANAGEMENT DASHBOARD',analise:'PROCESS ANALYSIS',detention:'DETENTION',gerenciamento:'ADMINISTRATION',transportadora:'REGISTER CARRIER'},
       weekdays:['Wk','Mon','Tue','Wed','Thu','Fri','Sat','Sun'], daysShort:['M','T','W','T','F','S','S'],
       annual:'YEARLY CALENDAR', footer:'Developed by', localOnly:'Language saved in this browser. Your account could not be updated.'
     },
     es: {
       subtitle:'Sistema ColetaWeb - Logística Internacional', language:'Idioma', logout:'SALIR', welcome:'Bienvenido, ',
-      buttons:['SOLICITAR CONTENEDOR','BOOKING','REGISTRAR RECOGIDA','PROCESOS - CONTENEDOR','PANEL DE GESTIÓN','ANÁLISIS DE PROCESOS','ADMINISTRACIÓN','REGISTRAR TRANSPORTISTA'],
+      buttons:{solicitar:'SOLICITAR CONTENEDOR',booking:'BOOKING',coleta:'REGISTRAR RECOGIDA',processos:'PROCESOS - CONTENEDOR',gestao:'PANEL DE GESTIÓN',analise:'ANÁLISIS DE PROCESOS',detention:'DETENTION',gerenciamento:'ADMINISTRACIÓN',transportadora:'REGISTRAR TRANSPORTISTA'},
       weekdays:['N.º','Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], daysShort:['L','M','X','J','V','S','D'],
       annual:'CALENDARIO ANUAL', footer:'Desarrollado por', localOnly:'Idioma guardado en este navegador. No se pudo sincronizar con tu cuenta.'
     }
@@ -59,15 +59,24 @@
       });
       const welcome = document.getElementById('welcome-message');
       if (welcome && displayName) welcome.textContent = t.welcome + displayName;
-      const buttons = document.querySelectorAll('.side-menu .container-btn > span');
-      buttons.forEach((el, i) => { if (t.buttons[i]) el.textContent = t.buttons[i]; });
+      // O identificador do menu é estável: adicionar/reordenar botões não desloca traduções.
+      document.querySelectorAll('.side-menu .container-btn > span[data-menu]').forEach(el => {
+        const traducao = t.buttons[el.dataset.menu];
+        if (traducao) el.textContent = traducao;
+      });
       document.querySelectorAll('#calendar-grid .cal-cell.head').forEach((el, i) => {
         if (t.weekdays[i]) el.textContent = t.weekdays[i];
       });
       const annual = document.querySelector('#full-calendar-modal > h2');
       if (annual) annual.textContent = t.annual;
       const footer = document.querySelector('.footer');
-      if (footer) footer.textContent = t.footer + ' Leandro Brasil • 2026';
+      if (footer) {
+        // Preserva o identificador da versão no rodapé, usado para diagnosticar cache.
+        const versao = footer.querySelector('[data-app-version]');
+        if (versao) {
+          footer.firstChild.textContent = t.footer + ' Leandro Brasil • 2026 ';
+        } else footer.textContent = t.footer + ' Leandro Brasil • 2026';
+      }
       const picker = document.getElementById('language-select');
       if (picker) picker.value = current;
       if (typeof window.renderCalendarRapido === 'function') window.renderCalendarRapido();

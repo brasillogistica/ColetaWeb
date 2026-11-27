@@ -821,6 +821,20 @@
 .booking-obs-message{white-space:pre-wrap;overflow-wrap:anywhere}
 .lib-obs-icon{display:inline-flex;justify-content:center;align-items:center;width:19px;height:19px;border-radius:50%;color:#926400;background:#fff0c5;border:1px solid #e2c279;font-size:12px;font-weight:900;flex:none}
 .lib-top .lib-obs-icon{margin-left:6px;margin-right:auto}
+/* Confirmação de quantidade PULMÃO no próprio card */
+.liberada-pulmao{border:1px solid #e8e0c8;border-radius:12px;background:#fff;padding:10px;margin-bottom:8px;color:var(--navy)}
+.liberada-pulmao .liberada-item{border:0;padding:0;margin:0;background:transparent;width:100%}
+.pulmao-verificacao{margin-top:8px;padding-top:8px;border-top:1px solid #e4eaf0;font-size:10px;line-height:1.5}
+.pulmao-verificacao strong{color:#24536a}
+.pulmao-acoes{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.pulmao-acoes button,.pulmao-modal-acoes button{padding:7px 9px;border:0;border-radius:7px;font-size:10px;font-weight:800;cursor:pointer}
+.pulmao-acoes .pulmao-sim{background:#216a4b;color:white}.pulmao-acoes .pulmao-nao{background:#f7e1c7;color:#7e4718}
+.pulmao-confirmado{color:#187349;font-weight:700}
+.pulmao-modal[hidden]{display:none!important}.pulmao-modal{position:fixed;inset:0;background:rgba(10,30,46,.65);z-index:10002;display:grid;place-items:center;padding:16px}
+.pulmao-modal-box{width:min(420px,100%);background:white;border-radius:14px;padding:22px;color:#233c4c;box-shadow:0 18px 50px #0003}
+.pulmao-modal-box h3{margin:0 0 10px;font-size:16px}.pulmao-modal-box label{display:block;font-size:11px;font-weight:750;margin:10px 0 5px}
+.pulmao-modal-box input,.pulmao-modal-box textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #b8c8d3;border-radius:7px;font:inherit}
+.pulmao-modal-acoes{display:flex;gap:8px;justify-content:flex-end;margin-top:15px}.pulmao-modal-acoes .pulmao-salvar{background:#23485e;color:#fff}
 </style>
 <link rel="stylesheet" href="css/site-background.css"></head>
 <body>
@@ -880,6 +894,7 @@
           <option value="ZIM">ZIM</option>
           <option value="INTERTRANS">INTERTRANS</option>
           <option value="BR-X CARGO">BR-X CARGO</option>
+          <option value="LEASING">LEASING</option>
         </select>
       </div>
       <div class="form-group">
@@ -929,6 +944,17 @@
   <div class="lib-alert">Selecione a ordem confirmada pelo Booking. Informe contêiner e placa para iniciar o processo.</div>
   <div class="results-list" id="listaLiberadas" aria-live="polite"></div>
 </aside>
+<div class="pulmao-modal" id="modalQuantidadePulmao" hidden role="dialog" aria-modal="true" aria-labelledby="tituloQuantidadePulmao">
+  <div class="pulmao-modal-box">
+    <h3 id="tituloQuantidadePulmao">Quantidade coletada diferente</h3>
+    <p id="resumoQuantidadePulmao" style="font-size:12px"></p>
+    <label for="quantidadeRealPulmao">QUANTIDADE REAL COLETADA</label>
+    <input id="quantidadeRealPulmao" type="number" min="0" max="10000" step="1" required>
+    <label for="motivoQuantidadePulmao">JUSTIFICATIVA OBRIGATÓRIA</label>
+    <textarea id="motivoQuantidadePulmao" rows="3" maxlength="1000" placeholder="Explique por que a quantidade é diferente da solicitada"></textarea>
+    <div class="pulmao-modal-acoes"><button type="button" onclick="fecharQuantidadePulmao()">CANCELAR</button><button type="button" id="salvarQuantidadePulmao" class="pulmao-salvar" onclick="salvarQuantidadeDivergentePulmao()">SALVAR E ENVIAR AO BOOKING</button></div>
+  </div>
+</div>
 
 <aside class="card-panel search-panel">
   <h3>ORDEM EM OPERAÇÃO</h3>
@@ -1023,33 +1049,34 @@
     return /^[A-Z]{4}[0-9]{7}$/.test(valor);
   }
   function validarArmadorBooking(mostrarMensagem = false) {
+    const selecionado = String(document.getElementById('armador')?.value || '').trim().toUpperCase();
+    if (!selecionado) return false;
     if (!bookingSelecionado?.armador || registroId) return true;
     const prefixo = document.getElementById('containerInput').value.slice(0,4);
     const empresa = BASE_PREFIXOS_EMPRESA[prefixo];
     const encontrado = armadorDoFabricante(empresa);
     const confirmado = String(bookingSelecionado.armador).trim().toUpperCase();
-    const divergente = encontrado && encontrado.toUpperCase() !== confirmado;
+    const prefixoLeasing = !encontrado;
+    const divergente = (!prefixoLeasing && encontrado.toUpperCase() !== confirmado)
+      || (!prefixoLeasing && selecionado !== confirmado)
+      || (prefixoLeasing && selecionado !== confirmado && selecionado !== 'LEASING');
     if (divergente && mostrarMensagem) {
-      mostrarAlerta(`Armador divergente: o prefixo ${prefixo} indica ${encontrado}, mas a coluna ARMADOR do Booking confirma ${bookingSelecionado.armador}. O armador deve ser igual ao Booking. Verifique o contêiner antes de salvar.`);
+      mostrarAlerta(`Armador divergente: o Booking informa ${bookingSelecionado.armador}${encontrado ? ` e o prefixo ${prefixo} indica ${encontrado}` : ''}. Selecione o armador do Booking ou, para prefixos sem correspondência, LEASING.`);
     }
     return !divergente;
   }
   function atualizarEdicaoArmador() {
     const select = document.getElementById('armador');
     if (!select) return;
-    const origem = select.dataset.origemArmador;
-    // Registro vinculado ao Booking: armador fixo, inclusive ao retomar um processo.
-    const vinculadoAoBooking = !!bookingSelecionado?.armador || !!registroAtual?.cw_solicitacao_id;
-    if (bookingSelecionado?.armador && !registroId) {
+    // A transportadora pode escolher o armador; a validação preserva a consistência com o Booking.
+    if (bookingSelecionado?.armador && !registroId && !select.value) {
       adicionarOpcaoSeFaltar(select, bookingSelecionado.armador);
       select.value = bookingSelecionado.armador;
       select.dataset.origemArmador = 'booking';
     }
-    // O campo é somente leitura em todas as etapas: o operador nunca escolhe o armador.
-    select.disabled = true;
-    select.title = vinculadoAoBooking
-      ? 'Armador definido pelo Booking: não pode ser alterado neste registro.'
-      : origem === 'prefixo' ? 'Identificado automaticamente pela aba BASE da planilha' : '';
+    select.disabled = !(tipoCargaSelecionado && cargaPulmaoSelecionado) || !!registroId;
+    select.title = registroId ? 'Armador registrado: somente leitura ao retomar o processo.'
+      : 'Selecione o armador correspondente. Para contêiner sem armador identificado, escolha LEASING.';
   }
   function aplicarArmadorDoPrefixo() {
     const container = document.getElementById('containerInput');
@@ -1080,17 +1107,19 @@
       return;
     }
     if (bookingSelecionado && bookingSelecionado.armador) {
-      // Booking é a fonte obrigatória para o armador operacional, inclusive leasing.
+      // Pré-seleciona o Booking, mas preserva a escolha manual do operador.
       adicionarOpcaoSeFaltar(armador,bookingSelecionado.armador);
-      armador.value = bookingSelecionado.armador;
-      armador.dataset.origemArmador = 'booking';
+      if (armador.dataset.origemArmador !== 'manual') {
+        armador.value = bookingSelecionado.armador;
+        armador.dataset.origemArmador = 'booking';
+      }
       const divergente = !validarArmadorBooking();
       avisarArmadorAuto(divergente
-        ? `ATENÇÃO: código ${prefixo} indica ${armadorDoFabricante(empresa)}, mas o armador do Booking é ${bookingSelecionado.armador}. Confira o contêiner; não será possível salvar com divergência.`
+        ? `ATENÇÃO: confira o armador selecionado e o Booking (${bookingSelecionado.armador}). Não será possível salvar com divergência.`
         : empresa
-          ? `Armador confirmado pelo Booking: ${bookingSelecionado.armador}. Prefixo ${prefixo}: ${empresa}.`
-          : `Prefixo ${prefixo || 'incompleto'}: leasing/sem correspondência. Armador fixo conforme Booking: ${bookingSelecionado.armador}.`,
-        divergente ? 'erro' : 'sucesso');
+          ? `Prefixo ${prefixo}: ${empresa}. Armador selecionável conforme Booking.`
+          : `Prefixo ${prefixo || 'incompleto'}: leasing/sem correspondência. Se necessário, selecione LEASING na lista de armadores.`,
+        divergente ? 'erro' : empresa ? 'sucesso' : 'atencao');
       atualizarEdicaoArmador();
       return;
     }
@@ -1104,23 +1133,26 @@
     if (!empresa || empresa.trim().toLowerCase()==='leasing') {
       if (armador.dataset.origemArmador==='prefixo') armador.value='';
       armador.dataset.origemArmador='leasing';
-      avisarArmadorAuto(`Código ${prefixo} identificado como leasing/sem correspondência. Utilize a solicitação liberada pelo Booking para definir o armador.`, 'atencao');
+      avisarArmadorAuto(`Código ${prefixo} identificado como leasing/sem correspondência. Escolha LEASING ou o armador correspondente na lista.`, 'atencao');
       atualizarEdicaoArmador();
       return;
     }
     // Espelha literalmente o resultado da coluna "ARMADOR FABRICANTE DO CONTAINER" da aba VERIFICADOR.
     adicionarOpcaoSeFaltar(armador,empresa);
-    armador.value=empresa;
-    armador.dataset.origemArmador='prefixo';
+    if (armador.dataset.origemArmador !== 'manual') {
+      armador.value=empresa;
+      armador.dataset.origemArmador='prefixo';
+    }
     avisarArmadorAuto(`VERIFICADOR: ${empresa} — código ${prefixo}. Preenchido automaticamente.`, 'sucesso');
     atualizarEdicaoArmador();
   }
   document.getElementById('containerInput')?.addEventListener('input', aplicarArmadorDoPrefixo, true);
   document.getElementById('containerInput')?.addEventListener('change', aplicarArmadorDoPrefixo, true);
   document.getElementById('armador')?.addEventListener('change', function(){
-    if (this.dataset.origemArmador==='prefixo' || this.dataset.origemArmador==='booking') return;
     this.dataset.origemArmador='manual';
-    if (this.value) avisarArmadorAuto('Armador selecionado manualmente (leasing).', 'atencao');
+    if (this.value) avisarArmadorAuto(`Armador selecionado: ${this.value}.${this.value==='LEASING' ? ' Contêiner leasing/sem armador identificado.' : ''}`, 'atencao');
+    validarArmadorBooking(false);
+    atualizarInterfaceEtapa();
   });
 
   const DRAFT_KEY = 'coletaweb_draft_v14';
@@ -2768,6 +2800,50 @@
   let bookingLiberados = [];
   let bookingSelecionado = null;
   let carregandoLiberadas = false;
+  let pulmaoEditandoId = null;
+  let pulmaoConfirmandoId = null;
+  async function registrarQuantidadePulmao(id,quantidade,motivo){
+    if(pulmaoConfirmandoId)return;
+    const x=bookingLiberados.find(r=>String(r.id)===String(id));
+    if(!x||x.tipo!=='PULMÃO'||x.quantidade_confirmada_pulmao!==null)return mostrarAlerta('Solicitação não disponível para confirmação. Atualize a lista.');
+    pulmaoConfirmandoId=id;desenharLiberadas();
+    try{
+      const {error}=await clienteSupabase.rpc('cw_confirmar_quantidade_pulmao_v22',{
+        p_solicitacao_id:id,p_quantidade_real:quantidade,p_justificativa:motivo||null
+      });
+      if(error)throw error;
+      document.getElementById('modalQuantidadePulmao').hidden=true;pulmaoEditandoId=null;
+      await carregarBookingLiberados();
+      mostrarAlerta('Quantidade real de PULMÃO registrada e enviada ao Booking.');
+    }catch(e){console.error('Confirmação de PULMÃO:',e);mostrarAlerta('Não foi possível confirmar a quantidade: '+e.message);}
+    finally{pulmaoConfirmandoId=null;await carregarBookingLiberados();}
+  }
+  function confirmarQuantidadePulmao(id){
+    const x=bookingLiberados.find(r=>String(r.id)===String(id));if(!x)return;
+    registrarQuantidadePulmao(id,Number(x.quantidade),null);
+  }
+  function abrirQuantidadePulmao(id){
+    const x=bookingLiberados.find(r=>String(r.id)===String(id));if(!x)return;
+    pulmaoEditandoId=id;
+    document.getElementById('resumoQuantidadePulmao').textContent=`Armador: ${x.armador||'—'} · Solicitados: ${x.quantidade} contêiner(es).`;
+    document.getElementById('quantidadeRealPulmao').value='';
+    document.getElementById('motivoQuantidadePulmao').value='';
+    document.getElementById('modalQuantidadePulmao').hidden=false;
+    document.getElementById('quantidadeRealPulmao').focus();
+  }
+  function fecharQuantidadePulmao(){if(pulmaoConfirmandoId)return;document.getElementById('modalQuantidadePulmao').hidden=true;pulmaoEditandoId=null;}
+  function salvarQuantidadeDivergentePulmao(){
+    const campo=document.getElementById('quantidadeRealPulmao');
+    const bruto=campo.value.trim(),q=Number(bruto),motivo=document.getElementById('motivoQuantidadePulmao').value.trim();
+    const x=bookingLiberados.find(r=>String(r.id)===String(pulmaoEditandoId));
+    if(!x)return mostrarAlerta('Solicitação não encontrada. Atualize a lista.');
+    if(!bruto||!Number.isSafeInteger(q)||q<0||q>10000)return mostrarAlerta('Informe a quantidade real inteira, de 0 a 10.000.');
+    if(q===Number(x.quantidade))return mostrarAlerta('A quantidade é igual à solicitada. Use CONFIRMAR no card.');
+    if(motivo.length<10)return mostrarAlerta('Informe uma justificativa com pelo menos 10 caracteres.');
+    registrarQuantidadePulmao(x.id,q,motivo);
+  }
+  window.fecharQuantidadePulmao=fecharQuantidadePulmao;
+  window.salvarQuantidadeDivergentePulmao=salvarQuantidadeDivergentePulmao;
   function mostrarObservacaoBookingInline(texto){
     const banner=document.getElementById('bookingObsBanner');
     const msg=document.getElementById('bookingObsMensagem');
@@ -2801,14 +2877,33 @@
       const meta=document.createElement('div');meta.className='lib-meta';
       meta.textContent=`Armador: ${x.armador||'—'} | Depot: ${x.depot_coleta||'—'} | Data: ${x.data_coleta||'—'} | Disponíveis: ${x.saldo_disponivel}`;
       el.append(head,meta);
-      el.addEventListener('click',()=>aplicarBookingSelecionado(x.id));lista.append(el);
+      if(x.tipo==='PULMÃO'){
+        const card=document.createElement('div');card.className='liberada-pulmao';card.append(el);
+        const verificacao=document.createElement('div');verificacao.className='pulmao-verificacao';
+        if(x.quantidade_confirmada_pulmao===null){
+          verificacao.textContent=`Solicitados: ${x.quantidade} contêiner(es). A quantidade realmente coletada confere?`;
+          const acoes=document.createElement('div');acoes.className='pulmao-acoes';
+          const sim=document.createElement('button');sim.type='button';sim.className='pulmao-sim';sim.textContent='CONFIRMAR';
+          const nao=document.createElement('button');nao.type='button';nao.className='pulmao-nao';nao.textContent='NÃO CONFIRMAR';
+          sim.disabled=nao.disabled=!!pulmaoConfirmandoId;
+          sim.addEventListener('click',()=>confirmarQuantidadePulmao(x.id));nao.addEventListener('click',()=>abrirQuantidadePulmao(x.id));
+          acoes.append(sim,nao);verificacao.append(acoes);
+        }else{
+          verificacao.className+=' pulmao-confirmado';
+          const original=x.quantidade_solicitada_pulmao??x.quantidade;
+          verificacao.textContent=`✓ Quantidade real confirmada: ${x.quantidade_confirmada_pulmao} · Solicitada: ${original}`;
+          if(x.justificativa_quantidade_pulmao){const obs=document.createElement('div');obs.textContent='Justificativa: '+x.justificativa_quantidade_pulmao;verificacao.append(obs);}
+        }
+        card.append(verificacao);lista.append(card);
+      }else lista.append(el);
+      el.addEventListener('click',()=>aplicarBookingSelecionado(x.id));
     }
   }
   async function carregarBookingLiberados(){
     if(carregandoLiberadas||!clienteSupabase||!transportadoraUsuario)return;
     carregandoLiberadas=true;
     try{
-      const req=await clienteSupabase.from('cw_solicitacoes').select('id,tipo,ordem,armador,temperatura,planta,regiao,data_coleta,quantidade,status,depot_coleta,observacao_booking').eq('transportadora',transportadoraUsuario).eq('status','LIBERADO PARA COLETA').order('created_at',{ascending:false});
+      const req=await clienteSupabase.from('cw_solicitacoes').select('id,tipo,ordem,armador,temperatura,planta,regiao,data_coleta,quantidade,quantidade_solicitada_pulmao,quantidade_confirmada_pulmao,justificativa_quantidade_pulmao,status,depot_coleta,observacao_booking').eq('transportadora',transportadoraUsuario).eq('status','LIBERADO PARA COLETA').order('created_at',{ascending:false});
       if(req.error)throw req.error;
       const ids=(req.data||[]).map(x=>x.id).filter(Boolean);
       const contagem=new Map();
@@ -2827,13 +2922,14 @@
           if(lote.length<1000)break;
         }
       }
-      bookingLiberados=(req.data||[]).map(x=>({...x,saldo_disponivel:Math.max(0,(x.quantidade||1)-(contagem.get(x.id)||0))})).filter(x=>x.saldo_disponivel>0);
+      bookingLiberados=(req.data||[]).map(x=>({...x,saldo_disponivel:Math.max(0,Number(x.quantidade??0)-(contagem.get(x.id)||0))})).filter(x=>x.tipo==='PULMÃO'&&x.quantidade_confirmada_pulmao===null||x.saldo_disponivel>0);
       desenharLiberadas();
     }catch(e){console.error('ORDENS LIBERADAS:',e);const el=document.getElementById('liberadasCount');if(el)el.textContent='Erro ao consultar Booking: '+e.message;}
     finally{carregandoLiberadas=false;}
   }
   function aplicarBookingSelecionado(id){
     const x=bookingLiberados.find(r=>String(r.id)===String(id));if(!x)return;
+    if(x.tipo==='PULMÃO'&&x.quantidade_confirmada_pulmao===null)return mostrarAlerta('Primeiro confirme a quantidade efetivamente coletada no card de PULMÃO.');
     if(registroId)return mostrarAlerta('Para utilizar outra ordem, finalize ou clique em NOVO REGISTRO.');
     bookingSelecionado=x;
     const t=(x.temperatura||'').toUpperCase();

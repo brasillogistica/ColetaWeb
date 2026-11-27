@@ -1,0 +1,43 @@
+COLETAWEB V13 - INSTALACAO NO GITHUB PAGES
+
+CORRECAO DA HOME (V15)
+- O arquivo js/idioma.js anterior traduzia os botoes pela posicao.
+- Inserir DETENTION deslocava os nomes: Detention parecia Gerenciamento,
+  e Gerenciamento parecia Cadastrar Transportadora, duplicando o ultimo.
+- V15 corrige isso usando data-menu em index.html e traducoes por identificador.
+- Para corrigir o problema LOCAL, substitua index.html E js/idioma.js juntos.
+
+ARQUIVOS QUE PRECISAM ESTAR NO GITHUB
+  index.html                 [SUBSTITUIR O DA RAIZ]
+  detention.html             [ADICIONAR]
+  css/detention.css          [ADICIONAR]
+  js/detention.js            [ADICIONAR]
+  js/detention-regras.js     [ADICIONAR]
+
+PUBLICACAO DA VERSAO COMPLETA
+1. Faca backup da versao atual pelo GitHub (Code > Download ZIP).
+2. Extraia o pacote COLETAWEB_V13_COMPLETO.zip.
+3. Abra a pasta COLETAWEB_FINAL dentro do pacote.
+4. No GitHub, na branch usada pelo Pages, abra Add file > Upload files.
+5. Arraste O CONTEUDO da pasta COLETAWEB_FINAL (sem a pasta externa).
+   Preserve a estrutura e confirme os caminhos das pastas js/, css/ e assets/.
+6. Confira que o index.html esta na raiz e o detention.html tambem.
+7. Salve com Commit changes e confira em Actions o deployment do Pages.
+8. Acesse a Home e confira no rodape o texto 'ColetaWeb V13'.
+
+SE O MENU DETENTION NAO APARECER
+- Abra https://github.com/brasillogistica/ColetaWeb/blob/main/index.html
+  e pesquise DETENTION. Se nao existir, o index.html nao foi substituido.
+- Abra https://brasillogistica.github.io/ColetaWeb/detention.html
+  para verificar se a pagina de Detention foi publicada.
+- Confira Settings > Pages: origem de publicacao (branch e pasta root/docs).
+- Se o index estiver correto, aguarde o deployment e recarregue com Ctrl+Shift+R.
+- O menu DETENTION e visivel a perfis Master e Administrador.
+
+ATENCAO
+- Nunca publique senhas, chaves service_role ou credenciais administrativas.
+- Se o GitHub for publico, as tarifas no arquivo js/detention-regras.js ficam
+  publicamente visiveis. Para proteger esses valores, e necessario migrar
+  a tabela de tarifas para um backend com autorizacao adequada.
+- O sistema continua dependente das politicas RLS do Supabase para acessar coletas.
+- Publicar arquivos no GitHub Pages nao cria tabelas nem executa scripts SQL.
